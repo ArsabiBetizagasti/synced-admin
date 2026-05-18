@@ -40,7 +40,7 @@ export default function App() {
         <div className="fixed inset-0 flex flex-col" style={BG_STYLE}>
           {/* Header floats in top margin, 4px above center */}
           <div className="flex-shrink-0 flex items-center px-4 py-3 sm:px-[72px] sm:h-[72px] sm:py-0">
-            <div className="w-full sm:-mt-[4px]">
+            <div className="w-full sm:-mt-[3px]">
               <AppHeader
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}

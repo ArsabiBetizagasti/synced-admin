@@ -220,10 +220,10 @@ function AddEntryModal({ onClose, defaultType = 'income' }) {
           </button>
         </div>
         <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div className="flex gap-1 bg-[#080808] rounded-xl p-1">
+          <div className="flex gap-1 bg-[#080808] rounded-full p-1">
             {['income','expense'].map(t => (
               <button key={t} type="button" onClick={() => handleTypeChange(t)}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${form.type===t?'text-black':'text-zinc-500 hover:text-white'}`}
+                className={`flex-1 py-2 rounded-full text-sm font-medium transition-all ${form.type===t?'text-black':'text-zinc-500 hover:text-white'}`}
                 style={form.type===t?{background:t==='income'?'#4ade80':'#f87171'}:{}}>
                 {t==='income'?'↑ Ingreso':'↓ Gasto'}
               </button>
@@ -233,7 +233,7 @@ function AddEntryModal({ onClose, defaultType = 'income' }) {
             <div className="flex gap-1.5">
               {incomeSubTypes.map(st => (
                 <button key={st.value} type="button" onClick={() => handleSubType(st.value)}
-                  className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${form.paymentType===st.value?'border-[#faff05] text-white bg-[#faff05]/10':'border-[#111] text-zinc-500'}`}>
+                  className={`flex-1 py-1.5 px-2 rounded-full text-xs font-medium border transition-all ${form.paymentType===st.value?'border-[#faff05] text-white bg-[#faff05]/10':'border-[#111] text-zinc-500'}`}>
                   {st.label}
                 </button>
               ))}
@@ -275,7 +275,7 @@ function AddEntryModal({ onClose, defaultType = 'income' }) {
               </select>
             </div>
           </div>
-          <button type="submit" className="w-full py-2.5 rounded-xl text-sm font-semibold text-black" style={{background:'#faff05'}}>
+          <button type="submit" className="w-full py-2.5 rounded-full text-sm font-semibold text-black" style={{background:'#faff05'}}>
             Registrar movimiento
           </button>
         </form>
@@ -339,7 +339,7 @@ function RecurringCostModal({ cost, onClose }) {
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Nota</label>
             <input value={form.note} onChange={e => set('note', e.target.value)} className={inputCls} placeholder="ej. dos licencias Photoshop" />
           </div>
-          <button type="submit" className="w-full py-2.5 rounded-xl text-sm font-semibold text-black" style={{ background: '#faff05' }}>
+          <button type="submit" className="w-full py-2.5 rounded-full text-sm font-semibold text-black" style={{ background: '#faff05' }}>
             {isEdit ? 'Guardar cambios' : 'Agregar costo fijo'}
           </button>
         </form>
@@ -401,7 +401,7 @@ function SyncedCostSection({ onAddExpense }) {
         <div className="flex items-center justify-between mb-2">
           <span className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Costos fijos mensuales</span>
           <button onClick={() => setShowRecurringModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-[#1a1a1a] text-zinc-400 hover:border-[#faff05]/60 hover:text-[#faff05] transition-colors bg-[#080808]">
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border border-[#1a1a1a] text-zinc-400 hover:border-[#faff05]/60 hover:text-[#faff05] transition-colors bg-[#080808]">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             Agregar
           </button>
@@ -447,7 +447,7 @@ function SyncedCostSection({ onAddExpense }) {
         <div className="flex items-center justify-between mb-2">
           <span className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Gastos variables registrados</span>
           <button onClick={onAddExpense}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-[#1a1a1a] text-zinc-400 hover:border-red-500/60 hover:text-red-400 transition-colors bg-[#080808]">
+            className="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium border border-[#1a1a1a] text-zinc-400 hover:border-red-500/60 hover:text-red-400 transition-colors bg-[#080808]">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             Registrar gasto
           </button>
@@ -456,7 +456,7 @@ function SyncedCostSection({ onAddExpense }) {
         {topCategories.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {topCategories.map(([cat, amt]) => (
-              <div key={cat} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#080808] rounded-xl border border-[#111]">
+              <div key={cat} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#080808] rounded-full border border-[#111]">
                 <span className="text-zinc-400 text-xs">{cat}</span>
                 <span className="text-red-400 text-xs font-semibold">{fmtAmount(amt)}</span>
               </div>
@@ -675,10 +675,10 @@ export default function FinanzasPortal() {
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3 flex-wrap">
           <span className="text-zinc-500 text-xs uppercase tracking-wider">Moneda</span>
-          <div className="flex gap-1 bg-[#080808] rounded-xl p-1">
+          <div className="flex gap-1 bg-[#080808] rounded-full p-1">
             {Object.keys(CURRENCY_SYMBOLS).map(c => (
               <button key={c} onClick={() => setCurrency(c)}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${currency===c?'text-black':'text-zinc-400 hover:text-white'}`}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${currency===c?'text-black':'text-zinc-400 hover:text-white'}`}
                 style={currency===c?{background:'#faff05'}:{}}>
                 {CURRENCY_SYMBOLS[c]} {c}
               </button>
@@ -693,10 +693,10 @@ export default function FinanzasPortal() {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-zinc-500 text-xs uppercase tracking-wider">Período</span>
-          <div className="flex gap-1 bg-[#080808] rounded-xl p-1">
+          <div className="flex gap-1 bg-[#080808] rounded-full p-1">
             {[['1M','1M'],['3M','3M'],['6M','6M'],['1A','1A'],['2A','2A'],['Todo','Todo']].map(([v,l]) => (
               <button key={v} onClick={() => setPeriod(v)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${period===v?'text-black':'text-zinc-400 hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${period===v?'text-black':'text-zinc-400 hover:text-white'}`}
                 style={period===v?{background:'#faff05'}:{}}>
                 {l}
               </button>
@@ -768,20 +768,20 @@ export default function FinanzasPortal() {
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <button onClick={() => setFilterClient('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterClient==='all'?'text-black':'text-zinc-500 bg-[#080808] hover:text-white'}`}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterClient==='all'?'text-black':'text-zinc-500 bg-[#080808] hover:text-white'}`}
             style={filterClient==='all'?{background:'#faff05'}:{}}>
             Ver Todo
           </button>
           {clients.map(c => (
             <button key={c.id} onClick={() => setFilterClient(filterClient===c.id?'all':c.id)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border-l-2 ${filterClient===c.id?'text-black':'text-zinc-500 bg-[#080808] hover:text-white'}`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border-l-2 ${filterClient===c.id?'text-black':'text-zinc-500 bg-[#080808] hover:text-white'}`}
               style={filterClient===c.id?{background:c.color,borderLeftColor:c.color}:{borderLeftColor:c.color}}>
               {c.name}
             </button>
           ))}
         </div>
         <button onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-black flex-shrink-0"
+          className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-black flex-shrink-0"
           style={{background:'#faff05'}}>
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -927,7 +927,7 @@ export default function FinanzasPortal() {
             <div className="flex gap-1">
               {[['all','Todos'],['income','Ingresos'],['expense','Gastos']].map(([v,l]) => (
                 <button key={v} onClick={() => setFilterType(v)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${filterType===v?'text-black':'text-zinc-500 bg-[#080808]'}`}
+                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${filterType===v?'text-black':'text-zinc-500 bg-[#080808]'}`}
                   style={filterType===v?{background:v==='income'?'#4ade80':v==='expense'?'#f87171':'#faff05'}:{}}>
                   {l}
                 </button>

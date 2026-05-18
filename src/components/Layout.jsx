@@ -400,6 +400,49 @@ export function AppHeader({ activeTab, setActiveTab, currentUser, onLogout }) {
   );
 }
 
+// ── Scroll fade container ──────────────────────────────────────────────────────
+function ScrollFadeContainer({ children }) {
+  const [atTop, setAtTop] = useState(true);
+  const [atBottom, setAtBottom] = useState(true);
+  const ref = useRef(null);
+
+  const update = () => {
+    const el = ref.current;
+    if (!el) return;
+    setAtTop(el.scrollTop < 4);
+    setAtBottom(el.scrollTop + el.clientHeight >= el.scrollHeight - 4);
+  };
+
+  useEffect(() => {
+    update();
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  return (
+    <div className="flex-1 relative min-h-0 overflow-hidden">
+      <div ref={ref} className="absolute inset-0 overflow-y-auto p-6" onScroll={update}>
+        {children}
+      </div>
+      {/* Top fade — hidden when at top */}
+      <div className="absolute top-0 inset-x-0 h-14 pointer-events-none z-10 transition-opacity duration-300"
+        style={{
+          background: 'linear-gradient(to bottom, #000 0%, transparent 100%)',
+          opacity: atTop ? 0 : 1,
+        }} />
+      {/* Bottom fade — hidden when at bottom */}
+      <div className="absolute bottom-0 inset-x-0 h-14 pointer-events-none z-10 transition-opacity duration-300"
+        style={{
+          background: 'linear-gradient(to top, #000 0%, transparent 100%)',
+          opacity: atBottom ? 0 : 1,
+        }} />
+    </div>
+  );
+}
+
 // ── Content area (rendered inside the rectangle) ───────────────────────────────
 export function LayoutContent({ activeTab, currentUser }) {
   const renderModule = () => {
@@ -415,9 +458,9 @@ export function LayoutContent({ activeTab, currentUser }) {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto p-6">
+    <ScrollFadeContainer>
       {renderModule()}
-    </div>
+    </ScrollFadeContainer>
   );
 }
 
