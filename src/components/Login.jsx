@@ -1,18 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
-function loadBrands() {
-  try {
-    const stored = localStorage.getItem('sg_clients_v7');
-    if (stored) return JSON.parse(stored).filter(c => c.active !== false && !c.isInternal);
-    return [];
-  } catch { return []; }
-}
-
-const USERS = [
-  { id: 'kann', label: 'Kann', initials: 'K', bg: '#faff05', text: '#000', pin: '515051' },
-  { id: 'jero', label: 'Jero', initials: 'J', bg: '#60a5fa', text: '#000', pin: '882001' },
-  { id: 'facu', label: 'Facu', initials: 'F', bg: '#a78bfa', text: '#000', pin: '182026' },
-];
+const ALL_USERS = {
+  'kann':              { id: 'kann',     label: 'Kann',             initials: 'K',  bg: '#faff05', text: '#000', pin: '515051' },
+  'jero':              { id: 'jero',     label: 'Jero',             initials: 'J',  bg: '#60a5fa', text: '#000', pin: '882001' },
+  'facu':              { id: 'facu',     label: 'Facu',             initials: 'F',  bg: '#a78bfa', text: '#000', pin: '182026' },
+  'hollywood browzer': { id: 'brand_c1', label: 'Hollywood Browzer',initials: 'HB', bg: '#f472b6', text: '#000', pin: '012026' },
+  '360 optimum':       { id: 'brand_c2', label: '360 Optimum',      initials: '36', bg: '#38bdf8', text: '#000', pin: '032026' },
+  'foreshank':         { id: 'brand_c3', label: 'Foreshank',        initials: 'FS', bg: '#34d399', text: '#000', pin: '022026' },
+  'adam':              { id: 'brand_c4', label: 'ADAM',             initials: 'AD', bg: '#fb923c', text: '#000', pin: '042026' },
+};
 
 function PinPad({ user, onBack, onSuccess }) {
   const [pin, setPin] = useState('');
@@ -33,11 +29,7 @@ function PinPad({ user, onBack, onSuccess }) {
         } else {
           setError(true);
           setShakeKey(k => k + 1);
-          setTimeout(() => {
-            setError(false);
-            setPin('');
-            setChecking(false);
-          }, 900);
+          setTimeout(() => { setError(false); setPin(''); setChecking(false); }, 900);
         }
       }, 150);
     }
@@ -65,15 +57,13 @@ function PinPad({ user, onBack, onSuccess }) {
           Volver
         </button>
 
-        {/* Avatar */}
-        <div className="w-20 h-20 rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-3"
+        <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-3"
           style={{ background: user.bg, color: user.text }}>
           {user.initials}
         </div>
         <p className="text-white font-semibold text-xl mb-1">{user.label}</p>
-        <p className="text-zinc-500 text-sm mb-8">Ingresá tu PIN de 6 dígitos</p>
+        <p className="text-zinc-500 text-sm mb-8">Ingresá tu código de 6 dígitos</p>
 
-        {/* PIN dots */}
         <div key={shakeKey} className={`flex justify-center gap-3 mb-3 ${error ? 'pin-shake' : ''}`}>
           {dots.map((_, i) => (
             <div key={i} className="w-3.5 h-3.5 rounded-full border-2 transition-all duration-150"
@@ -85,10 +75,9 @@ function PinPad({ user, onBack, onSuccess }) {
         </div>
 
         <div className="h-5 mb-5">
-          {error && <p className="text-red-400 text-sm">PIN incorrecto. Intentá de nuevo.</p>}
+          {error && <p className="text-red-400 text-sm">Código incorrecto. Intentá de nuevo.</p>}
         </div>
 
-        {/* Numpad */}
         <div className="grid grid-cols-3 gap-3">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => (
             <button key={d} onClick={() => handleDigit(String(d))}
@@ -96,13 +85,11 @@ function PinPad({ user, onBack, onSuccess }) {
               {d}
             </button>
           ))}
-          {/* Empty */}
           <div />
           <button onClick={() => handleDigit('0')}
             className="h-16 rounded-2xl bg-[#1a1a1a] border border-zinc-800 text-white text-2xl font-semibold hover:bg-zinc-800 active:scale-95 transition-all select-none">
             0
           </button>
-          {/* Backspace */}
           <button onClick={handleDelete}
             className="h-16 rounded-2xl bg-[#1a1a1a] border border-zinc-800 text-zinc-400 hover:bg-zinc-800 active:scale-95 transition-all flex items-center justify-center select-none">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -117,26 +104,42 @@ function PinPad({ user, onBack, onSuccess }) {
 }
 
 export default function Login({ onLogin }) {
+  const [username, setUsername] = useState('');
+  const [error, setError] = useState('');
   const [selectedUser, setSelectedUser] = useState(null);
-  const brands = loadBrands();
+  const inputRef = useRef(null);
 
-  const user = USERS.find(u => u.id === selectedUser);
+  useEffect(() => { inputRef.current?.focus(); }, []);
 
-  if (selectedUser) return (
-    <PinPad
-      user={user}
-      onBack={() => setSelectedUser(null)}
-      onSuccess={onLogin}
-    />
-  );
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const key = username.trim().toLowerCase();
+    const found = ALL_USERS[key];
+    if (found) {
+      setError('');
+      setSelectedUser(found);
+    } else {
+      setError('Usuario no encontrado. Verificá el nombre e intentá de nuevo.');
+    }
+  };
+
+  if (selectedUser) {
+    return (
+      <PinPad
+        user={selectedUser}
+        onBack={() => { setSelectedUser(null); setUsername(''); }}
+        onSuccess={onLogin}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4 relative overflow-hidden">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.03]"
         style={{ background: 'radial-gradient(circle, #faff05, transparent 70%)' }} />
 
-      <div className="w-full max-w-lg relative z-10 text-center">
-        <div className="inline-flex items-center gap-2.5 mb-10">
+      <div className="w-full max-w-sm relative z-10">
+        <div className="flex items-center gap-2.5 mb-10 justify-center">
           <div className="w-9 h-9 rounded-xl flex items-center justify-center font-bold text-black text-xs"
             style={{ background: '#faff05' }}>SG</div>
           <div className="text-left">
@@ -146,51 +149,36 @@ export default function Login({ onLogin }) {
         </div>
 
         <div className="bg-[#111] border border-zinc-800 rounded-2xl p-8">
-          {/* Team section */}
-          <p className="text-zinc-500 text-xs uppercase tracking-wider mb-5">Equipo interno</p>
-          <div className="flex gap-4 justify-center mb-6">
-            {USERS.map(u => (
-              <button key={u.id} onClick={() => setSelectedUser(u.id)}
-                className="flex flex-col items-center gap-3 p-4 rounded-2xl border border-zinc-800 hover:border-zinc-600 transition-all group w-24">
-                <div className="w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold transition-transform group-hover:scale-110"
-                  style={{ background: u.bg, color: u.text }}>
-                  {u.initials}
-                </div>
-                <span className="text-white font-semibold text-sm">{u.label}</span>
-              </button>
-            ))}
-          </div>
+          <p className="text-white font-semibold text-center mb-1">Bienvenido</p>
+          <p className="text-zinc-500 text-sm text-center mb-7">Ingresá tu usuario para continuar</p>
 
-          {/* Brand section */}
-          {brands.length > 0 && (
-            <>
-              <div className="flex items-center gap-3 mb-5">
-                <div className="flex-1 h-px bg-zinc-800" />
-                <span className="text-zinc-600 text-xs uppercase tracking-wider">Acceso de marcas</span>
-                <div className="flex-1 h-px bg-zinc-800" />
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                {brands.map(b => {
-                  const initials = (b.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-                  return (
-                    <button key={b.id} onClick={() => onLogin('brand_' + b.id)}
-                      className="flex flex-col items-center gap-2 p-3 rounded-xl border border-zinc-800 hover:border-zinc-600 transition-all group">
-                      <div className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold text-black transition-transform group-hover:scale-110"
-                        style={{ background: b.color }}>
-                        {initials}
-                      </div>
-                      <span className="text-zinc-400 text-xs font-medium leading-tight text-center group-hover:text-white transition-colors line-clamp-2">
-                        {b.name}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          )}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-zinc-400 text-xs mb-2 uppercase tracking-wider">Usuario</label>
+              <input
+                ref={inputRef}
+                value={username}
+                onChange={e => { setUsername(e.target.value); setError(''); }}
+                placeholder="ej: kann, jero, hollywood browzer..."
+                autoComplete="off"
+                spellCheck={false}
+                className="w-full bg-[#1a1a1a] border border-zinc-700 rounded-xl px-4 py-3 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] transition-colors"
+              />
+            </div>
+
+            {error && (
+              <p className="text-red-400 text-xs">{error}</p>
+            )}
+
+            <button type="submit"
+              className="w-full py-3 rounded-xl text-sm font-semibold text-black transition-opacity hover:opacity-90 active:scale-[0.98] transition-all"
+              style={{ background: '#faff05' }}>
+              Continuar
+            </button>
+          </form>
         </div>
 
-        <p className="text-zinc-700 text-xs mt-6">© 2026 Synced Graphics</p>
+        <p className="text-zinc-700 text-xs mt-6 text-center">© 2026 Synced Graphics</p>
       </div>
     </div>
   );

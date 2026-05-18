@@ -392,73 +392,62 @@ function FileCard({ doc, clientId, clientColor, onOpen }) {
 
   return (
     <>
-      <div className="bg-[#1a1a1a] border border-zinc-800 rounded-2xl overflow-hidden flex flex-col group hover:border-zinc-600 transition-all"
+      <div className="bg-[#1a1a1a] border border-zinc-800 rounded-2xl overflow-hidden flex flex-col hover:border-zinc-600 transition-all group"
         style={{ borderTopColor: clientColor, borderTopWidth: 2 }}>
 
-        {/* Thumbnail / preview area */}
-        <div className="relative cursor-pointer" onClick={() => onOpen(doc)}
+        {/* Thumbnail — click anywhere here to open */}
+        <div className="relative cursor-pointer flex-shrink-0" onClick={() => onOpen(doc)}
           style={{ height: 120 }}>
           {isValidUrl && isImage(doc) ? (
             <img src={doc.url} alt={doc.name}
-              className="w-full h-full object-cover" />
+              className="w-full h-full object-cover hover:opacity-90 transition-opacity" />
           ) : isValidUrl && isVideo(doc) ? (
-            <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
-              <svg className="w-10 h-10 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="w-full h-full bg-zinc-900 flex items-center justify-center hover:bg-zinc-800 transition-colors">
+              <svg className="w-10 h-10 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
           ) : (
-            <div className="w-full h-full bg-zinc-900 flex items-center justify-center">
+            <div className="w-full h-full bg-zinc-900 flex items-center justify-center hover:bg-zinc-800 transition-colors">
               <span className="text-4xl">{fileTypeIcon(doc)}</span>
             </div>
           )}
 
-          {/* Hover overlay with click-to-open hint */}
-          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 text-white text-xs font-medium">
-              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-              </svg>
-              Ver
-            </div>
-          </div>
-
           {/* Unread badge */}
           {unread && (
-            <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-[#faff05] ring-2 ring-[#1a1a1a]" title="Comentarios sin leer" />
+            <div className="absolute top-2 right-2 w-2.5 h-2.5 rounded-full bg-[#faff05] ring-2 ring-[#1a1a1a]" />
           )}
 
-          {/* Delete button */}
+          {/* Delete button — appears on card hover */}
           <button
             onClick={e => { e.stopPropagation(); setConfirmDelete(true); }}
-            className="absolute top-2 left-2 w-6 h-6 rounded-lg bg-black/60 text-zinc-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
+            className="absolute top-2 left-2 w-6 h-6 rounded-lg bg-black/70 text-zinc-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {/* Info area */}
+        {/* Info — always visible below the thumbnail */}
         <div className="p-3 flex flex-col gap-2 flex-1">
           <p className="text-white text-xs font-medium leading-tight truncate" title={doc.name}>{doc.name}</p>
 
           <div className="space-y-0.5">
-            {doc.size && <p className="text-zinc-600 text-[10px]">{formatSize(doc.size)}</p>}
-            <p className="text-zinc-600 text-[10px]">
+            {doc.size && <p className="text-zinc-500 text-[10px]">{formatSize(doc.size)}</p>}
+            <p className="text-zinc-500 text-[10px]">
               <span className="font-medium" style={{ color: userBg(doc.uploadedBy) }}>{userLabel(doc.uploadedBy)}</span>
               {' · '}{relativeTime(doc.uploadedAt)}
             </p>
           </div>
 
-          {/* Comments badge */}
+          {/* Comments count */}
           <div className="flex items-center gap-1.5">
             <svg className="w-3 h-3 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
             </svg>
             <span className={`text-[10px] ${unread ? 'text-[#faff05] font-semibold' : 'text-zinc-600'}`}>
-              {doc.notes?.length || 0} {unread && '· sin leer'}
+              {doc.notes?.length || 0} {unread ? '· sin leer' : ''}
             </span>
           </div>
 
@@ -466,14 +455,14 @@ function FileCard({ doc, clientId, clientColor, onOpen }) {
           {isValidUrl ? (
             <button
               onClick={e => { e.stopPropagation(); downloadFile(doc.url, doc.name); }}
-              className="w-full py-1.5 rounded-lg text-[10px] font-semibold border border-zinc-700 text-zinc-400 hover:border-[#faff05] hover:text-[#faff05] transition-colors flex items-center justify-center gap-1">
+              className="w-full py-1.5 rounded-lg text-[10px] font-semibold border border-zinc-700 text-zinc-400 hover:border-[#faff05] hover:text-[#faff05] transition-colors flex items-center justify-center gap-1 mt-auto">
               <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
               DESCARGAR
             </button>
           ) : (
-            <div className="w-full py-1.5 rounded-lg text-[10px] text-zinc-700 border border-zinc-800 text-center">
+            <div className="w-full py-1.5 rounded-lg text-[10px] text-zinc-700 border border-zinc-800 text-center mt-auto">
               Sin URL permanente
             </div>
           )}
