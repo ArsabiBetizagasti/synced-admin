@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 
 const ASSIGNEES = {
@@ -32,7 +32,7 @@ const PLATFORMS = [
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#111] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
+      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
         <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -104,7 +104,7 @@ function TaskCard({ task, onMove, onEdit, onDelete }) {
         ref={dragRef}
         draggable
         onDragStart={handleDragStart}
-        className="relative bg-[#1a1a1a] border border-zinc-800/80 rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-zinc-700 transition-all group"
+        className="relative bg-[#0a0a0a] border border-zinc-800/80 rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-zinc-700 transition-all group"
         style={{ borderLeft: `3px solid ${client?.color || '#333'}` }}
       >
         {/* Top-right: edit + delete */}
@@ -313,7 +313,7 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#111] border border-zinc-800 rounded-2xl w-full max-w-md max-h-[92vh] overflow-y-auto">
+      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-md max-h-[92vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b border-zinc-800">
           <h2 className="text-white font-semibold">{isEdit ? 'Editar tarea' : 'Nueva tarea'}</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white">
@@ -328,7 +328,7 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
           <div>
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Título *</label>
             <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-              className="w-full bg-[#1a1a1a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+              className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
               placeholder="Ej. Diseño de logo principal" required />
           </div>
 
@@ -337,7 +337,7 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Descripción</label>
             <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
               rows={2}
-              className="w-full bg-[#1a1a1a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
+              className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
               placeholder="Detalla el alcance de la tarea..." />
           </div>
 
@@ -346,14 +346,14 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Cliente</label>
               <select value={form.clientId} onChange={e => setForm(p => ({ ...p, clientId: e.target.value }))}
-                className="w-full bg-[#1a1a1a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Prioridad</label>
               <select value={form.priority} onChange={e => setForm(p => ({ ...p, priority: e.target.value }))}
-                className="w-full bg-[#1a1a1a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {Object.keys(PRIORITIES).map(p => <option key={p}>{p}</option>)}
               </select>
             </div>
@@ -364,13 +364,13 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Deadline</label>
               <input type="date" value={form.deadline} onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
-                className="w-full bg-[#1a1a1a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]"
+                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]"
                 required />
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Columna</label>
               <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
-                className="w-full bg-[#1a1a1a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {COLUMNS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </div>
@@ -514,7 +514,7 @@ export default function KanbanBoard({ filters: extFilters }) {
         <div className="flex items-center gap-1.5 flex-wrap mb-5">
           <button
             onClick={() => setFilterClient('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterClient === 'all' ? 'text-black' : 'text-zinc-500 bg-[#1a1a1a] hover:text-white'}`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterClient === 'all' ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a] hover:text-white'}`}
             style={filterClient === 'all' ? { background: '#faff05' } : {}}>
             Todos <span className="opacity-60">({tasks.length})</span>
           </button>
@@ -523,7 +523,7 @@ export default function KanbanBoard({ filters: extFilters }) {
             return (
               <button key={c.id}
                 onClick={() => setFilterClient(filterClient === c.id ? 'all' : c.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border-l-2 ${filterClient === c.id ? 'text-black' : 'text-zinc-500 bg-[#1a1a1a] hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border-l-2 ${filterClient === c.id ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a] hover:text-white'}`}
                 style={filterClient === c.id ? { background: c.color, borderLeftColor: c.color } : { borderLeftColor: c.color }}>
                 {c.name} <span className={filterClient === c.id ? 'opacity-70' : 'opacity-50'}>({count})</span>
               </button>

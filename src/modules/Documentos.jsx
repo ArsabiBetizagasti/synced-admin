@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+﻿import React, { useState, useRef, useCallback } from 'react';
 import { app } from '../firebase';
 import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { useApp } from '../context/AppContext';
@@ -169,7 +169,7 @@ function FileViewer({ doc, clientId, onClose }) {
         </div>
 
         {/* Comments panel */}
-        <div className="w-80 flex-shrink-0 border-l border-zinc-800 flex flex-col bg-[#0f0f0f]">
+        <div className="w-80 flex-shrink-0 border-l border-zinc-800 flex flex-col bg-[#080808]">
           <div className="px-4 py-3 border-b border-zinc-800">
             <p className="text-white font-semibold text-sm">Comentarios</p>
             <p className="text-zinc-600 text-xs">{notes.length} {notes.length === 1 ? 'comentario' : 'comentarios'}</p>
@@ -295,7 +295,7 @@ function UploadPanel({ clientId, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#111] border border-zinc-800 rounded-2xl w-full max-w-md">
+      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-md">
         <div className="flex items-center justify-between p-5 border-b border-zinc-800">
           <h2 className="text-white font-semibold">Subir archivo</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
@@ -348,10 +348,10 @@ function UploadPanel({ clientId, onClose }) {
 
           <form onSubmit={handleLink} className="space-y-2">
             <input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre del archivo"
-              className="w-full bg-[#1a1a1a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]" />
+              className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]" />
             <div className="flex gap-2">
               <input value={url} onChange={e => setUrl(e.target.value)} placeholder="https://drive.google.com/..."
-                className="flex-1 bg-[#1a1a1a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]" />
+                className="flex-1 bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]" />
               <button type="submit" className="px-4 py-2.5 rounded-xl text-sm font-semibold text-black flex-shrink-0" style={{ background: '#faff05' }}>
                 Agregar
               </button>
@@ -367,7 +367,7 @@ function UploadPanel({ clientId, onClose }) {
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#111] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
+      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
         <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -392,7 +392,7 @@ function FileCard({ doc, clientId, clientColor, onOpen }) {
 
   return (
     <>
-      <div className="bg-[#1a1a1a] border border-zinc-800 rounded-2xl overflow-hidden flex flex-col hover:border-zinc-600 transition-all group"
+      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl overflow-hidden flex flex-col hover:border-zinc-600 transition-all group"
         style={{ borderTopColor: clientColor, borderTopWidth: 2 }}>
 
         {/* Thumbnail — click anywhere here to open */}
@@ -554,7 +554,7 @@ function FolderCard({ client, onClick }) {
 
   return (
     <button onClick={onClick}
-      className="bg-[#1a1a1a] border border-zinc-800 rounded-2xl overflow-hidden text-left hover:border-zinc-600 transition-all group w-full">
+      className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl overflow-hidden text-left hover:border-zinc-600 transition-all group w-full">
 
       {/* Mini image strip */}
       {imageDocs.length > 0 ? (

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import KanbanBoard from '../modules/KanbanBoard';
 import FinanzasPortal from '../modules/FinanzasPortal';
 import Tasks, { AddTaskInline } from '../modules/Tasks';
@@ -121,7 +121,7 @@ function NotificationBell({ onNavigate }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 w-80 bg-[#111] border border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
+        <div className="absolute right-0 top-10 w-80 bg-[#0a0a0a] border border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
             <span className="text-white font-semibold text-sm">Actividad reciente</span>
             <span className="text-zinc-600 text-xs">{notifications.length} eventos</span>
@@ -179,7 +179,7 @@ function KanbanSection() {
   return (
     <div className="space-y-6">
       {/* Unified filter bar */}
-      <div className="bg-[#1a1a1a] border border-zinc-800/50 rounded-2xl p-4">
+      <div className="bg-[#0a0a0a] border border-zinc-800/50 rounded-2xl p-4">
         <div className="flex items-center gap-3 flex-wrap">
           {/* Search */}
           <div className="relative flex-shrink-0">
@@ -187,14 +187,14 @@ function KanbanSection() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input value={search} onChange={e => setSearch(e.target.value)}
-              className="bg-[#111] border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-40"
+              className="bg-[#0a0a0a] border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-40"
               placeholder="Buscar tarea..." />
           </div>
 
           {/* Assignees */}
           <div className="flex gap-1 flex-shrink-0">
             <button onClick={() => setFilterAssignee('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterAssignee === 'all' ? 'text-black' : 'text-zinc-500 bg-[#111]'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterAssignee === 'all' ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a]'}`}
               style={filterAssignee === 'all' ? { background: '#faff05' } : {}}>
               Todos
             </button>
@@ -213,7 +213,7 @@ function KanbanSection() {
           <div className="flex gap-1 flex-shrink-0">
             {['all', 'Alta', 'Media', 'Baja'].map(p => (
               <button key={p} onClick={() => setFilterPriority(filterPriority === p ? 'all' : p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterPriority === p ? 'text-black' : 'text-zinc-500 bg-[#111]'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterPriority === p ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a]'}`}
                 style={filterPriority === p ? { background: p === 'all' ? '#faff05' : KB_PRIORITIES[p] } : {}}>
                 {p === 'all' ? 'Prioridad' : p}
               </button>
@@ -227,7 +227,7 @@ function KanbanSection() {
           {clientsWithTasks.length > 0 && (
             <>
               <button onClick={() => setFilterClient('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex-shrink-0 ${filterClient === 'all' ? 'text-black' : 'text-zinc-500 bg-[#111] hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex-shrink-0 ${filterClient === 'all' ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a] hover:text-white'}`}
                 style={filterClient === 'all' ? { background: '#faff05' } : {}}>
                 Todos <span className="opacity-60">({tasks.length})</span>
               </button>
@@ -235,7 +235,7 @@ function KanbanSection() {
                 const count = tasks.filter(t => t.clientId === c.id).length;
                 return (
                   <button key={c.id} onClick={() => setFilterClient(filterClient === c.id ? 'all' : c.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border-l-2 flex-shrink-0 ${filterClient === c.id ? 'text-black' : 'text-zinc-500 bg-[#111] hover:text-white'}`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border-l-2 flex-shrink-0 ${filterClient === c.id ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a] hover:text-white'}`}
                     style={filterClient === c.id ? { background: c.color, borderLeftColor: c.color } : { borderLeftColor: c.color }}>
                     {c.name} <span className={filterClient === c.id ? 'opacity-70' : 'opacity-50'}>({count})</span>
                   </button>
@@ -247,7 +247,7 @@ function KanbanSection() {
           <div className="ml-auto flex items-center gap-2 flex-shrink-0">
             {hasActive && (
               <button onClick={resetFilters}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-500 bg-[#111] hover:text-zinc-300 transition-colors">
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-500 bg-[#0a0a0a] hover:text-zinc-300 transition-colors">
                 Reset
               </button>
             )}
@@ -305,7 +305,7 @@ export default function Layout({ onLogout, currentUser }) {
           </div>
 
           {/* Nav pills */}
-          <nav className="flex items-center gap-1 bg-[#1a1a1a] rounded-xl p-1">
+          <nav className="flex items-center gap-1 bg-[#0a0a0a] rounded-xl p-1">
             {TABS_MAIN.map(tab => (
               <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === tab.id ? 'text-black' : 'text-zinc-500 hover:text-zinc-300'}`}

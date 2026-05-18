@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 
 const ALL_USERS = {
   'kann':              { id: 'kann',     label: 'Kann',             initials: 'K',  bg: '#faff05', text: '#000', pin: '515051' },
@@ -81,17 +81,17 @@ function PinPad({ user, onBack, onSuccess }) {
         <div className="grid grid-cols-3 gap-3">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => (
             <button key={d} onClick={() => handleDigit(String(d))}
-              className="h-16 rounded-2xl bg-[#1a1a1a] border border-zinc-800 text-white text-2xl font-semibold hover:bg-zinc-800 active:scale-95 transition-all select-none">
+              className="h-16 rounded-2xl bg-[#0a0a0a] border border-zinc-800 text-white text-2xl font-semibold hover:bg-zinc-800 active:scale-95 transition-all select-none">
               {d}
             </button>
           ))}
           <div />
           <button onClick={() => handleDigit('0')}
-            className="h-16 rounded-2xl bg-[#1a1a1a] border border-zinc-800 text-white text-2xl font-semibold hover:bg-zinc-800 active:scale-95 transition-all select-none">
+            className="h-16 rounded-2xl bg-[#0a0a0a] border border-zinc-800 text-white text-2xl font-semibold hover:bg-zinc-800 active:scale-95 transition-all select-none">
             0
           </button>
           <button onClick={handleDelete}
-            className="h-16 rounded-2xl bg-[#1a1a1a] border border-zinc-800 text-zinc-400 hover:bg-zinc-800 active:scale-95 transition-all flex items-center justify-center select-none">
+            className="h-16 rounded-2xl bg-[#0a0a0a] border border-zinc-800 text-zinc-400 hover:bg-zinc-800 active:scale-95 transition-all flex items-center justify-center select-none">
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8}
                 d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
@@ -148,7 +148,7 @@ export default function Login({ onLogin }) {
           </div>
         </div>
 
-        <div className="bg-[#111] border border-zinc-800 rounded-2xl p-8">
+        <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl p-8">
           <p className="text-white font-semibold text-center mb-1">Bienvenido</p>
           <p className="text-zinc-500 text-sm text-center mb-7">Ingresá tu usuario para continuar</p>
 
@@ -162,7 +162,7 @@ export default function Login({ onLogin }) {
                 placeholder="ej: kann, jero, hollywood browzer..."
                 autoComplete="off"
                 spellCheck={false}
-                className="w-full bg-[#1a1a1a] border border-zinc-700 rounded-xl px-4 py-3 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] transition-colors"
+                className="w-full bg-[#0a0a0a] border border-zinc-700 rounded-xl px-4 py-3 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] transition-colors"
               />
             </div>
 

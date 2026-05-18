@@ -28,7 +28,7 @@ export default function App() {
       className="fixed inset-0 sm:p-[72px] flex"
       style={{
         backgroundImage: [
-          'radial-gradient(circle, #202020 1px, transparent 1px)',
+          'radial-gradient(circle, #141414 1px, transparent 1px)',
           'linear-gradient(to bottom, #0c0c0c 0%, #060606 55%, #000000 100%)',
         ].join(', '),
         backgroundSize: '22px 22px, 100% 100%',

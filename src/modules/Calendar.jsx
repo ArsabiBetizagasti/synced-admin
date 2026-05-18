@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+﻿import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import {
   isConfigured, connectGoogle, silentRefresh,
@@ -358,7 +358,7 @@ function MeetingCard({ ev, currentUser, onEdit, onRsvp, compact }) {
 function ConfirmDialog({ onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-      <div className="bg-[#111] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
+      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
         <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -378,7 +378,7 @@ function ConfirmDialog({ onConfirm, onCancel }) {
 // ─── Meeting Modal ────────────────────────────────────────────────────────────
 
 function MeetingModal({ initial, prefillDate, clients, onClose, onSave, onDelete }) {
-  const inp = 'w-full bg-[#1a1a1a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#818cf8] placeholder-zinc-700';
+  const inp = 'w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#818cf8] placeholder-zinc-700';
   const [form, setForm] = useState({
     title: initial?.title || '',
     clientId: initial?.clientId || '',
@@ -407,7 +407,7 @@ function MeetingModal({ initial, prefillDate, clients, onClose, onSave, onDelete
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#111] border border-zinc-800 rounded-2xl w-full max-w-md">
+      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-md">
         <div className="flex items-center justify-between p-5 border-b border-zinc-800">
           <h2 className="text-white font-semibold text-sm">{initial ? 'Editar reunión' : 'Nueva reunión'}</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
@@ -595,7 +595,7 @@ function MonthView({ year, month, eventsMap, selectedDay, onDayClick, today }) {
               onClick={() => onDayClick(cell.ymd)}
               className={`border-r border-b border-zinc-800/30 p-1.5 min-h-[90px] cursor-pointer transition-colors last:border-r-0
                 ${!cell.inMonth ? 'opacity-25' : 'hover:bg-zinc-900/40'}
-                ${isSelected ? 'bg-[#818cf8]/5 ring-1 ring-inset ring-[#818cf8]/30' : 'bg-[#111]'}
+                ${isSelected ? 'bg-[#818cf8]/5 ring-1 ring-inset ring-[#818cf8]/30' : 'bg-[#0a0a0a]'}
               `}>
               <div className="flex items-center justify-end mb-1">
                 <span className={`text-xs w-6 h-6 flex items-center justify-center rounded-full font-medium transition-all ${
@@ -866,7 +866,7 @@ export default function CalendarModule() {
           <span className="text-zinc-600 text-xs">{totalEvents} eventos</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <div className="flex items-center gap-1 bg-[#1a1a1a] rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-[#0a0a0a] rounded-xl p-1">
             {[['day','Día'],['month','Mes'],['year','Año']].map(([v, label]) => (
               <button key={v} onClick={() => switchView(v)}
                 className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
