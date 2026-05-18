@@ -24,8 +24,17 @@ export default function App() {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#080808] sm:p-[72px] flex">
-      <div className="flex-1 bg-[#0f0f0f] sm:border border-zinc-800/60 sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+    <div
+      className="fixed inset-0 sm:p-[72px] flex"
+      style={{
+        backgroundImage: [
+          'radial-gradient(circle, #202020 1px, transparent 1px)',
+          'linear-gradient(to bottom, #0c0c0c 0%, #060606 55%, #000000 100%)',
+        ].join(', '),
+        backgroundSize: '22px 22px, 100% 100%',
+      }}
+    >
+      <div className="flex-1 bg-black sm:border border-zinc-800/50 sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col">
         {!user ? (
           <Login onLogin={handleLogin} />
         ) : user.startsWith('brand_') ? (

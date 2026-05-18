@@ -291,7 +291,7 @@ export default function Layout({ onLogout, currentUser }) {
   return (
     <>
         {/* Top bar — always visible at top of the fixed container */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/50 flex-shrink-0 bg-[#0f0f0f] z-40">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/50 flex-shrink-0 bg-black z-40">
           {/* Brand */}
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-black text-xs"
