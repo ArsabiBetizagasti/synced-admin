@@ -196,12 +196,12 @@ function KanbanSection() {
           {/* Assignees */}
           <div className="flex gap-1 flex-shrink-0">
             <button onClick={() => setFilterAssignee('all')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${filterAssignee === 'all' ? 'bg-[#faff05] text-black border-[#faff05]' : 'bg-black text-[#faff05] border-[#faff05] hover:bg-[#faff05] hover:text-black'}`}>
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${filterAssignee === 'all' ? 'bg-[#faff05] text-black border-[#faff05]' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}>
               Todos
             </button>
             {Object.entries(KB_ASSIGNEES).map(([key, a]) => (
               <button key={key} onClick={() => setFilterAssignee(filterAssignee === key ? 'all' : key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${filterAssignee === key ? 'border-transparent text-black' : 'bg-black border-[#faff05] text-[#faff05] hover:bg-[#faff05] hover:text-black'}`}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${filterAssignee === key ? 'border-transparent text-black' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}
                 style={filterAssignee === key ? { background: a.bg } : {}}>
                 <div className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
                   style={{ background: a.bg, color: a.text }}>{a.initials}</div>
@@ -216,7 +216,7 @@ function KanbanSection() {
           <div className="flex gap-1 flex-shrink-0">
             {['all', 'Alta', 'Media', 'Baja'].map(p => (
               <button key={p} onClick={() => setFilterPriority(filterPriority === p ? 'all' : p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${filterPriority === p ? 'border-transparent text-black' : 'bg-black border-[#faff05] text-[#faff05] hover:bg-[#faff05] hover:text-black'}`}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${filterPriority === p ? 'border-transparent text-black' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}
                 style={filterPriority === p ? { background: p === 'all' ? '#faff05' : KB_PRIORITIES[p] } : {}}>
                 {p === 'all' ? 'Prioridad' : p}
               </button>
@@ -228,14 +228,14 @@ function KanbanSection() {
             <>
               <div className="w-px h-4 bg-zinc-800 flex-shrink-0" />
               <button onClick={() => setFilterClient('all')}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex-shrink-0 border ${filterClient === 'all' ? 'bg-[#faff05] text-black border-[#faff05]' : 'bg-black text-[#faff05] border-[#faff05] hover:bg-[#faff05] hover:text-black'}`}>
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex-shrink-0 border ${filterClient === 'all' ? 'bg-[#faff05] text-black border-[#faff05]' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}>
                 Todos <span className="opacity-60">({tasks.length})</span>
               </button>
               {clientsWithTasks.map(c => {
                 const count = tasks.filter(t => t.clientId === c.id).length;
                 return (
                   <button key={c.id} onClick={() => setFilterClient(filterClient === c.id ? 'all' : c.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex-shrink-0 border ${filterClient === c.id ? 'text-black border-transparent' : 'bg-black text-[#faff05] border-[#faff05] hover:bg-[#faff05] hover:text-black'}`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex-shrink-0 border ${filterClient === c.id ? 'text-black border-transparent' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}
                     style={filterClient === c.id ? { background: c.color } : {}}>
                     {c.name} <span className="opacity-60">({count})</span>
                   </button>
@@ -247,7 +247,7 @@ function KanbanSection() {
           <div className="ml-auto flex items-center gap-2 flex-shrink-0">
             {hasActive && (
               <button onClick={resetFilters}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-[#faff05] text-[#faff05] bg-black hover:bg-[#faff05] hover:text-black transition-all">
+                className="px-3 py-1.5 rounded-lg text-xs font-medium border border-transparent text-zinc-500 bg-black hover:border-[#faff05] hover:text-[#faff05] transition-all">
                 Reset
               </button>
             )}
