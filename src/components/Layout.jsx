@@ -428,13 +428,13 @@ function ScrollFadeContainer({ children }) {
         {children}
       </div>
       {/* Top fade — hidden when at top */}
-      <div className="absolute top-0 inset-x-0 h-14 pointer-events-none z-10 transition-opacity duration-300"
+      <div className="absolute top-0 inset-x-0 h-20 pointer-events-none z-10 transition-opacity duration-300"
         style={{
           background: 'linear-gradient(to bottom, #000 0%, transparent 100%)',
           opacity: atTop ? 0 : 1,
         }} />
       {/* Bottom fade — hidden when at bottom */}
-      <div className="absolute bottom-0 inset-x-0 h-14 pointer-events-none z-10 transition-opacity duration-300"
+      <div className="absolute bottom-0 inset-x-0 h-20 pointer-events-none z-10 transition-opacity duration-300"
         style={{
           background: 'linear-gradient(to top, #000 0%, transparent 100%)',
           opacity: atBottom ? 0 : 1,

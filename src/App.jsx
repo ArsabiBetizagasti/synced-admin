@@ -5,11 +5,8 @@ import { AppHeader, LayoutContent } from './components/Layout';
 import BrandPortal from './modules/BrandPortal';
 
 const BG_STYLE = {
-  backgroundImage: [
-    'radial-gradient(circle, #222 1px, transparent 1px)',
-    'linear-gradient(to bottom, #1a1a1a 0%, #111 55%, #080808 100%)',
-  ].join(', '),
-  backgroundSize: '22px 22px, 100% 100%',
+  backgroundImage: 'linear-gradient(to bottom, #1a1a1a 0%, #111 55%, #080808 100%)',
+  backgroundSize: '100% 100%',
 };
 
 export default function App() {
