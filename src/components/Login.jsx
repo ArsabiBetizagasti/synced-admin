@@ -159,7 +159,6 @@ export default function Login({ onLogin }) {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-zinc-400 text-xs mb-2 uppercase tracking-wider">Username</label>
                 <input
                   ref={inputRef}
                   value={username}
