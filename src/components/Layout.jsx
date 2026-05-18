@@ -445,11 +445,12 @@ function ScrollFadeContainer({ children }) {
 
 // ── Content area (rendered inside the rectangle) ───────────────────────────────
 export function LayoutContent({ activeTab, currentUser }) {
+  const canSeeRestricted = currentUser !== 'facu';
   const renderModule = () => {
     switch (activeTab) {
       case 'kanban': return <KanbanSection />;
-      case 'clientes': return <ClientesDashboard />;
-      case 'finanzas': return <FinanzasPortal />;
+      case 'clientes': return canSeeRestricted ? <ClientesDashboard /> : null;
+      case 'finanzas': return canSeeRestricted ? <FinanzasPortal /> : null;
       case 'documentos': return <Documentos />;
       case 'calendar': return <CalendarModule />;
       case 'live': return <LiveTasks />;
