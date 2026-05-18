@@ -70,7 +70,7 @@ function TaskCard({ task }) {
   );
 }
 
-function BrandPortalContent({ clientId }) {
+function BrandPortalContent({ clientId, onLogout }) {
   const { liveTasks, clients } = useApp();
   const client = clients.find(c => c.id === clientId);
 
@@ -96,7 +96,15 @@ function BrandPortalContent({ clientId }) {
   const initials = (client.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
+    <div className="flex-1 flex flex-col min-h-0 relative">
+      <button onClick={onLogout}
+        className="absolute top-4 right-6 z-10 text-zinc-600 hover:text-red-400 text-sm transition-colors flex items-center gap-1.5">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+            d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+        </svg>
+        Sign out
+      </button>
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-6 py-10">
           {/* Brand header */}
@@ -165,6 +173,6 @@ function BrandPortalContent({ clientId }) {
   );
 }
 
-export default function BrandPortal({ clientId }) {
-  return <BrandPortalContent clientId={clientId} />;
+export default function BrandPortal({ clientId, onLogout }) {
+  return <BrandPortalContent clientId={clientId} onLogout={onLogout} />;
 }

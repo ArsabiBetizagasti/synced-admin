@@ -61,23 +61,13 @@ export default function App() {
   return (
     <div className="fixed inset-0 flex flex-col" style={BG_STYLE}>
       {/* Header outside rectangle */}
-      <div className="flex-shrink-0 relative flex items-center justify-center px-4 py-3 sm:px-[72px] sm:h-[72px] sm:py-0">
+      <div className="flex-shrink-0 flex items-center justify-center px-4 py-3 sm:px-[72px] sm:h-[72px] sm:py-0">
         <div className="sm:mt-[2px]">
           <span className="text-white font-semibold text-sm">Synced</span>
           <span className="text-sm font-light ml-1" style={{ color: '#faff05' }}>
             {user ? 'Live' : 'Graphics Admin'}
           </span>
         </div>
-        {user && (
-          <button onClick={handleLogout}
-            className="absolute right-4 sm:right-[72px] sm:mt-[2px] text-zinc-600 hover:text-red-400 text-sm transition-colors flex items-center gap-1.5">
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-            </svg>
-            Sign out
-          </button>
-        )}
       </div>
       {/* Rectangle */}
       <div className="flex-1 flex min-h-0 sm:px-[72px] sm:pb-[72px]">
@@ -87,7 +77,7 @@ export default function App() {
             <Login onLogin={handleLogin} />
           ) : (
             <AppProvider>
-              <BrandPortal clientId={user.slice(6)} />
+              <BrandPortal clientId={user.slice(6)} onLogout={handleLogout} />
             </AppProvider>
           )}
         </div>
