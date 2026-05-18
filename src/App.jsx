@@ -6,8 +6,8 @@ import BrandPortal from './modules/BrandPortal';
 
 const BG_STYLE = {
   backgroundImage: [
-    'radial-gradient(circle, #141414 1px, transparent 1px)',
-    'linear-gradient(to bottom, #0c0c0c 0%, #060606 55%, #000000 100%)',
+    'radial-gradient(circle, #1c1c1c 1px, transparent 1px)',
+    'linear-gradient(to bottom, #141414 0%, #0c0c0c 55%, #060606 100%)',
   ].join(', '),
   backgroundSize: '22px 22px, 100% 100%',
 };
@@ -38,19 +38,21 @@ export default function App() {
     return (
       <AppProvider>
         <div className="fixed inset-0 flex flex-col" style={BG_STYLE}>
-          {/* Header floats above the rectangle in the top margin, nudged toward the rectangle */}
-          <div className="flex-shrink-0 flex items-end px-4 py-3 sm:px-[72px] sm:h-[72px] sm:pb-3 sm:py-0">
-            <AppHeader
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              currentUser={user}
-              onLogout={handleLogout}
-            />
+          {/* Header floats in top margin, 4px above center */}
+          <div className="flex-shrink-0 flex items-center px-4 py-3 sm:px-[72px] sm:h-[72px] sm:py-0">
+            <div className="w-full sm:-mt-[4px]">
+              <AppHeader
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                currentUser={user}
+                onLogout={handleLogout}
+              />
+            </div>
           </div>
           {/* Rectangle with side + bottom margins */}
           <div className="flex-1 flex min-h-0 sm:px-[72px] sm:pb-[72px]">
             <div className="flex-1 bg-black sm:rounded-3xl overflow-hidden flex flex-col"
-              style={{ boxShadow: '0 0 0 6px #000, 0 25px 50px -12px rgba(0,0,0,0.8)' }}>
+              style={{ boxShadow: '0 0 0 8px #000, 0 25px 50px -12px rgba(0,0,0,0.8)' }}>
               <LayoutContent activeTab={activeTab} currentUser={user} />
             </div>
           </div>
