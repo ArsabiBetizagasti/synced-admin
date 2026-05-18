@@ -9,6 +9,13 @@ import CalendarModule from '../modules/Calendar';
 import LiveTasks from '../modules/LiveTasks';
 import { useApp } from '../context/AppContext';
 
+const RecDot = () => (
+  <span className="relative flex items-center justify-center w-3.5 h-3.5 flex-shrink-0">
+    <span className="absolute inset-0 rounded-full bg-red-500/40 animate-ping" />
+    <span className="w-2.5 h-2.5 rounded-full bg-red-500 flex-shrink-0" />
+  </span>
+);
+
 const TABS_MAIN = [
   {
     id: 'kanban', label: 'Kanban',
@@ -36,14 +43,7 @@ const TABS_MAIN = [
   },
 ];
 
-const TAB_LIVE = {
-  id: 'live', label: 'Live Tasks',
-  icon: (
-    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 10V3L4 14h7v7l9-11h-7z" />
-    </svg>
-  ),
-};
+const TAB_LIVE = { id: 'live', label: 'Live Tasks' };
 
 const TABS_RESTRICTED = [
   {
@@ -64,22 +64,25 @@ const TABS_RESTRICTED = [
   },
 ];
 
-const LOC_TO_TAB = {
-  'Clientes': 'clientes', 'Proyectos': 'clientes', 'Finanzas': 'finanzas',
-  'Documentos': 'documentos', 'Kanban': 'kanban', 'Tareas': 'kanban',
-};
-
 const USER_INFO = {
   kann: { label: 'Kann', initials: 'K', bg: '#faff05', text: '#000' },
   jero: { label: 'Jero', initials: 'J', bg: '#60a5fa', text: '#000' },
   facu: { label: 'Facu', initials: 'F', bg: '#a78bfa', text: '#000' },
 };
 
-function NotificationBell({ onNavigate }) {
+const relativeTime = (iso) => {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (diff < 60) return 'hace un momento';
+  if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;
+  return `hace ${Math.floor(diff / 86400)} d`;
+};
+
+function AccountDropdown({ currentUser, onLogout, onNavigate }) {
   const { notifications, markAllRead } = useApp();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-
+  const info = USER_INFO[currentUser] || { label: currentUser, initials: '?', bg: '#444', text: '#fff' };
   const unread = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
@@ -90,36 +93,23 @@ function NotificationBell({ onNavigate }) {
 
   const handleOpen = () => {
     setOpen(o => !o);
-    if (!open && unread > 0) markAllRead();
+    if (unread > 0) markAllRead();
   };
-
-  const handleNotifClick = (n) => {
-    const match = Object.entries(LOC_TO_TAB).find(([loc]) => (n.location || '').startsWith(loc));
-    if (match) onNavigate(match[1]);
-    setOpen(false);
-  };
-
-  const relativeTime = (iso) => {
-    const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-    if (diff < 60) return 'hace un momento';
-    if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
-    if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;
-    return `hace ${Math.floor(diff / 86400)} d`;
-  };
-
-  const userLabel = (u) => u === 'kann' ? 'Kann' : 'Jero';
 
   return (
-    <div className="relative" ref={ref}>
-      <button
-        onClick={handleOpen}
-        className="relative flex items-center justify-center w-8 h-8 rounded-lg text-zinc-500 hover:text-zinc-300 hover:bg-zinc-900 transition-colors"
-      >
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
+    <div className="relative" ref={ref}
+      onMouseEnter={() => { setOpen(true); if (unread > 0) markAllRead(); }}
+      onMouseLeave={() => setOpen(false)}>
+
+      {/* Trigger — padded area so hover target is bigger than just the avatar */}
+      <button onClick={handleOpen}
+        className="relative flex items-center justify-center w-10 h-10 rounded-2xl hover:bg-zinc-900/60 transition-colors">
+        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+          style={{ background: info.bg, color: info.text }}>
+          {info.initials}
+        </div>
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-black text-[9px] font-bold flex items-center justify-center"
+          <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full text-black text-[9px] font-bold flex items-center justify-center"
             style={{ background: '#faff05' }}>
             {unread > 9 ? '9+' : unread}
           </span>
@@ -127,72 +117,47 @@ function NotificationBell({ onNavigate }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 w-80 bg-[#080808] border border-[#111] rounded-2xl shadow-2xl z-50 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#111]">
-            <span className="text-white font-semibold text-sm">Actividad reciente</span>
-            <span className="text-zinc-600 text-xs">{notifications.length} eventos</span>
+        <div className="absolute right-0 top-full mt-1 bg-[#080808] border border-[#111] rounded-2xl shadow-2xl z-50 overflow-hidden w-80">
+          {/* Account header */}
+          <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[#111]">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+              style={{ background: info.bg, color: info.text }}>
+              {info.initials}
+            </div>
+            <span className="text-white font-medium text-sm">{info.label}</span>
           </div>
-          <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="px-4 py-6 text-center text-zinc-600 text-sm">Sin actividad aún</div>
-            ) : (
-              notifications.map(n => (
-                <div key={n.id} onClick={() => handleNotifClick(n)} className="flex gap-3 px-4 py-3 border-b border-[#111] hover:bg-zinc-900/40 transition-colors cursor-pointer">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
-                    style={{ background: n.user === 'kann' ? '#faff05' : '#60a5fa', color: '#000' }}>
-                    {n.user === 'kann' ? 'K' : 'J'}
+
+          {/* Notifications */}
+          <div className="border-b border-[#111]">
+            <div className="flex items-center justify-between px-4 py-2">
+              <span className="text-zinc-500 text-[10px] uppercase tracking-wider">Actividad reciente</span>
+              <span className="text-zinc-700 text-[10px]">{notifications.length} eventos</span>
+            </div>
+            <div className="max-h-52 overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="px-4 py-4 text-center text-zinc-600 text-xs">Sin actividad aún</div>
+              ) : (
+                notifications.slice(0, 8).map(n => (
+                  <div key={n.id} className="flex gap-2.5 px-4 py-2.5 border-t border-[#111]/60 hover:bg-zinc-900/40 transition-colors cursor-default">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
+                      style={{ background: n.user === 'kann' ? '#faff05' : '#60a5fa', color: '#000' }}>
+                      {n.user === 'kann' ? 'K' : 'J'}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-zinc-400 text-xs leading-relaxed">
+                        <span className="text-white font-medium">{n.user === 'kann' ? 'Kann' : 'Jero'}</span>{' '}
+                        {n.action}
+                        {n.location && <span className="text-zinc-600"> en {n.location}</span>}
+                      </p>
+                      <p className="text-zinc-700 text-[10px] mt-0.5">{relativeTime(n.timestamp)}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-zinc-300 text-xs leading-relaxed">
-                      <span className="text-white font-medium">{userLabel(n.user)}</span>{' '}
-                      {n.action}
-                      {n.location && <span className="text-zinc-500"> en {n.location}</span>}
-                    </p>
-                    <p className="text-zinc-600 text-xs mt-0.5">{relativeTime(n.timestamp)}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function AccountDropdown({ currentUser, onLogout }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  const info = USER_INFO[currentUser] || { label: currentUser, initials: '?', bg: '#444', text: '#fff' };
-
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  return (
-    <div className="relative" ref={ref}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}>
-      <button
-        onClick={() => setOpen(o => !o)}
-        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-opacity hover:opacity-80"
-        style={{ background: info.bg, color: info.text }}>
-        {info.initials}
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full mt-1 bg-[#080808] border border-[#111] rounded-2xl shadow-2xl z-50 overflow-hidden min-w-[140px]">
-          <div className="px-4 py-3 border-b border-[#111]">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
-                style={{ background: info.bg, color: info.text }}>
-                {info.initials}
-              </div>
-              <span className="text-white text-sm font-medium">{info.label}</span>
+                ))
+              )}
             </div>
           </div>
+
+          {/* Salir */}
           <button onClick={onLogout}
             className="w-full flex items-center gap-2 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/40 transition-colors text-sm">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -233,16 +198,15 @@ function KanbanSection() {
   };
 
   const btnCls = (active) =>
-    `px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+    `px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
       active ? 'bg-[#faff05] text-black border-[#faff05]' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'
     }`;
 
   return (
     <div className="space-y-5">
-      {/* Stats */}
       <TaskStats />
 
-      {/* Filter bar — between stats and task table */}
+      {/* Filter bar */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           {/* Search */}
@@ -251,17 +215,17 @@ function KanbanSection() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input value={search} onChange={e => setSearch(e.target.value)}
-              className="bg-black border border-[#111] rounded-xl pl-8 pr-3 py-1.5 text-white text-xs placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-36 transition-colors"
+              className="bg-black border border-[#111] rounded-2xl pl-8 pr-3 py-1.5 text-white text-xs placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-36 transition-colors"
               placeholder="Buscar tarea..." />
           </div>
 
-          {/* Filtros hover/click dropdown */}
+          {/* Filtros dropdown */}
           <div ref={filterWrapRef} className="relative"
             onMouseEnter={() => setShowFilters(true)}
             onMouseLeave={() => setShowFilters(false)}>
             <button
               onClick={() => setShowFilters(o => !o)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                 activeCount > 0
                   ? 'bg-[#faff05] text-black border-[#faff05]'
                   : 'bg-black text-zinc-500 border-[#111] hover:border-[#faff05] hover:text-[#faff05]'
@@ -279,14 +243,13 @@ function KanbanSection() {
 
             {showFilters && (
               <div className="absolute top-full left-0 mt-1 bg-black border border-[#111] rounded-2xl p-4 z-50 shadow-2xl min-w-max space-y-4">
-                {/* Assignees */}
                 <div>
                   <p className="text-zinc-600 text-[10px] uppercase tracking-wider mb-2">Asignado</p>
                   <div className="flex gap-1 flex-wrap">
                     <button onClick={() => setFilterAssignee('all')} className={btnCls(filterAssignee === 'all')}>Todos</button>
                     {Object.entries(KB_ASSIGNEES).map(([key, a]) => (
                       <button key={key} onClick={() => setFilterAssignee(filterAssignee === key ? 'all' : key)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${filterAssignee === key ? 'border-transparent text-black' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${filterAssignee === key ? 'border-transparent text-black' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}
                         style={filterAssignee === key ? { background: a.bg } : {}}>
                         <div className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold" style={{ background: a.bg, color: a.text }}>{a.initials}</div>
                         {a.label}
@@ -295,13 +258,12 @@ function KanbanSection() {
                   </div>
                 </div>
 
-                {/* Priority */}
                 <div>
                   <p className="text-zinc-600 text-[10px] uppercase tracking-wider mb-2">Prioridad</p>
                   <div className="flex gap-1">
                     {['all', 'Alta', 'Media', 'Baja'].map(p => (
                       <button key={p} onClick={() => setFilterPriority(filterPriority === p ? 'all' : p)}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${filterPriority === p ? 'border-transparent text-black' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${filterPriority === p ? 'border-transparent text-black' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}
                         style={filterPriority === p ? { background: p === 'all' ? '#faff05' : KB_PRIORITIES[p] } : {}}>
                         {p === 'all' ? 'Todas' : p}
                       </button>
@@ -309,7 +271,6 @@ function KanbanSection() {
                   </div>
                 </div>
 
-                {/* Clients */}
                 {clientsWithTasks.length > 0 && (
                   <div>
                     <p className="text-zinc-600 text-[10px] uppercase tracking-wider mb-2">Cliente</p>
@@ -321,7 +282,7 @@ function KanbanSection() {
                         const count = tasks.filter(t => t.clientId === c.id).length;
                         return (
                           <button key={c.id} onClick={() => setFilterClient(filterClient === c.id ? 'all' : c.id)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${filterClient === c.id ? 'text-black border-transparent' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}
+                            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${filterClient === c.id ? 'text-black border-transparent' : 'bg-black text-zinc-500 border-transparent hover:border-[#faff05] hover:text-[#faff05]'}`}
                             style={filterClient === c.id ? { background: c.color } : {}}>
                             {c.name} <span className="opacity-60">({count})</span>
                           </button>
@@ -341,10 +302,9 @@ function KanbanSection() {
           </div>
         </div>
 
-        {/* Nueva tarea */}
         <div className="ml-auto">
           <button onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-black hover:opacity-90 transition-opacity"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-black hover:opacity-90 transition-opacity"
             style={{ background: '#faff05' }}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -354,7 +314,6 @@ function KanbanSection() {
         </div>
       </div>
 
-      {/* Task table — no stats since we rendered them above */}
       <Tasks filters={filters} hideStats />
 
       <div className="border-t border-[#111] pt-8"><KanbanBoard filters={filters} /></div>
@@ -382,39 +341,40 @@ export default function Layout({ onLogout, currentUser }) {
   };
 
   const tabCls = (id) =>
-    `flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+    `flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
       activeTab === id ? 'text-black' : 'text-zinc-500 hover:text-zinc-300'
     }`;
 
   return (
     <>
       {/* Top bar */}
-      <div className="flex items-center px-6 py-3 border-b border-[#111] flex-shrink-0 bg-black z-40">
+      <div className="flex items-center px-4 py-2 border-b border-[#111] flex-shrink-0 bg-black z-40">
 
-        {/* Left: Live Tasks */}
-        <div className="flex-1 flex items-center">
+        {/* Left group: Live Tasks + separator + main tabs */}
+        <div className="flex items-center gap-2">
           <button onClick={() => setActiveTab(TAB_LIVE.id)}
-            className={tabCls(TAB_LIVE.id)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeTab === TAB_LIVE.id ? 'text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
             style={activeTab === TAB_LIVE.id ? { background: '#faff05' } : {}}>
-            {TAB_LIVE.icon}
+            <RecDot />
             {TAB_LIVE.label}
           </button>
+
+          <div className="w-px h-5 bg-zinc-800 flex-shrink-0 mx-1" />
+
+          <nav className="flex items-center gap-1 bg-[#080808] rounded-2xl p-1">
+            {TABS_MAIN.map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={tabCls(tab.id)}
+                style={activeTab === tab.id ? { background: '#faff05' } : {}}>
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+          </nav>
         </div>
 
-        {/* Center: main tabs pill */}
-        <nav className="flex items-center gap-1 bg-[#080808] rounded-xl p-1">
-          {TABS_MAIN.map(tab => (
-            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-              className={tabCls(tab.id)}
-              style={activeTab === tab.id ? { background: '#faff05' } : {}}>
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </nav>
-
-        {/* Right: Clientes + Finanzas + bell + account */}
-        <div className="flex-1 flex items-center justify-end gap-1">
+        {/* Right group: Clientes + Finanzas + account */}
+        <div className="ml-auto flex items-center gap-1">
           {canSeeRestricted && (
             <>
               {TABS_RESTRICTED.map(tab => (
@@ -428,8 +388,7 @@ export default function Layout({ onLogout, currentUser }) {
               <div className="w-px h-5 bg-zinc-800 mx-2 flex-shrink-0" />
             </>
           )}
-          <NotificationBell onNavigate={setActiveTab} />
-          <AccountDropdown currentUser={currentUser} onLogout={onLogout} />
+          <AccountDropdown currentUser={currentUser} onLogout={onLogout} onNavigate={setActiveTab} />
         </div>
       </div>
 

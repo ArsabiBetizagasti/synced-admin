@@ -92,20 +92,20 @@ export default function Tasks({ filters: extFilters, hideStats }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input value={search} onChange={e => setSearch(e.target.value)}
-            className="bg-[#080808] border border-[#111] rounded-xl pl-9 pr-3 py-2 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-48"
+            className="bg-[#080808] border border-[#111] rounded-2xl pl-9 pr-3 py-2 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-48"
             placeholder="Buscar tarea..." />
         </div>
 
         {/* Assignee filter */}
         <div className="flex gap-1">
           <button onClick={() => setFilterAssignee('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterAssignee === 'all' ? 'text-black' : 'text-zinc-500 bg-[#080808]'}`}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterAssignee === 'all' ? 'text-black' : 'text-zinc-500 bg-[#080808]'}`}
             style={filterAssignee === 'all' ? { background: '#faff05' } : {}}>
             Todos
           </button>
           {Object.entries(ASSIGNEES).map(([key, a]) => (
             <button key={key} onClick={() => setFilterAssignee(key)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${filterAssignee === key ? 'border-transparent text-black' : 'border-[#111] text-zinc-500'}`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${filterAssignee === key ? 'border-transparent text-black' : 'border-[#111] text-zinc-500'}`}
               style={filterAssignee === key ? { background: a.bg } : {}}>
               <div className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
                 style={{ background: a.bg, color: a.text }}>{a.initials}</div>
@@ -118,7 +118,7 @@ export default function Tasks({ filters: extFilters, hideStats }) {
         <div className="flex gap-1">
           {['all', 'Alta', 'Media', 'Baja'].map(p => (
             <button key={p} onClick={() => setFilterPriority(p)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterPriority === p ? 'text-black' : 'text-zinc-500 bg-[#080808]'}`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterPriority === p ? 'text-black' : 'text-zinc-500 bg-[#080808]'}`}
               style={filterPriority === p ? { background: p === 'all' ? '#faff05' : PRIORITIES[p]?.color } : {}}>
               {p === 'all' ? 'Prioridad' : p}
             </button>
@@ -129,7 +129,7 @@ export default function Tasks({ filters: extFilters, hideStats }) {
         <div className="flex gap-1">
           {['all', 'todo', 'inprogress', 'done'].map(s => (
             <button key={s} onClick={() => setFilterStatus(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterStatus === s ? 'text-black' : 'text-zinc-500 bg-[#080808]'}`}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterStatus === s ? 'text-black' : 'text-zinc-500 bg-[#080808]'}`}
               style={filterStatus === s ? { background: s === 'all' ? '#faff05' : STATUS_COLORS[s] } : {}}>
               {s === 'all' ? 'Estado' : STATUS_LABELS[s]}
             </button>
@@ -138,7 +138,7 @@ export default function Tasks({ filters: extFilters, hideStats }) {
 
         <div className="ml-auto">
           <button onClick={() => setShowAdd(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-black"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-black"
             style={{ background: '#faff05' }}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
