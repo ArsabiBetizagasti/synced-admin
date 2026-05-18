@@ -23,16 +23,21 @@ export default function App() {
     setUser(null);
   };
 
-  if (!user) return <Login onLogin={handleLogin} />;
-
-  if (user.startsWith('brand_')) {
-    const clientId = user.slice(6);
-    return <BrandPortal clientId={clientId} onLogout={handleLogout} />;
-  }
-
   return (
-    <AppProvider>
-      <Layout onLogout={handleLogout} currentUser={user} />
-    </AppProvider>
+    <div className="fixed inset-0 bg-[#080808] p-5 flex justify-center">
+      <div className="w-full max-w-[1400px] bg-[#0f0f0f] border border-zinc-800/60 rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+        {!user ? (
+          <Login onLogin={handleLogin} />
+        ) : user.startsWith('brand_') ? (
+          <AppProvider>
+            <BrandPortal clientId={user.slice(6)} onLogout={handleLogout} />
+          </AppProvider>
+        ) : (
+          <AppProvider>
+            <Layout onLogout={handleLogout} currentUser={user} />
+          </AppProvider>
+        )}
+      </div>
+    </div>
   );
 }

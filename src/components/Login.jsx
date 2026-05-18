@@ -44,8 +44,8 @@ function PinPad({ user, onBack, onSuccess }) {
   const dots = Array.from({ length: 6 });
 
   return (
-    <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-[0.03]"
+    <div className="flex-1 flex items-center justify-center p-4 relative overflow-y-auto">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full opacity-[0.03] pointer-events-none"
         style={{ background: 'radial-gradient(circle, #faff05, transparent 70%)' }} />
 
       <div className="w-full max-w-xs relative z-10 text-center">
@@ -134,8 +134,8 @@ export default function Login({ onLogin }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#080808] flex items-center justify-center p-4 relative overflow-hidden">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.03]"
+    <div className="flex-1 flex items-center justify-center p-4 relative overflow-y-auto">
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full opacity-[0.03] pointer-events-none"
         style={{ background: 'radial-gradient(circle, #faff05, transparent 70%)' }} />
 
       <div className="w-full max-w-sm relative z-10">

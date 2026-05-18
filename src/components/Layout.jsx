@@ -289,12 +289,9 @@ export default function Layout({ onLogout, currentUser }) {
   };
 
   return (
-    <div className="min-h-screen bg-[#080808] flex items-start justify-center p-4 py-6">
-      <div className="w-full max-w-[1400px] bg-[#0f0f0f] border border-zinc-800/60 rounded-3xl overflow-hidden shadow-2xl"
-        style={{ minHeight: 'calc(100vh - 48px)' }}>
-
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/50 sticky top-0 bg-[#0f0f0f] z-40">
+    <>
+        {/* Top bar — always visible at top of the fixed container */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/50 flex-shrink-0 bg-[#0f0f0f] z-40">
           {/* Brand */}
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-black text-xs"
@@ -360,11 +357,10 @@ export default function Layout({ onLogout, currentUser }) {
           </div>
         </div>
 
-        {/* Module content */}
-        <div className="p-6" style={{ minHeight: 'calc(100vh - 48px - 73px)' }}>
+        {/* Module content — scrolls inside the fixed container */}
+        <div className="flex-1 overflow-y-auto p-6">
           {renderModule()}
         </div>
-      </div>
-    </div>
+    </>
   );
 }

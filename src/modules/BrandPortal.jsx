@@ -88,7 +88,7 @@ function BrandPortalContent({ clientId, onLogout }) {
 
   if (!client) {
     return (
-      <div className="min-h-screen bg-[#080808] flex items-center justify-center text-zinc-500">
+      <div className="flex-1 flex items-center justify-center text-zinc-500">
         Marca no encontrada
       </div>
     );
@@ -97,9 +97,9 @@ function BrandPortalContent({ clientId, onLogout }) {
   const initials = (client.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <div className="min-h-screen bg-[#080808]">
-      {/* Top bar */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/40">
+    <>
+      {/* Top bar — fixed at top */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/40 flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-black text-xs"
             style={{ background: '#faff05' }}>SG</div>
@@ -122,6 +122,7 @@ function BrandPortalContent({ clientId, onLogout }) {
         </button>
       </div>
 
+      <div className="flex-1 overflow-y-auto">
       <div className="max-w-2xl mx-auto px-6 py-10">
         {/* Brand header */}
         <div className="flex items-center gap-4 mb-8">
@@ -184,7 +185,8 @@ function BrandPortalContent({ clientId, onLogout }) {
 
         <p className="text-center text-zinc-800 text-xs mt-12">© 2026 Synced Graphics · Acceso exclusivo de marca</p>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
