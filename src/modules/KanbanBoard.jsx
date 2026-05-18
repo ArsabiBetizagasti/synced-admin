@@ -167,7 +167,7 @@ function TaskCard({ task, onMove, onEdit, onDelete }) {
           <div className="flex flex-wrap gap-1 mb-2">
             {platforms.map(p => (
               <span key={p.id}
-                className="text-[9px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wide"
+                className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide"
                 style={{ background: p.bg, color: p.color }}>
                 {p.label}
               </span>
@@ -231,15 +231,6 @@ function TaskCard({ task, onMove, onEdit, onDelete }) {
           </div>
         )}
 
-        {/* Move buttons */}
-        <div className="mt-2 pt-2 border-t border-[#111] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          {COLUMNS.filter(c => c.id !== task.status).map(col => (
-            <button key={col.id} onClick={() => onMove(task.id, col.id)}
-              className="text-zinc-500 hover:text-white text-xs px-2 py-1 rounded-lg bg-[#222] hover:bg-[#2a2a2a] transition-all">
-              → {col.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Lightbox — fixed overlay, rendered outside the card in DOM but still inside the component */}
@@ -384,7 +375,7 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
                 const active = form.platforms.includes(p.id);
                 return (
                   <button key={p.id} type="button" onClick={() => togglePlatform(p.id)}
-                    className="px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all border"
+                    className="px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all border"
                     style={active
                       ? { background: p.bg, color: p.color, borderColor: p.color + '60' }
                       : { background: 'transparent', color: '#52525b', borderColor: '#27272a' }
@@ -514,7 +505,7 @@ export default function KanbanBoard({ filters: extFilters }) {
         <div className="flex items-center gap-1.5 flex-wrap mb-5">
           <button
             onClick={() => setFilterClient('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterClient === 'all' ? 'text-black' : 'text-zinc-500 bg-[#080808] hover:text-white'}`}
+            className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${filterClient === 'all' ? 'text-black' : 'text-zinc-500 bg-[#080808] hover:text-white'}`}
             style={filterClient === 'all' ? { background: '#faff05' } : {}}>
             Todos <span className="opacity-60">({tasks.length})</span>
           </button>
@@ -523,7 +514,7 @@ export default function KanbanBoard({ filters: extFilters }) {
             return (
               <button key={c.id}
                 onClick={() => setFilterClient(filterClient === c.id ? 'all' : c.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border-l-2 ${filterClient === c.id ? 'text-black' : 'text-zinc-500 bg-[#080808] hover:text-white'}`}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all border-l-2 ${filterClient === c.id ? 'text-black' : 'text-zinc-500 bg-[#080808] hover:text-white'}`}
                 style={filterClient === c.id ? { background: c.color, borderLeftColor: c.color } : { borderLeftColor: c.color }}>
                 {c.name} <span className={filterClient === c.id ? 'opacity-70' : 'opacity-50'}>({count})</span>
               </button>

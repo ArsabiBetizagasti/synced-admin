@@ -78,11 +78,10 @@ const relativeTime = (iso) => {
   return `hace ${Math.floor(diff / 86400)} d`;
 };
 
-function AccountDropdown({ currentUser, onLogout, onNavigate }) {
+function NotificationBell({ onNavigate }) {
   const { notifications, markAllRead } = useApp();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
-  const info = USER_INFO[currentUser] || { label: currentUser, initials: '?', bg: '#444', text: '#fff' };
   const unread = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
@@ -93,23 +92,18 @@ function AccountDropdown({ currentUser, onLogout, onNavigate }) {
 
   const handleOpen = () => {
     setOpen(o => !o);
-    if (unread > 0) markAllRead();
+    if (!open && unread > 0) markAllRead();
   };
 
   return (
-    <div className="relative" ref={ref}
-      onMouseEnter={() => { setOpen(true); if (unread > 0) markAllRead(); }}
-      onMouseLeave={() => setOpen(false)}>
-
-      {/* Trigger — padded area so hover target is bigger than just the avatar */}
+    <div className="relative" ref={ref}>
       <button onClick={handleOpen}
-        className="relative flex items-center justify-center w-10 h-10 rounded-2xl hover:bg-zinc-900/60 transition-colors">
-        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-          style={{ background: info.bg, color: info.text }}>
-          {info.initials}
-        </div>
+        className="relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-zinc-900 transition-colors text-zinc-500 hover:text-zinc-300">
+        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+        </svg>
         {unread > 0 && (
-          <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full text-black text-[9px] font-bold flex items-center justify-center"
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-black text-[9px] font-bold flex items-center justify-center"
             style={{ background: '#faff05' }}>
             {unread > 9 ? '9+' : unread}
           </span>
@@ -117,49 +111,73 @@ function AccountDropdown({ currentUser, onLogout, onNavigate }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 bg-[#080808] border border-[#111] rounded-2xl shadow-2xl z-50 overflow-hidden w-80">
-          {/* Account header */}
+        <div className="absolute right-0 top-10 w-80 bg-[#080808] border border-[#111] rounded-2xl shadow-2xl z-50 overflow-hidden">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-[#111]">
+            <span className="text-white font-semibold text-sm">Actividad reciente</span>
+            <span className="text-zinc-600 text-xs">{notifications.length} eventos</span>
+          </div>
+          <div className="max-h-80 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="px-4 py-6 text-center text-zinc-600 text-sm">Sin actividad aún</div>
+            ) : (
+              notifications.map(n => (
+                <div key={n.id} className="flex gap-3 px-4 py-3 border-b border-[#111] hover:bg-zinc-900/40 transition-colors cursor-default">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
+                    style={{ background: n.user === 'kann' ? '#faff05' : '#60a5fa', color: '#000' }}>
+                    {n.user === 'kann' ? 'K' : 'J'}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-zinc-300 text-xs leading-relaxed">
+                      <span className="text-white font-medium">{n.user === 'kann' ? 'Kann' : 'Jero'}</span>{' '}
+                      {n.action}
+                      {n.location && <span className="text-zinc-500"> en {n.location}</span>}
+                    </p>
+                    <p className="text-zinc-600 text-xs mt-0.5">{relativeTime(n.timestamp)}</p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AccountDropdown({ currentUser, onLogout }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const info = USER_INFO[currentUser] || { label: currentUser, initials: '?', bg: '#444', text: '#fff' };
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}>
+      <button onClick={() => setOpen(o => !o)}
+        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-zinc-900/60 transition-colors">
+        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+          style={{ background: info.bg, color: info.text }}>
+          {info.initials}
+        </div>
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 bg-[#080808] border border-[#111] rounded-2xl shadow-2xl z-50 overflow-hidden min-w-[160px]">
           <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[#111]">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0"
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ background: info.bg, color: info.text }}>
               {info.initials}
             </div>
-            <span className="text-white font-medium text-sm">{info.label}</span>
+            <span className="text-white text-sm font-medium">{info.label}</span>
           </div>
-
-          {/* Notifications */}
-          <div className="border-b border-[#111]">
-            <div className="flex items-center justify-between px-4 py-2">
-              <span className="text-zinc-500 text-[10px] uppercase tracking-wider">Actividad reciente</span>
-              <span className="text-zinc-700 text-[10px]">{notifications.length} eventos</span>
-            </div>
-            <div className="max-h-52 overflow-y-auto">
-              {notifications.length === 0 ? (
-                <div className="px-4 py-4 text-center text-zinc-600 text-xs">Sin actividad aún</div>
-              ) : (
-                notifications.slice(0, 8).map(n => (
-                  <div key={n.id} className="flex gap-2.5 px-4 py-2.5 border-t border-[#111]/60 hover:bg-zinc-900/40 transition-colors cursor-default">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
-                      style={{ background: n.user === 'kann' ? '#faff05' : '#60a5fa', color: '#000' }}>
-                      {n.user === 'kann' ? 'K' : 'J'}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-zinc-400 text-xs leading-relaxed">
-                        <span className="text-white font-medium">{n.user === 'kann' ? 'Kann' : 'Jero'}</span>{' '}
-                        {n.action}
-                        {n.location && <span className="text-zinc-600"> en {n.location}</span>}
-                      </p>
-                      <p className="text-zinc-700 text-[10px] mt-0.5">{relativeTime(n.timestamp)}</p>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Salir */}
           <button onClick={onLogout}
-            className="w-full flex items-center gap-2 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/40 transition-colors text-sm">
+            className="w-full flex items-center gap-2 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-sm">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
@@ -388,7 +406,8 @@ export default function Layout({ onLogout, currentUser }) {
               <div className="w-px h-5 bg-zinc-800 mx-2 flex-shrink-0" />
             </>
           )}
-          <AccountDropdown currentUser={currentUser} onLogout={onLogout} onNavigate={setActiveTab} />
+          <NotificationBell onNavigate={setActiveTab} />
+          <AccountDropdown currentUser={currentUser} onLogout={onLogout} />
         </div>
       </div>
 
