@@ -16,7 +16,26 @@ const ASSIGNEES = {
 const STATUS_LABELS = { todo: 'To Do', inprogress: 'En Progreso', done: 'Completado' };
 const STATUS_COLORS = { todo: '#71717a', inprogress: '#faff05', done: '#34d399' };
 
-export default function Tasks({ filters: extFilters }) {
+export function TaskStats() {
+  const { tasks } = useApp();
+  return (
+    <div className="grid grid-cols-4 gap-4">
+      {[
+        { label: 'Total tareas', value: tasks.length, color: 'white' },
+        { label: 'To Do', value: tasks.filter(t => t.status === 'todo').length, color: '#71717a' },
+        { label: 'En Progreso', value: tasks.filter(t => t.status === 'inprogress').length, color: '#faff05' },
+        { label: 'Completadas', value: tasks.filter(t => t.status === 'done').length, color: '#34d399' },
+      ].map(s => (
+        <div key={s.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4">
+          <p className="text-zinc-500 text-xs uppercase tracking-wider mb-2">{s.label}</p>
+          <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export default function Tasks({ filters: extFilters, hideStats }) {
   const { tasks, clients, updateTask, deleteTask, moveTask, addTask } = useApp();
   const [filterAssignee, setFilterAssignee] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
@@ -50,20 +69,21 @@ export default function Tasks({ filters: extFilters }) {
 
   return (
     <div className="space-y-5">
-      {/* Stats row */}
-      <div className="grid grid-cols-4 gap-4">
-        {[
-          { label: 'Total tareas', value: tasks.length, color: 'white' },
-          { label: 'To Do', value: tasks.filter(t => t.status === 'todo').length, color: '#71717a' },
-          { label: 'En Progreso', value: tasks.filter(t => t.status === 'inprogress').length, color: '#faff05' },
-          { label: 'Completadas', value: tasks.filter(t => t.status === 'done').length, color: '#34d399' },
-        ].map(s => (
-          <div key={s.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4">
-            <p className="text-zinc-500 text-xs uppercase tracking-wider mb-2">{s.label}</p>
-            <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
-          </div>
-        ))}
-      </div>
+      {!hideStats && (
+        <div className="grid grid-cols-4 gap-4">
+          {[
+            { label: 'Total tareas', value: tasks.length, color: 'white' },
+            { label: 'To Do', value: tasks.filter(t => t.status === 'todo').length, color: '#71717a' },
+            { label: 'En Progreso', value: tasks.filter(t => t.status === 'inprogress').length, color: '#faff05' },
+            { label: 'Completadas', value: tasks.filter(t => t.status === 'done').length, color: '#34d399' },
+          ].map(s => (
+            <div key={s.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4">
+              <p className="text-zinc-500 text-xs uppercase tracking-wider mb-2">{s.label}</p>
+              <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Filters — only shown when using internal (standalone) mode */}
       {!extFilters && <div className="flex items-center gap-3 flex-wrap">

@@ -1,7 +1,7 @@
-﻿import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import KanbanBoard from '../modules/KanbanBoard';
 import FinanzasPortal from '../modules/FinanzasPortal';
-import Tasks, { AddTaskInline } from '../modules/Tasks';
+import Tasks, { AddTaskInline, TaskStats } from '../modules/Tasks';
 import Documentos from '../modules/Documentos';
 import IdeaBank from '../modules/IdeaBank';
 import ClientesDashboard from '../modules/ClientesDashboard';
@@ -67,6 +67,12 @@ const TABS_RESTRICTED = [
 const LOC_TO_TAB = {
   'Clientes': 'clientes', 'Proyectos': 'clientes', 'Finanzas': 'finanzas',
   'Documentos': 'documentos', 'Kanban': 'kanban', 'Tareas': 'kanban',
+};
+
+const USER_INFO = {
+  kann: { label: 'Kann', initials: 'K', bg: '#faff05', text: '#000' },
+  jero: { label: 'Jero', initials: 'J', bg: '#60a5fa', text: '#000' },
+  facu: { label: 'Facu', initials: 'F', bg: '#a78bfa', text: '#000' },
 };
 
 function NotificationBell({ onNavigate }) {
@@ -154,12 +160,59 @@ function NotificationBell({ onNavigate }) {
   );
 }
 
+function AccountDropdown({ currentUser, onLogout }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+  const info = USER_INFO[currentUser] || { label: currentUser, initials: '?', bg: '#444', text: '#fff' };
+
+  useEffect(() => {
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  return (
+    <div className="relative" ref={ref}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-opacity hover:opacity-80"
+        style={{ background: info.bg, color: info.text }}>
+        {info.initials}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 bg-[#080808] border border-[#111] rounded-2xl shadow-2xl z-50 overflow-hidden min-w-[140px]">
+          <div className="px-4 py-3 border-b border-[#111]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                style={{ background: info.bg, color: info.text }}>
+                {info.initials}
+              </div>
+              <span className="text-white text-sm font-medium">{info.label}</span>
+            </div>
+          </div>
+          <button onClick={onLogout}
+            className="w-full flex items-center gap-2 px-4 py-3 text-zinc-500 hover:text-white hover:bg-zinc-900/40 transition-colors text-sm">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            Salir
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const KB_ASSIGNEES = {
   kann: { label: 'Kann', initials: 'K', bg: '#faff05', text: '#000' },
   jero: { label: 'Jero', initials: 'J', bg: '#60a5fa', text: '#000' },
   facu: { label: 'Facu', initials: 'F', bg: '#a78bfa', text: '#000' },
 };
 const KB_PRIORITIES = { Alta: '#f87171', Media: '#fbbf24', Baja: '#34d399' };
+
 function KanbanSection() {
   const { tasks, clients } = useApp();
   const [search, setSearch] = useState('');
@@ -185,12 +238,12 @@ function KanbanSection() {
     }`;
 
   return (
-    <div className="space-y-6">
-      <Tasks filters={filters} />
+    <div className="space-y-5">
+      {/* Stats */}
+      <TaskStats />
 
-      {/* Slim filter bar — below stats */}
+      {/* Filter bar — between stats and task table */}
       <div className="flex items-center gap-3">
-        {/* Left side: search + filtros dropdown */}
         <div className="flex items-center gap-2">
           {/* Search */}
           <div className="relative">
@@ -202,7 +255,7 @@ function KanbanSection() {
               placeholder="Buscar tarea..." />
           </div>
 
-          {/* Filtros button with hover/click dropdown */}
+          {/* Filtros hover/click dropdown */}
           <div ref={filterWrapRef} className="relative"
             onMouseEnter={() => setShowFilters(true)}
             onMouseLeave={() => setShowFilters(false)}>
@@ -224,7 +277,6 @@ function KanbanSection() {
               )}
             </button>
 
-            {/* Dropdown panel */}
             {showFilters && (
               <div className="absolute top-full left-0 mt-1 bg-black border border-[#111] rounded-2xl p-4 z-50 shadow-2xl min-w-max space-y-4">
                 {/* Assignees */}
@@ -289,7 +341,7 @@ function KanbanSection() {
           </div>
         </div>
 
-        {/* Right side: nueva tarea */}
+        {/* Nueva tarea */}
         <div className="ml-auto">
           <button onClick={() => setShowAdd(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-black hover:opacity-90 transition-opacity"
@@ -301,6 +353,9 @@ function KanbanSection() {
           </button>
         </div>
       </div>
+
+      {/* Task table — no stats since we rendered them above */}
+      <Tasks filters={filters} hideStats />
 
       <div className="border-t border-[#111] pt-8"><KanbanBoard filters={filters} /></div>
       <div className="border-t border-[#111] pt-8"><IdeaBank /></div>
@@ -326,79 +381,62 @@ export default function Layout({ onLogout, currentUser }) {
     }
   };
 
+  const tabCls = (id) =>
+    `flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+      activeTab === id ? 'text-black' : 'text-zinc-500 hover:text-zinc-300'
+    }`;
+
   return (
     <>
-        {/* Top bar — always visible at top of the fixed container */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#111] flex-shrink-0 bg-black z-40">
-          {/* Brand */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center font-bold text-black text-xs"
-              style={{ background: '#faff05' }}>
-              SG
-            </div>
-            <div>
-              <span className="text-white font-semibold text-sm">Synced</span>
-              <span className="text-sm font-light ml-1" style={{ color: '#faff05' }}>Admin</span>
-            </div>
-          </div>
+      {/* Top bar */}
+      <div className="flex items-center px-6 py-3 border-b border-[#111] flex-shrink-0 bg-black z-40">
 
-          {/* Nav pills */}
-          <nav className="flex items-center gap-1 bg-[#080808] rounded-xl p-1">
-            {TABS_MAIN.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === tab.id ? 'text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
-                style={activeTab === tab.id ? { background: '#faff05' } : {}}>
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-            {canSeeRestricted && (
-              <>
-                <div className="w-px h-5 bg-zinc-700 mx-1 flex-shrink-0" />
-                {TABS_RESTRICTED.map(tab => (
-                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === tab.id ? 'text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
-                    style={activeTab === tab.id ? { background: '#faff05' } : {}}>
-                    {tab.icon}
-                    {tab.label}
-                  </button>
-                ))}
-              </>
-            )}
-            <div className="w-px h-5 bg-zinc-700 mx-1 flex-shrink-0" />
-            <button onClick={() => setActiveTab(TAB_LIVE.id)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${activeTab === TAB_LIVE.id ? 'text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
-              style={activeTab === TAB_LIVE.id ? { background: '#faff05' } : {}}>
-              {TAB_LIVE.icon}
-              {TAB_LIVE.label}
-            </button>
-          </nav>
-
-          {/* Right controls */}
-          <div className="flex items-center gap-2">
-            <NotificationBell onNavigate={setActiveTab} />
-            {/* Current user badge */}
-            {{
-              kann: <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-black" style={{ background: '#faff05' }}>K</div>,
-              jero: <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-black" style={{ background: '#60a5fa' }}>J</div>,
-              facu: <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-black" style={{ background: '#a78bfa' }}>F</div>,
-            }[currentUser]}
-            <button
-              onClick={onLogout}
-              className="flex items-center gap-1.5 text-zinc-600 text-sm hover:text-zinc-300 transition-colors px-3 py-1.5 rounded-lg hover:bg-zinc-900"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-              Salir
-            </button>
-          </div>
+        {/* Left: Live Tasks */}
+        <div className="flex-1 flex items-center">
+          <button onClick={() => setActiveTab(TAB_LIVE.id)}
+            className={tabCls(TAB_LIVE.id)}
+            style={activeTab === TAB_LIVE.id ? { background: '#faff05' } : {}}>
+            {TAB_LIVE.icon}
+            {TAB_LIVE.label}
+          </button>
         </div>
 
-        {/* Module content — scrolls inside the fixed container */}
-        <div className="flex-1 overflow-y-auto p-6">
-          {renderModule()}
+        {/* Center: main tabs pill */}
+        <nav className="flex items-center gap-1 bg-[#080808] rounded-xl p-1">
+          {TABS_MAIN.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={tabCls(tab.id)}
+              style={activeTab === tab.id ? { background: '#faff05' } : {}}>
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Right: Clientes + Finanzas + bell + account */}
+        <div className="flex-1 flex items-center justify-end gap-1">
+          {canSeeRestricted && (
+            <>
+              {TABS_RESTRICTED.map(tab => (
+                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                  className={tabCls(tab.id)}
+                  style={activeTab === tab.id ? { background: '#faff05' } : {}}>
+                  {tab.icon}
+                  {tab.label}
+                </button>
+              ))}
+              <div className="w-px h-5 bg-zinc-800 mx-2 flex-shrink-0" />
+            </>
+          )}
+          <NotificationBell onNavigate={setActiveTab} />
+          <AccountDropdown currentUser={currentUser} onLogout={onLogout} />
         </div>
+      </div>
+
+      {/* Module content */}
+      <div className="flex-1 overflow-y-auto p-6">
+        {renderModule()}
+      </div>
     </>
   );
 }
