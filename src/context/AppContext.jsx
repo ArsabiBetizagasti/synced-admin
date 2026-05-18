@@ -1,0 +1,441 @@
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { db } from '../firebase';
+import { ref, set, remove, onValue, get, update as fbUpdate } from 'firebase/database';
+
+const AppContext = createContext(null);
+
+export const CLIENT_COLORS = [
+  '#ff6b6b', '#60a5fa', '#a78bfa', '#fb923c', '#f472b6',
+  '#34d399', '#faff05', '#4ecdc4', '#fbbf24', '#e879f9',
+];
+
+const INITIAL_CLIENTS = [
+  {
+    id: 'c1', name: 'Hollywood Browzer', contact: '', country: 'UK', category: 'Beauty',
+    contractType: 'Monthly', monthlyRevenue: 3500, revenueCurrency: 'GBP', commissions: 0,
+    hasMonthlyPayment: true, hasCommissions: true, commissionRate: 10,
+    contractStart: '2026-05-01', contractMonths: 6,
+    color: '#f472b6', active: true, weeklyUpdate: '', files: [], contractFile: null,
+    proposalFile: null, documents: [], commissionHistory: [],
+  },
+  {
+    id: 'c2', name: '360 Optimum', contact: '', country: '', category: 'Other',
+    contractType: 'Monthly', monthlyRevenue: 0, revenueCurrency: 'USD', commissions: 0,
+    hasMonthlyPayment: false, hasCommissions: true, commissionRate: 10,
+    contractStart: '2026-05-01', contractMonths: 6,
+    color: '#38bdf8', active: true, weeklyUpdate: '', files: [], contractFile: null,
+    proposalFile: null, documents: [], commissionHistory: [],
+  },
+  {
+    id: 'c3', name: 'Foreshank', contact: '', country: '', category: 'Food',
+    contractType: 'Monthly', monthlyRevenue: 0, revenueCurrency: 'USD', commissions: 0,
+    hasMonthlyPayment: false, hasCommissions: true, commissionRate: 10,
+    contractStart: '2026-05-01', contractMonths: 6,
+    color: '#34d399', active: true, weeklyUpdate: '', files: [], contractFile: null,
+    proposalFile: null, documents: [], commissionHistory: [],
+  },
+  {
+    id: 'c4', name: 'ADAM', contact: '', country: '', category: 'Other',
+    contractType: 'Monthly', monthlyRevenue: 0, revenueCurrency: 'USD', commissions: 0,
+    hasMonthlyPayment: false, hasCommissions: false, commissionRate: 0,
+    contractStart: '2026-05-01', contractMonths: 6,
+    color: '#fb923c', active: true, weeklyUpdate: '', files: [], contractFile: null,
+    proposalFile: null, documents: [], commissionHistory: [],
+  },
+  {
+    id: 'c5', name: 'Synced', contact: 'Interno', country: '', category: 'Other',
+    contractType: 'Monthly', monthlyRevenue: 0, revenueCurrency: 'USD', commissions: 0,
+    hasMonthlyPayment: false, hasCommissions: false, commissionRate: 0,
+    contractStart: '2026-05-01', contractMonths: 12,
+    color: '#faff05', active: true, weeklyUpdate: '', files: [], contractFile: null,
+    proposalFile: null, documents: [], commissionHistory: [], isInternal: true,
+  },
+];
+
+const INITIAL_TASKS = [
+  {
+    id: 't1', title: 'Social media contenido Mayo', clientId: 'c1',
+    description: 'Posts, stories y reels para el mes',
+    priority: 'Alta', deadline: '2026-05-31', assignees: ['kann', 'jero'], status: 'inprogress',
+  },
+  {
+    id: 't2', title: 'Identidad visual', clientId: 'c2',
+    description: 'Logo, paleta y brand guidelines',
+    priority: 'Alta', deadline: '2026-06-10', assignees: ['kann'], status: 'todo',
+  },
+  {
+    id: 't3', title: 'Campaña contenido Junio', clientId: 'c3',
+    description: 'Planificación y diseño de piezas',
+    priority: 'Media', deadline: '2026-06-05', assignees: ['jero'], status: 'todo',
+  },
+  {
+    id: 't4', title: 'Branding completo', clientId: 'c4',
+    description: 'Identidad visual desde cero',
+    priority: 'Alta', deadline: '2026-06-15', assignees: ['kann', 'jero'], status: 'inprogress',
+  },
+  {
+    id: 't5', title: 'Actualizar web synced.graphics', clientId: 'c5',
+    description: 'Actualización de portfolio y servicios',
+    priority: 'Media', deadline: '2026-06-20', assignees: ['kann'], status: 'todo',
+  },
+];
+
+const INITIAL_FINANCES = [
+  { id: 'h1',  type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2024-06-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h2',  type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2024-07-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h3',  type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2024-08-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h4',  type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2024-09-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h5',  type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2024-10-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h6',  type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2024-11-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h7',  type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2024-12-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h8',  type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-01-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h9',  type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-02-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h10', type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-03-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h11', type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-04-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h12', type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-05-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h13', type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-06-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h14', type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-07-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h15', type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-08-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h16', type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-09-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h17', type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-10-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h18', type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-11-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h19', type: 'income', amount: 0, description: 'Proyecto — [completar]', clientId: null, date: '2025-12-01', category: 'Proyecto', paymentType: 'project' },
+  { id: 'h20', type: 'income', amount: 0, description: 'Retainers Mayo 2026 — [completar]', clientId: null, date: '2026-05-01', category: 'Retainer', paymentType: 'retainer' },
+  { id: 'h21', type: 'expense', amount: 0, description: 'Gastos operativos — [completar]', clientId: null, date: '2026-05-01', category: 'Software', paymentType: 'expense' },
+];
+
+const INITIAL_PROJECTS = [
+  { id:'pr0a', clientName:'GLAD',           dateStart:'2024-01-01', dateEnd:'2024-02-01', paymentDate:null,         originalAmount:0,    originalCurrency:'GBP', amountUSD:0,       paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
+  { id:'pr0b', clientName:'Bloody Bens',    dateStart:'2024-02-01', dateEnd:'2024-03-01', paymentDate:null,         originalAmount:0,    originalCurrency:'GBP', amountUSD:0,       paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
+  { id:'pr0c', clientName:'Aquela Kombucha',dateStart:'2024-03-01', dateEnd:'2024-04-01', paymentDate:null,         originalAmount:0,    originalCurrency:'GBP', amountUSD:0,       paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
+  { id:'pr0d', clientName:'Raise',          dateStart:'2024-04-01', dateEnd:'2024-05-01', paymentDate:null,         originalAmount:0,    originalCurrency:'GBP', amountUSD:0,       paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
+  { id:'pr0e', clientName:'Coda',           dateStart:'2024-05-01', dateEnd:'2024-06-01', paymentDate:null,         originalAmount:0,    originalCurrency:'GBP', amountUSD:0,       paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
+  { id:'pr1',  clientName:'Helpbnk',        dateStart:'2024-06-01', dateEnd:'2024-07-01', paymentDate:null,         originalAmount:1000, originalCurrency:'GBP', amountUSD:1350,    paidStatus:'paid',    paidAmount:1350,   receiptFile:null, note:'' },
+  { id:'pr2',  clientName:'Monaco',         dateStart:'2024-07-01', dateEnd:'2024-09-01', paymentDate:null,         originalAmount:4250, originalCurrency:'USD', amountUSD:4250,    paidStatus:'paid',    paidAmount:4250,   receiptFile:null, note:'' },
+  { id:'pr3',  clientName:'PerfectTED',     dateStart:'2024-08-01', dateEnd:'2024-09-01', paymentDate:null,         originalAmount:300,  originalCurrency:'GBP', amountUSD:406,     paidStatus:'paid',    paidAmount:406,    receiptFile:null, note:'Proyecto P1' },
+  { id:'pr4',  clientName:'Reeses',         dateStart:'2024-09-01', dateEnd:'2024-10-01', paymentDate:null,         originalAmount:429,  originalCurrency:'GBP', amountUSD:579.60,  paidStatus:'paid',    paidAmount:579.60, receiptFile:null, note:'' },
+  { id:'pr5',  clientName:'Hershey',        dateStart:'2024-10-01', dateEnd:'2024-11-01', paymentDate:null,         originalAmount:475,  originalCurrency:'GBP', amountUSD:641.74,  paidStatus:'paid',    paidAmount:641.74, receiptFile:null, note:'' },
+  { id:'pr6',  clientName:'ED-cuchara',     dateStart:'2024-11-01', dateEnd:'2024-12-01', paymentDate:null,         originalAmount:350,  originalCurrency:'GBP', amountUSD:468.64,  paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
+  { id:'pr7',  clientName:'PAWZ',           dateStart:'2024-12-01', dateEnd:'2025-01-01', paymentDate:null,         originalAmount:250,  originalCurrency:'GBP', amountUSD:334.74,  paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
+  { id:'pr8',  clientName:'PerfectTED',     dateStart:'2025-02-01', dateEnd:'2025-03-01', paymentDate:null,         originalAmount:350,  originalCurrency:'GBP', amountUSD:468.64,  paidStatus:'paid',    paidAmount:468.64, receiptFile:null, note:'Proyecto P2' },
+  { id:'pr9',  clientName:'Chotto MAtte',   dateStart:'2025-04-01', dateEnd:'2025-05-01', paymentDate:null,         originalAmount:2000, originalCurrency:'GBP', amountUSD:2677.94, paidStatus:'paid',    paidAmount:2677.94,receiptFile:null, note:'' },
+  { id:'pr10', clientName:'Wicker Basket',  dateStart:'2025-09-01', dateEnd:'2025-10-01', paymentDate:'2025-11-16', originalAmount:500,  originalCurrency:'GBP', amountUSD:669.50,  paidStatus:'paid',    paidAmount:669.50, receiptFile:null, note:'Si consigue inversión paga £1300 adicional' },
+  { id:'pr11', clientName:'Simply Honest',  dateStart:'2025-11-01', dateEnd:'2025-12-01', paymentDate:'2025-12-02', originalAmount:450,  originalCurrency:'GBP', amountUSD:602.55,  paidStatus:'partial', paidAmount:301.28, receiptFile:null, note:'50% pagado' },
+  { id:'pr12', clientName:'Von Dutch',      dateStart:'2025-10-01', dateEnd:'2026-01-01', paymentDate:null,         originalAmount:6000, originalCurrency:'USD', amountUSD:6000,    paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'Proyecto total $6,000 USD' },
+  { id:'pr13', clientName:'Monaco',         dateStart:'2025-12-01', dateEnd:'2026-02-01', paymentDate:null,         originalAmount:2500, originalCurrency:'USD', amountUSD:2500,    paidStatus:'paid',    paidAmount:2500,   receiptFile:null, note:'' },
+];
+
+function load(key, fallback) {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? JSON.parse(v) : fallback;
+  } catch { return fallback; }
+}
+
+function objToArr(val) {
+  return val ? Object.values(val) : [];
+}
+
+export function AppProvider({ children }) {
+  // Initialize from localStorage immediately — app renders right away
+  const [clients, setClients] = useState(() => load('sg_clients_v7', INITIAL_CLIENTS));
+  const [tasks, setTasks] = useState(() => load('sg_tasks_v2', INITIAL_TASKS));
+  const [finances, setFinances] = useState(() => load('sg_finances_v2', INITIAL_FINANCES));
+  const [projects, setProjects] = useState(() => load('sg_projects_v2', INITIAL_PROJECTS));
+  const [recurringCosts, setRecurringCosts] = useState(() => load('sg_recurring_costs', []));
+  const [ideas, setIdeas] = useState(() => load('sg_ideas', []));
+  const [meetings, setMeetings] = useState(() => load('sg_meetings', []));
+  const [liveTasks, setLiveTasks] = useState(() => load('sg_live_tasks', []));
+  const [notifications, setNotifications] = useState(() => load('sg_notifications', []));
+  const [docFocusClientId, setDocFocusClientId] = useState(null);
+  // Tracks which Firebase paths have fired at least once (so empty = user deleted everything)
+  const fbSyncedRef = useRef(new Set());
+
+  const currentUser = sessionStorage.getItem('sg_user') || 'kann';
+
+  const [currency, setCurrency] = useState('USD');
+  const [exchangeRates, setExchangeRates] = useState({ USD: 1, EUR: 0.92, GBP: 0.79 });
+  const [ratesUpdatedAt, setRatesUpdatedAt] = useState(null);
+
+  useEffect(() => {
+    fetch('https://open.er-api.com/v6/latest/USD')
+      .then(r => r.json())
+      .then(d => {
+        if (d.rates) {
+          setExchangeRates({ USD: 1, EUR: d.rates.EUR, GBP: d.rates.GBP });
+          setRatesUpdatedAt(new Date().toLocaleTimeString());
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Firebase: listeners fire immediately and sync in real-time; seeding happens in background
+  useEffect(() => {
+    const collections = [
+      { path: 'tasks',          setter: setTasks,          lsKey: 'sg_tasks_v2',        initial: INITIAL_TASKS },
+      { path: 'clients',        setter: setClients,        lsKey: 'sg_clients_v7',      initial: INITIAL_CLIENTS },
+      { path: 'finances',       setter: setFinances,       lsKey: 'sg_finances_v2',     initial: INITIAL_FINANCES },
+      { path: 'projects',       setter: setProjects,       lsKey: 'sg_projects_v2',     initial: INITIAL_PROJECTS },
+      { path: 'ideas',          setter: setIdeas,          lsKey: 'sg_ideas',           initial: [] },
+      { path: 'meetings',       setter: setMeetings,       lsKey: 'sg_meetings',        initial: [] },
+      { path: 'liveTasks',      setter: setLiveTasks,      lsKey: 'sg_live_tasks',      initial: [] },
+      { path: 'recurringCosts', setter: setRecurringCosts, lsKey: 'sg_recurring_costs', initial: [] },
+    ];
+
+    // Set up real-time listeners immediately — state updates come from Firebase
+    const unsubscribes = collections.map(({ path, setter }) =>
+      onValue(ref(db, path), snap => {
+        // First fire with no data: keep localStorage state (Firebase not yet seeded)
+        // After first sync: always trust Firebase (empty = user deleted everything)
+        if (snap.exists() || fbSyncedRef.current.has(path)) {
+          setter(objToArr(snap.val()));
+        }
+        fbSyncedRef.current.add(path);
+      })
+    );
+
+    // Seed Firebase from localStorage in the background (fire and forget)
+    collections.forEach(({ path, lsKey, initial }) => {
+      get(ref(db, path))
+        .then(snap => {
+          if (!snap.exists()) {
+            const data = load(lsKey, initial);
+            if (data.length > 0) {
+              set(ref(db, path), Object.fromEntries(data.map(i => [String(i.id), i])));
+            }
+          }
+        })
+        .catch(() => {}); // Silently ignore if Firebase is unreachable
+    });
+
+    return () => unsubscribes.forEach(u => u());
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('sg_notifications', JSON.stringify(notifications));
+  }, [notifications]);
+
+  const convertAmount = useCallback((usdAmount) =>
+    Math.round(usdAmount * exchangeRates[currency]), [currency, exchangeRates]);
+
+  const fmtAmount = useCallback((usdAmount) => {
+    const symbols = { USD: '$', EUR: '€', GBP: '£' };
+    const v = convertAmount(usdAmount);
+    return `${symbols[currency]}${v.toLocaleString()}`;
+  }, [currency, convertAmount]);
+
+  const toUSD = useCallback((amount, fromCurrency) => {
+    if (!fromCurrency || fromCurrency === 'USD') return amount;
+    const rate = exchangeRates[fromCurrency] || 1;
+    return amount / rate;
+  }, [exchangeRates]);
+
+  const addNotification = useCallback((action, location) => {
+    const user = sessionStorage.getItem('sg_user') || 'kann';
+    const note = { id: Date.now().toString(), user, action, location, timestamp: new Date().toISOString(), read: false };
+    setNotifications(p => [note, ...p].slice(0, 100));
+  }, []);
+
+  const markAllRead = useCallback(() => {
+    setNotifications(p => p.map(n => ({ ...n, read: true })));
+  }, []);
+
+  // Helpers: update local state immediately + sync to Firebase in background
+  const fb = (promise) => promise.catch(e => console.warn('[Firebase]', e));
+
+  const addDocument = useCallback((clientId, doc) => {
+    const user = sessionStorage.getItem('sg_user') || 'kann';
+    const newDoc = { ...doc, id: Date.now().toString(), uploadedBy: user, uploadedAt: new Date().toISOString(), notes: [] };
+    setClients(p => p.map(c => c.id === clientId ? { ...c, documents: [...(c.documents || []), newDoc] } : c));
+    const client = clients.find(c => c.id === clientId);
+    if (client) fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: [...(client.documents || []), newDoc] }));
+    addNotification(`subió "${doc.name}"`, `Documentos › ${clientId}`);
+  }, [clients, addNotification]);
+
+  const removeDocument = useCallback((clientId, docId) => {
+    setClients(p => p.map(c => c.id === clientId
+      ? { ...c, documents: (c.documents || []).filter(d => d.id !== docId) } : c));
+    const client = clients.find(c => c.id === clientId);
+    if (client) fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: (client.documents || []).filter(d => d.id !== docId) }));
+  }, [clients]);
+
+  const addDocumentNote = useCallback((clientId, docId, note) => {
+    const user = sessionStorage.getItem('sg_user') || 'kann';
+    const newNote = { text: note, by: user, at: new Date().toISOString() };
+    setClients(p => p.map(c => {
+      if (c.id !== clientId) return c;
+      return { ...c, documents: (c.documents || []).map(d => d.id === docId ? { ...d, notes: [...(d.notes || []), newNote] } : d) };
+    }));
+    const client = clients.find(c => c.id === clientId);
+    if (client) {
+      const updatedDocs = (client.documents || []).map(d =>
+        d.id === docId ? { ...d, notes: [...(d.notes || []), newNote] } : d);
+      fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: updatedDocs }));
+    }
+  }, [clients]);
+
+  const addClient = (data) => {
+    const id = Date.now().toString();
+    const c = {
+      ...data, id,
+      color: data.color || CLIENT_COLORS[clients.length % CLIENT_COLORS.length],
+      weeklyUpdate: '', files: [], contractFile: null, proposalFile: null,
+      documents: [], active: true, commissions: 0, commissionHistory: [],
+      monthlyRevenueHistory: [], monthlyExpenseHistory: [],
+    };
+    setClients(p => [...p, c]);
+    fb(set(ref(db, `clients/${id}`), c));
+  };
+
+  const updateClient = (id, updates) => {
+    setClients(p => p.map(c => c.id === id ? { ...c, ...updates } : c));
+    fb(fbUpdate(ref(db, `clients/${id}`), updates));
+  };
+
+  const deleteClient = (id) => {
+    setClients(p => p.filter(c => c.id !== id));
+    fb(remove(ref(db, `clients/${id}`)));
+  };
+
+  const addProject = (data) => {
+    const id = Date.now().toString();
+    const p = { ...data, id };
+    setProjects(prev => [...prev, p]);
+    fb(set(ref(db, `projects/${id}`), p));
+  };
+  const updateProject = (id, updates) => {
+    setProjects(p => p.map(pr => pr.id === id ? { ...pr, ...updates } : pr));
+    fb(fbUpdate(ref(db, `projects/${id}`), updates));
+  };
+  const deleteProject = (id) => {
+    setProjects(p => p.filter(pr => pr.id !== id));
+    fb(remove(ref(db, `projects/${id}`)));
+  };
+
+  const addTask = (data) => {
+    const id = Date.now().toString();
+    const task = { ...data, id, status: data.status || 'todo' };
+    setTasks(p => [...p, task]);
+    fb(set(ref(db, `tasks/${id}`), task));
+  };
+  const updateTask = (id, updates) => {
+    setTasks(p => p.map(t => t.id === id ? { ...t, ...updates } : t));
+    fb(fbUpdate(ref(db, `tasks/${id}`), updates));
+  };
+  const moveTask = (id, status) => {
+    setTasks(p => p.map(t => t.id === id ? { ...t, status } : t));
+    fb(fbUpdate(ref(db, `tasks/${id}`), { status }));
+  };
+  const deleteTask = (id) => {
+    setTasks(p => p.filter(t => t.id !== id));
+    fb(remove(ref(db, `tasks/${id}`)));
+  };
+
+  const addFinanceEntry = (data) => {
+    const id = Date.now().toString();
+    const entry = { ...data, id };
+    setFinances(p => [...p, entry]);
+    fb(set(ref(db, `finances/${id}`), entry));
+  };
+  const deleteFinanceEntry = (id) => {
+    setFinances(p => p.filter(f => f.id !== id));
+    fb(remove(ref(db, `finances/${id}`)));
+  };
+
+  const addIdea = (data) => {
+    const id = Date.now().toString();
+    const idea = { ...data, id, createdAt: new Date().toISOString() };
+    setIdeas(p => [...p, idea]);
+    fb(set(ref(db, `ideas/${id}`), idea));
+  };
+  const deleteIdea = (id) => {
+    setIdeas(p => p.filter(i => i.id !== id));
+    fb(remove(ref(db, `ideas/${id}`)));
+  };
+
+  const addMeeting = (data) => {
+    const id = Date.now().toString();
+    const meeting = { ...data, id, createdAt: new Date().toISOString() };
+    setMeetings(p => [...p, meeting]);
+    fb(set(ref(db, `meetings/${id}`), meeting));
+  };
+  const updateMeeting = (id, updates) => {
+    setMeetings(p => p.map(m => m.id === id ? { ...m, ...updates } : m));
+    fb(fbUpdate(ref(db, `meetings/${id}`), updates));
+  };
+  const deleteMeeting = (id) => {
+    setMeetings(p => p.filter(m => m.id !== id));
+    fb(remove(ref(db, `meetings/${id}`)));
+  };
+
+  const addLiveTask = (data) => {
+    const id = Date.now().toString();
+    const task = { ...data, id, createdAt: new Date().toISOString(), status: data.status || 'todo' };
+    setLiveTasks(p => [...p, task]);
+    fb(set(ref(db, `liveTasks/${id}`), task));
+  };
+  const updateLiveTask = (id, updates) => {
+    setLiveTasks(p => p.map(t => t.id === id ? { ...t, ...updates } : t));
+    fb(fbUpdate(ref(db, `liveTasks/${id}`), updates));
+  };
+  const deleteLiveTask = (id) => {
+    setLiveTasks(p => p.filter(t => t.id !== id));
+    fb(remove(ref(db, `liveTasks/${id}`)));
+  };
+  const moveLiveTask = (id, status) => {
+    setLiveTasks(p => p.map(t => t.id === id ? { ...t, status } : t));
+    fb(fbUpdate(ref(db, `liveTasks/${id}`), { status }));
+  };
+
+  const addRecurringCost = (data) => {
+    const id = Date.now().toString();
+    const cost = { ...data, id };
+    setRecurringCosts(p => [...p, cost]);
+    fb(set(ref(db, `recurringCosts/${id}`), cost));
+  };
+  const updateRecurringCost = (id, updates) => {
+    setRecurringCosts(p => p.map(c => c.id === id ? { ...c, ...updates } : c));
+    fb(fbUpdate(ref(db, `recurringCosts/${id}`), updates));
+  };
+  const deleteRecurringCost = (id) => {
+    setRecurringCosts(p => p.filter(c => c.id !== id));
+    fb(remove(ref(db, `recurringCosts/${id}`)));
+  };
+
+  const getClientExpenses = (clientId) =>
+    finances.filter(f => f.clientId === clientId && f.type === 'expense')
+      .reduce((s, f) => s + f.amount, 0);
+
+  const getClientRevenue = (clientId) =>
+    finances.filter(f => f.clientId === clientId && f.type === 'income')
+      .reduce((s, f) => s + f.amount, 0);
+
+  return (
+    <AppContext.Provider value={{
+      clients, tasks, finances,
+      addClient, updateClient, deleteClient,
+      addTask, updateTask, moveTask, deleteTask,
+      addFinanceEntry, deleteFinanceEntry,
+      getClientExpenses, getClientRevenue,
+      currency, setCurrency, exchangeRates, ratesUpdatedAt,
+      convertAmount, fmtAmount, toUSD,
+      currentUser,
+      notifications, addNotification, markAllRead,
+      addDocument, removeDocument, addDocumentNote,
+      projects, addProject, updateProject, deleteProject,
+      recurringCosts, addRecurringCost, updateRecurringCost, deleteRecurringCost,
+      ideas, addIdea, deleteIdea,
+      meetings, addMeeting, updateMeeting, deleteMeeting,
+      liveTasks, addLiveTask, updateLiveTask, deleteLiveTask, moveLiveTask,
+      docFocusClientId, setDocFocusClientId,
+    }}>
+      {children}
+    </AppContext.Provider>
+  );
+}
+
+export const useApp = () => {
+  const ctx = useContext(AppContext);
+  if (!ctx) throw new Error('useApp must be within AppProvider');
+  return ctx;
+};

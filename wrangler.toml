@@ -1,0 +1,11 @@
+name = "synced-admin"
+main = "worker-admin.js"
+compatibility_date = "2025-05-18"
+
+routes = [
+  { pattern = "synced.graphics/admin*", zone_name = "synced.graphics" }
+]
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"

@@ -1,0 +1,650 @@
+import React, { useState, useMemo } from 'react';
+import { useApp } from '../context/AppContext';
+
+const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+  'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const DAY_HEADERS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+
+const toYMD = d =>
+  `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+
+const addContractMonths = (startYMD, months) => {
+  const d = new Date(startYMD + 'T00:00:00');
+  d.setMonth(d.getMonth() + months);
+  return toYMD(d);
+};
+
+function getMonthGrid(year, month) {
+  const firstDay = new Date(year, month, 1);
+  const startOffset = (firstDay.getDay() + 6) % 7;
+  const cells = [];
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(year, month, 1 - startOffset + i);
+    cells.push({ date: d, ymd: toYMD(d), inMonth: d.getMonth() === month });
+  }
+  return cells;
+}
+
+function useEventsMap(tasks, clients, meetings) {
+  return useMemo(() => {
+    const map = {};
+    const push = (ymd, ev) => { (map[ymd] = map[ymd] || []).push(ev); };
+
+    (tasks || []).forEach(t => {
+      if (!t.deadline) return;
+      const c = clients.find(x => x.id === t.clientId);
+      push(t.deadline, { type: 'task', key: `task-${t.id}`, title: t.title, color: c?.color || '#faff05', clientName: c?.name || '', meta: t });
+    });
+
+    (clients || []).forEach(c => {
+      if (!c.contractStart || !c.contractMonths) return;
+      const end = addContractMonths(c.contractStart, Number(c.contractMonths));
+      push(end, { type: 'contract', key: `contract-${c.id}`, title: `Fin contrato: ${c.name}`, color: c.color, clientName: c.name });
+    });
+
+    (meetings || []).forEach(m => {
+      if (!m.date) return;
+      const c = clients.find(x => x.id === m.clientId);
+      push(m.date, { type: 'meeting', key: `meeting-${m.id}`, title: m.title, color: '#818cf8', clientName: c?.name || '', time: m.time, meetingId: m.id, raw: m });
+    });
+
+    Object.keys(map).forEach(ymd => {
+      map[ymd].sort((a, b) => {
+        const order = { meeting: 0, task: 1, contract: 2 };
+        if (a.type !== b.type) return order[a.type] - order[b.type];
+        if (a.type === 'meeting') return (a.time || '').localeCompare(b.time || '');
+        return 0;
+      });
+    });
+
+    return map;
+  }, [tasks, clients, meetings]);
+}
+
+const TaskIcon = () => (
+  <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+  </svg>
+);
+const ContractIcon = () => (
+  <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
+const MeetingIcon = () => (
+  <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+  </svg>
+);
+
+const TYPE_ICON = { task: <TaskIcon />, contract: <ContractIcon />, meeting: <MeetingIcon /> };
+
+function EventPill({ ev }) {
+  return (
+    <div className="flex items-center gap-0.5 px-1 py-px rounded text-[9px] font-medium truncate"
+      style={{ background: ev.color + '22', color: ev.color, border: `1px solid ${ev.color}35` }}>
+      {ev.type === 'meeting' && ev.time && (
+        <span className="opacity-60 flex-shrink-0 mr-0.5">{ev.time}</span>
+      )}
+      <span className="truncate">{ev.title}</span>
+    </div>
+  );
+}
+
+function ConfirmDialog({ message, onConfirm, onCancel }) {
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+      <div className="bg-[#111] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
+        <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
+          <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+          </svg>
+        </div>
+        <p className="text-white font-semibold mb-1">¿Eliminar reunión?</p>
+        <p className="text-zinc-400 text-sm mb-6">{message}</p>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-zinc-400 bg-zinc-800 hover:text-white transition-colors">Cancelar</button>
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-400 transition-colors">Eliminar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MeetingModal({ initial, prefillDate, clients, onClose, onSave, onDelete }) {
+  const inp = 'w-full bg-[#1a1a1a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#818cf8] placeholder-zinc-700';
+  const [form, setForm] = useState({
+    title: initial?.title || '',
+    clientId: initial?.clientId || '',
+    date: initial?.date || prefillDate || toYMD(new Date()),
+    time: initial?.time || '10:00',
+    duration: initial?.duration || 60,
+    notes: initial?.notes || '',
+  });
+  const [confirmDel, setConfirmDel] = useState(false);
+  const s = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  if (confirmDel) {
+    return (
+      <ConfirmDialog
+        message="Esta reunión se eliminará permanentemente."
+        onConfirm={onDelete}
+        onCancel={() => setConfirmDel(false)}
+      />
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-[#111] border border-zinc-800 rounded-2xl w-full max-w-md">
+        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+          <h2 className="text-white font-semibold text-sm">{initial ? 'Editar reunión' : 'Nueva reunión'}</h2>
+          <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <form onSubmit={e => { e.preventDefault(); onSave({ ...form, duration: Number(form.duration) }); }} className="p-5 space-y-4">
+          <div>
+            <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Título *</label>
+            <input value={form.title} onChange={e => s('title', e.target.value)} required placeholder="Ej. Kick-off call..." className={inp} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Fecha *</label>
+              <input type="date" value={form.date} onChange={e => s('date', e.target.value)} required className={inp} />
+            </div>
+            <div>
+              <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Hora</label>
+              <input type="time" value={form.time} onChange={e => s('time', e.target.value)} className={inp} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Cliente</label>
+              <select value={form.clientId} onChange={e => s('clientId', e.target.value)} className={inp}>
+                <option value="">Sin cliente</option>
+                {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Duración (min)</label>
+              <input type="number" value={form.duration} onChange={e => s('duration', e.target.value)} min={15} step={15} className={inp} />
+            </div>
+          </div>
+          <div>
+            <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Notas</label>
+            <textarea value={form.notes} onChange={e => s('notes', e.target.value)} rows={3} className={`${inp} resize-none`} placeholder="Agenda, temas..." />
+          </div>
+          <div className="flex gap-2 pt-1">
+            {initial && onDelete && (
+              <button type="button" onClick={() => setConfirmDel(true)}
+                className="px-4 py-2.5 rounded-xl text-sm font-medium text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors">
+                Eliminar
+              </button>
+            )}
+            <button type="submit" className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ background: '#818cf8', color: 'white' }}>
+              {initial ? 'Guardar' : 'Agregar reunión'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function DayDetail({ ymd, events, onAddMeeting, onEditMeeting, onClose }) {
+  const date = new Date(ymd + 'T00:00:00');
+  const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  return (
+    <div className="mt-4 bg-[#161616] border border-zinc-800/50 rounded-2xl p-5">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-white font-semibold text-sm">
+            {dayNames[date.getDay()]} {date.getDate()} de {MONTHS_ES[date.getMonth()]}
+          </p>
+          <p className="text-zinc-600 text-xs">{events.length} evento{events.length !== 1 ? 's' : ''}</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <button onClick={() => onAddMeeting(ymd)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+            style={{ background: '#818cf8', color: 'white' }}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Reunión
+          </button>
+          <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {events.length === 0 ? (
+        <p className="text-zinc-600 text-sm text-center py-4">Sin eventos en este día</p>
+      ) : (
+        <div className="space-y-2">
+          {events.map(ev => (
+            <div key={ev.key}
+              className={`flex items-start gap-3 p-3 rounded-xl ${ev.type === 'meeting' ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+              style={{ background: ev.color + '12', border: `1px solid ${ev.color}25` }}
+              onClick={ev.type === 'meeting' ? () => onEditMeeting(ev.raw) : undefined}>
+              <div className="mt-0.5" style={{ color: ev.color }}>{TYPE_ICON[ev.type]}</div>
+              <div className="min-w-0 flex-1">
+                <p className="text-white text-sm font-medium truncate">{ev.title}</p>
+                <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                  {ev.clientName && <span className="text-xs" style={{ color: ev.color + 'cc' }}>{ev.clientName}</span>}
+                  {ev.type === 'meeting' && ev.time && (
+                    <span className="text-zinc-500 text-xs">{ev.time}{ev.raw?.duration ? ` · ${ev.raw.duration} min` : ''}</span>
+                  )}
+                  {ev.type === 'task' && <span className="text-zinc-600 text-xs">Deadline</span>}
+                  {ev.type === 'contract' && <span className="text-zinc-600 text-xs">Fin de contrato</span>}
+                </div>
+                {ev.type === 'meeting' && ev.raw?.notes && (
+                  <p className="text-zinc-500 text-xs mt-1 line-clamp-2">{ev.raw.notes}</p>
+                )}
+              </div>
+              {ev.type === 'meeting' && (
+                <svg className="w-3 h-3 text-zinc-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MonthView({ year, month, eventsMap, selectedDay, onDayClick, today }) {
+  const cells = getMonthGrid(year, month);
+
+  return (
+    <div>
+      <div className="grid grid-cols-7 mb-1">
+        {DAY_HEADERS.map(d => (
+          <div key={d} className="text-center text-zinc-600 text-xs font-medium py-2">{d}</div>
+        ))}
+      </div>
+      <div className="grid grid-cols-7 border border-zinc-800/40 rounded-2xl overflow-hidden">
+        {cells.map((cell, i) => {
+          const events = eventsMap[cell.ymd] || [];
+          const isToday = cell.ymd === today;
+          const isSelected = cell.ymd === selectedDay;
+          const visible = events.slice(0, 2);
+          const overflow = events.length - 2;
+
+          return (
+            <div key={i}
+              onClick={() => onDayClick(cell.ymd)}
+              className={`border-r border-b border-zinc-800/30 p-1.5 min-h-[90px] cursor-pointer transition-colors last:border-r-0
+                ${!cell.inMonth ? 'opacity-25' : 'hover:bg-zinc-900/40'}
+                ${isSelected ? 'bg-[#818cf8]/5 ring-1 ring-inset ring-[#818cf8]/30' : 'bg-[#111]'}
+              `}>
+              <div className="flex items-center justify-end mb-1">
+                <span className={`text-xs w-6 h-6 flex items-center justify-center rounded-full font-medium transition-all ${
+                  isToday ? 'text-black font-bold' : cell.inMonth ? 'text-zinc-400' : 'text-zinc-700'
+                }`} style={isToday ? { background: '#faff05' } : {}}>
+                  {cell.date.getDate()}
+                </span>
+              </div>
+              <div className="space-y-px">
+                {visible.map(ev => <EventPill key={ev.key} ev={ev} />)}
+                {overflow > 0 && (
+                  <div className="text-zinc-600 text-[8px] pl-1">+{overflow} más</div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MiniMonth({ year, month, eventsMap, today, onClick }) {
+  const cells = getMonthGrid(year, month);
+
+  return (
+    <button onClick={onClick}
+      className="bg-[#161616] border border-zinc-800/50 rounded-2xl p-4 hover:border-zinc-700 transition-colors text-left w-full">
+      <p className="text-white text-xs font-semibold mb-2">{MONTHS_ES[month]}</p>
+      <div className="grid grid-cols-7">
+        {['L','M','M','J','V','S','D'].map((d, i) => (
+          <div key={i} className="text-zinc-700 text-[7px] text-center mb-1">{d}</div>
+        ))}
+        {cells.map((cell, i) => {
+          const evs = eventsMap[cell.ymd] || [];
+          const isToday = cell.ymd === today;
+          const dotColors = evs.slice(0, 3).map(e => e.color);
+
+          return (
+            <div key={i} className="flex flex-col items-center mb-px">
+              <span className={`text-[8px] w-4 h-4 flex items-center justify-center rounded-full leading-none
+                ${!cell.inMonth ? 'text-zinc-800' : 'text-zinc-500'}
+                ${isToday ? 'font-bold' : ''}
+              `} style={isToday ? { background: '#faff05', color: '#000' } : {}}>
+                {cell.date.getDate()}
+              </span>
+              {evs.length > 0 && cell.inMonth && (
+                <div className="flex gap-px mt-px">
+                  {dotColors.map((col, j) => (
+                    <div key={j} className="w-0.5 h-0.5 rounded-full" style={{ background: col }} />
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </button>
+  );
+}
+
+function YearView({ year, eventsMap, today, onMonthClick }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+      {Array.from({ length: 12 }, (_, m) => (
+        <MiniMonth key={m} year={year} month={m} eventsMap={eventsMap} today={today}
+          onClick={() => onMonthClick(m)} />
+      ))}
+    </div>
+  );
+}
+
+function DayView({ ymd, eventsMap, onAddMeeting, onEditMeeting }) {
+  const events = eventsMap[ymd] || [];
+  const date = new Date(ymd + 'T00:00:00');
+  const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <p className="text-white font-semibold">{dayNames[date.getDay()]} {date.getDate()} de {MONTHS_ES[date.getMonth()]}</p>
+          <p className="text-zinc-600 text-xs mt-0.5">{events.length} evento{events.length !== 1 ? 's' : ''}</p>
+        </div>
+        <button onClick={() => onAddMeeting(ymd)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium"
+          style={{ background: '#818cf8', color: 'white' }}>
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Nueva reunión
+        </button>
+      </div>
+
+      {events.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-14 text-center">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 bg-zinc-900">
+            <svg className="w-6 h-6 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <p className="text-zinc-500 text-sm font-medium">Sin eventos</p>
+          <p className="text-zinc-700 text-xs mt-1">Agregá una reunión para este día</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {events.map(ev => (
+            <div key={ev.key}
+              className={`flex items-start gap-4 p-4 rounded-2xl ${ev.type === 'meeting' ? 'cursor-pointer hover:opacity-80 transition-opacity' : ''}`}
+              style={{ background: ev.color + '10', border: `1px solid ${ev.color}30` }}
+              onClick={ev.type === 'meeting' ? () => onEditMeeting(ev.raw) : undefined}>
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
+                style={{ background: ev.color + '20', color: ev.color }}>
+                {TYPE_ICON[ev.type]}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white font-medium text-sm">{ev.title}</p>
+                <div className="flex flex-wrap items-center gap-2 mt-1">
+                  {ev.clientName && <span className="text-xs font-medium" style={{ color: ev.color + 'cc' }}>{ev.clientName}</span>}
+                  {ev.type === 'meeting' && ev.time && (
+                    <span className="text-zinc-500 text-xs">{ev.time}{ev.raw?.duration ? ` · ${ev.raw.duration} min` : ''}</span>
+                  )}
+                  <span className="text-xs px-2 py-px rounded-full bg-zinc-900 text-zinc-500">
+                    {ev.type === 'task' ? 'Deadline' : ev.type === 'contract' ? 'Fin de contrato' : 'Reunión'}
+                  </span>
+                </div>
+                {ev.type === 'meeting' && ev.raw?.notes && (
+                  <p className="text-zinc-500 text-sm mt-2">{ev.raw.notes}</p>
+                )}
+              </div>
+              {ev.type === 'meeting' && (
+                <svg className="w-3.5 h-3.5 text-zinc-600 flex-shrink-0 mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function CalendarModule() {
+  const { tasks, clients, meetings, addMeeting, updateMeeting, deleteMeeting } = useApp();
+  const todayDate = new Date();
+  const today = toYMD(todayDate);
+
+  const [view, setView] = useState('month');
+  const [currentYear, setCurrentYear] = useState(todayDate.getFullYear());
+  const [currentMonth, setCurrentMonth] = useState(todayDate.getMonth());
+  const [currentDay, setCurrentDay] = useState(today);
+  const [selectedDay, setSelectedDay] = useState(null);
+  const [meetingModal, setMeetingModal] = useState(null);
+
+  const eventsMap = useEventsMap(tasks, clients, meetings);
+
+  const navigatePrev = () => {
+    if (view === 'month') {
+      if (currentMonth === 0) { setCurrentMonth(11); setCurrentYear(y => y - 1); }
+      else setCurrentMonth(m => m - 1);
+      setSelectedDay(null);
+    } else if (view === 'day') {
+      const d = new Date(currentDay + 'T00:00:00');
+      d.setDate(d.getDate() - 1);
+      setCurrentDay(toYMD(d));
+    } else {
+      setCurrentYear(y => y - 1);
+    }
+  };
+
+  const navigateNext = () => {
+    if (view === 'month') {
+      if (currentMonth === 11) { setCurrentMonth(0); setCurrentYear(y => y + 1); }
+      else setCurrentMonth(m => m + 1);
+      setSelectedDay(null);
+    } else if (view === 'day') {
+      const d = new Date(currentDay + 'T00:00:00');
+      d.setDate(d.getDate() + 1);
+      setCurrentDay(toYMD(d));
+    } else {
+      setCurrentYear(y => y + 1);
+    }
+  };
+
+  const goToToday = () => {
+    const now = new Date();
+    setCurrentYear(now.getFullYear());
+    setCurrentMonth(now.getMonth());
+    setCurrentDay(today);
+    if (view === 'month') setSelectedDay(today);
+  };
+
+  const switchView = (v) => {
+    if (v === 'day') {
+      setCurrentDay(selectedDay || today);
+    } else if (v === 'month') {
+      const d = new Date(currentDay + 'T00:00:00');
+      setCurrentYear(d.getFullYear());
+      setCurrentMonth(d.getMonth());
+    }
+    setView(v);
+  };
+
+  const headerTitle = () => {
+    if (view === 'year') return String(currentYear);
+    if (view === 'month') return `${MONTHS_ES[currentMonth]} ${currentYear}`;
+    const d = new Date(currentDay + 'T00:00:00');
+    return `${d.getDate()} de ${MONTHS_ES[d.getMonth()]} ${d.getFullYear()}`;
+  };
+
+  const handleDayClick = (ymd) => {
+    setSelectedDay(prev => prev === ymd ? null : ymd);
+  };
+
+  const openAddMeeting = (prefillDate) => setMeetingModal({ prefillDate });
+  const openEditMeeting = (meeting) => setMeetingModal({ initial: meeting });
+
+  const handleSaveMeeting = (form) => {
+    const currentUser = sessionStorage.getItem('sg_user') || 'kann';
+    if (meetingModal?.initial) {
+      updateMeeting(meetingModal.initial.id, form);
+    } else {
+      addMeeting({ ...form, createdBy: currentUser });
+    }
+    setMeetingModal(null);
+  };
+
+  const handleDeleteMeeting = () => {
+    if (meetingModal?.initial) deleteMeeting(meetingModal.initial.id);
+    setMeetingModal(null);
+  };
+
+  const defaultAddDate = view === 'day' ? currentDay : (selectedDay || today);
+
+  const totalEvents = Object.values(eventsMap).reduce((s, arr) => s + arr.length, 0);
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex items-center gap-2">
+          <svg className="w-4 h-4" style={{ color: '#818cf8' }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <h2 className="text-white font-semibold text-sm">Calendario</h2>
+          <span className="text-zinc-600 text-xs">{totalEvents} eventos</span>
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* View switcher */}
+          <div className="flex items-center gap-1 bg-[#1a1a1a] rounded-xl p-1">
+            {[['day','Día'],['month','Mes'],['year','Año']].map(([v, label]) => (
+              <button key={v} onClick={() => switchView(v)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+                  view === v ? 'font-semibold' : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+                style={view === v ? { background: '#818cf8', color: 'white' } : {}}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          {/* Navigation */}
+          <div className="flex items-center gap-1">
+            <button onClick={navigatePrev}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button onClick={goToToday}
+              className="px-3 py-1 text-xs font-medium text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-900 transition-colors">
+              Hoy
+            </button>
+            <button onClick={navigateNext}
+              className="w-8 h-8 flex items-center justify-center rounded-lg text-zinc-500 hover:text-white hover:bg-zinc-900 transition-colors">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <span className="text-white font-semibold text-sm min-w-[170px] text-center">{headerTitle()}</span>
+
+          <button onClick={() => openAddMeeting(defaultAddDate)}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold"
+            style={{ background: '#818cf8', color: 'white' }}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Nueva reunión
+          </button>
+        </div>
+      </div>
+
+      {/* Legend */}
+      <div className="flex items-center gap-5 text-xs text-zinc-600">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-sm bg-zinc-700" />
+          <span>Deadlines de tareas (color del cliente)</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-sm bg-zinc-700" />
+          <span>Fin de contrato (color del cliente)</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-sm" style={{ background: '#818cf840', border: '1px solid #818cf8' }} />
+          <span>Reuniones</span>
+        </div>
+      </div>
+
+      {/* Views */}
+      {view === 'month' && (
+        <>
+          <MonthView
+            year={currentYear} month={currentMonth}
+            eventsMap={eventsMap} selectedDay={selectedDay}
+            onDayClick={handleDayClick} today={today}
+          />
+          {selectedDay && (
+            <DayDetail
+              ymd={selectedDay}
+              events={eventsMap[selectedDay] || []}
+              onAddMeeting={openAddMeeting}
+              onEditMeeting={openEditMeeting}
+              onClose={() => setSelectedDay(null)}
+            />
+          )}
+        </>
+      )}
+
+      {view === 'day' && (
+        <DayView
+          ymd={currentDay}
+          eventsMap={eventsMap}
+          onAddMeeting={openAddMeeting}
+          onEditMeeting={openEditMeeting}
+        />
+      )}
+
+      {view === 'year' && (
+        <YearView
+          year={currentYear}
+          eventsMap={eventsMap}
+          today={today}
+          onMonthClick={(m) => { setCurrentMonth(m); setView('month'); setSelectedDay(null); }}
+        />
+      )}
+
+      {meetingModal !== null && (
+        <MeetingModal
+          initial={meetingModal.initial}
+          prefillDate={meetingModal.prefillDate}
+          clients={clients}
+          onClose={() => setMeetingModal(null)}
+          onSave={handleSaveMeeting}
+          onDelete={meetingModal.initial ? handleDeleteMeeting : undefined}
+        />
+      )}
+    </div>
+  );
+}
