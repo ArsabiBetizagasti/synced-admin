@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { AppProvider } from './context/AppContext';
 import Login from './components/Login';
 import Layout from './components/Layout';
@@ -34,7 +34,7 @@ export default function App() {
         backgroundSize: '22px 22px, 100% 100%',
       }}
     >
-      <div className="flex-1 bg-black sm:border border-zinc-800/50 sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+      <div className="flex-1 bg-black sm:border border-[#111] sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col">
         {!user ? (
           <Login onLogin={handleLogin} />
         ) : user.startsWith('brand_') ? (

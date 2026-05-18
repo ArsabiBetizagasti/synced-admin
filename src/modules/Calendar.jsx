@@ -160,7 +160,7 @@ function MeetLinkButton({ url, small }) {
 function GoogleCalendarBar({ currentUser, gcalEvents, onConnect, onDisconnect, syncing }) {
   if (!isConfigured()) {
     return (
-      <div className="flex items-center gap-2 px-3 py-2 bg-[#161616] border border-zinc-800/50 rounded-xl text-xs text-zinc-500">
+      <div className="flex items-center gap-2 px-3 py-2 bg-[#161616] border border-[#111] rounded-xl text-xs text-zinc-500">
         <GoogleIcon size={12} />
         <span>Google Calendar no configurado — agregá <code className="text-zinc-400">VITE_GOOGLE_CLIENT_ID</code> al archivo <code className="text-zinc-400">.env</code></span>
       </div>
@@ -168,7 +168,7 @@ function GoogleCalendarBar({ currentUser, gcalEvents, onConnect, onDisconnect, s
   }
 
   return (
-    <div className="flex items-center gap-3 px-3 py-2 bg-[#161616] border border-zinc-800/50 rounded-xl flex-wrap">
+    <div className="flex items-center gap-3 px-3 py-2 bg-[#161616] border border-[#111] rounded-xl flex-wrap">
       <div className="flex items-center gap-1.5 text-zinc-500 text-xs flex-shrink-0">
         <GoogleIcon size={12} />
         <span>Google Calendar</span>
@@ -329,7 +329,7 @@ function MeetingCard({ ev, currentUser, onEdit, onRsvp, compact }) {
       </div>
 
       {hovered && (
-        <div className="mt-2.5 pt-2.5 border-t border-zinc-800/60 flex items-center gap-2"
+        <div className="mt-2.5 pt-2.5 border-t border-[#111] flex items-center gap-2"
           onClick={e => e.stopPropagation()}>
           <span className="text-zinc-500 text-xs">¿Vas a asistir?</span>
           <button
@@ -358,7 +358,7 @@ function MeetingCard({ ev, currentUser, onEdit, onRsvp, compact }) {
 function ConfirmDialog({ onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-sm p-6 text-center">
         <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -378,7 +378,7 @@ function ConfirmDialog({ onConfirm, onCancel }) {
 // ─── Meeting Modal ────────────────────────────────────────────────────────────
 
 function MeetingModal({ initial, prefillDate, clients, onClose, onSave, onDelete }) {
-  const inp = 'w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#818cf8] placeholder-zinc-700';
+  const inp = 'w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#818cf8] placeholder-zinc-700';
   const [form, setForm] = useState({
     title: initial?.title || '',
     clientId: initial?.clientId || '',
@@ -407,8 +407,8 @@ function MeetingModal({ initial, prefillDate, clients, onClose, onSave, onDelete
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-md">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-md">
+        <div className="flex items-center justify-between p-5 border-b border-[#111]">
           <h2 className="text-white font-semibold text-sm">{initial ? 'Editar reunión' : 'Nueva reunión'}</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -453,7 +453,7 @@ function MeetingModal({ initial, prefillDate, clients, onClose, onSave, onDelete
                 return (
                   <button key={u.id} type="button" onClick={() => toggleAttendee(u.id)}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border ${
-                      selected ? 'border-transparent scale-105' : 'border-zinc-800 opacity-50 hover:opacity-80'
+                      selected ? 'border-transparent scale-105' : 'border-[#111] opacity-50 hover:opacity-80'
                     }`}
                     style={selected ? { background: u.bg, color: u.text } : { background: 'transparent', color: '#71717a' }}>
                     <span className="w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold"
@@ -533,7 +533,7 @@ function DayDetail({ ymd, events, onAddMeeting, onEditMeeting, onRsvp, onClose, 
   const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
 
   return (
-    <div className="mt-4 bg-[#161616] border border-zinc-800/50 rounded-2xl p-5">
+    <div className="mt-4 bg-[#161616] border border-[#111] rounded-2xl p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
           <p className="text-white font-semibold text-sm">
@@ -583,7 +583,7 @@ function MonthView({ year, month, eventsMap, selectedDay, onDayClick, today }) {
           <div key={d} className="text-center text-zinc-600 text-xs font-medium py-2">{d}</div>
         ))}
       </div>
-      <div className="grid grid-cols-7 border border-zinc-800/40 rounded-2xl overflow-hidden">
+      <div className="grid grid-cols-7 border border-[#111] rounded-2xl overflow-hidden">
         {cells.map((cell, i) => {
           const events = eventsMap[cell.ymd] || [];
           const isToday = cell.ymd === today;
@@ -593,7 +593,7 @@ function MonthView({ year, month, eventsMap, selectedDay, onDayClick, today }) {
           return (
             <div key={i}
               onClick={() => onDayClick(cell.ymd)}
-              className={`border-r border-b border-zinc-800/30 p-1.5 min-h-[90px] cursor-pointer transition-colors last:border-r-0
+              className={`border-r border-b border-[#111] p-1.5 min-h-[90px] cursor-pointer transition-colors last:border-r-0
                 ${!cell.inMonth ? 'opacity-25' : 'hover:bg-zinc-900/40'}
                 ${isSelected ? 'bg-[#818cf8]/5 ring-1 ring-inset ring-[#818cf8]/30' : 'bg-[#080808]'}
               `}>
@@ -622,7 +622,7 @@ function MiniMonth({ year, month, eventsMap, today, onClick }) {
   const cells = getMonthGrid(year, month);
   return (
     <button onClick={onClick}
-      className="bg-[#161616] border border-zinc-800/50 rounded-2xl p-4 hover:border-zinc-700 transition-colors text-left w-full">
+      className="bg-[#161616] border border-[#111] rounded-2xl p-4 hover:border-[#1a1a1a] transition-colors text-left w-full">
       <p className="text-white text-xs font-semibold mb-2">{MONTHS_ES[month]}</p>
       <div className="grid grid-cols-7">
         {['L','M','M','J','V','S','D'].map((d, i) => (
@@ -933,7 +933,7 @@ export default function CalendarModule() {
               return (
                 <button key={u.id} onClick={() => toggleFilter(u.id)}
                   className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all border ${
-                    active ? 'border-transparent' : 'border-zinc-800 opacity-40'
+                    active ? 'border-transparent' : 'border-[#111] opacity-40'
                   }`}
                   style={active ? { background: u.bg + '25', color: u.bg, border: `1px solid ${u.bg}40` } : {}}>
                   <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7px] font-bold"

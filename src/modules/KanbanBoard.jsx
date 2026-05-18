@@ -32,7 +32,7 @@ const PLATFORMS = [
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-sm p-6 text-center">
         <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -104,7 +104,7 @@ function TaskCard({ task, onMove, onEdit, onDelete }) {
         ref={dragRef}
         draggable
         onDragStart={handleDragStart}
-        className="relative bg-[#080808] border border-zinc-800/80 rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-zinc-700 transition-all group"
+        className="relative bg-[#080808] border border-[#111] rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-[#1a1a1a] transition-all group"
         style={{ borderLeft: `3px solid ${client?.color || '#333'}` }}
       >
         {/* Top-right: edit + delete */}
@@ -192,7 +192,7 @@ function TaskCard({ task, onMove, onEdit, onDelete }) {
 
         {/* Images strip */}
         {images.length > 0 && (
-          <div className="mt-2 pt-2 border-t border-zinc-800/40">
+          <div className="mt-2 pt-2 border-t border-[#111]">
             {/* Icon + count — click to toggle sticky */}
             <button
               draggable={false}
@@ -232,7 +232,7 @@ function TaskCard({ task, onMove, onEdit, onDelete }) {
         )}
 
         {/* Move buttons */}
-        <div className="mt-2 pt-2 border-t border-zinc-800/50 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+        <div className="mt-2 pt-2 border-t border-[#111] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           {COLUMNS.filter(c => c.id !== task.status).map(col => (
             <button key={col.id} onClick={() => onMove(task.id, col.id)}
               className="text-zinc-500 hover:text-white text-xs px-2 py-1 rounded-lg bg-[#222] hover:bg-[#2a2a2a] transition-all">
@@ -313,8 +313,8 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-md max-h-[92vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-md max-h-[92vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-[#111]">
           <h2 className="text-white font-semibold">{isEdit ? 'Editar tarea' : 'Nueva tarea'}</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -328,7 +328,7 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
           <div>
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Título *</label>
             <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-              className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+              className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
               placeholder="Ej. Diseño de logo principal" required />
           </div>
 
@@ -337,7 +337,7 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Descripción</label>
             <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
               rows={2}
-              className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
+              className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
               placeholder="Detalla el alcance de la tarea..." />
           </div>
 
@@ -346,14 +346,14 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Cliente</label>
               <select value={form.clientId} onChange={e => setForm(p => ({ ...p, clientId: e.target.value }))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Prioridad</label>
               <select value={form.priority} onChange={e => setForm(p => ({ ...p, priority: e.target.value }))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {Object.keys(PRIORITIES).map(p => <option key={p}>{p}</option>)}
               </select>
             </div>
@@ -364,13 +364,13 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Deadline</label>
               <input type="date" value={form.deadline} onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]"
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]"
                 required />
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Columna</label>
               <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {COLUMNS.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}
               </select>
             </div>
@@ -423,7 +423,7 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
             )}
 
             {/* Upload button */}
-            <label className="flex items-center gap-2 border border-dashed border-zinc-700 rounded-xl px-3 py-2.5 cursor-pointer hover:border-zinc-500 hover:bg-white/[0.02] transition-all">
+            <label className="flex items-center gap-2 border border-dashed border-[#1a1a1a] rounded-xl px-3 py-2.5 cursor-pointer hover:border-zinc-500 hover:bg-white/[0.02] transition-all">
               <svg className="w-4 h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
@@ -439,7 +439,7 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
               {Object.entries(ASSIGNEES).map(([key, a]) => (
                 <button key={key} type="button" onClick={() => toggleAssignee(key)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
-                    form.assignees.includes(key) ? 'border-[#faff05]' : 'border-zinc-800 text-zinc-500'
+                    form.assignees.includes(key) ? 'border-[#faff05]' : 'border-[#111] text-zinc-500'
                   }`}>
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
                     style={{ background: a.bg, color: a.text }}>
@@ -569,7 +569,7 @@ export default function KanbanBoard({ filters: extFilters }) {
                   />
                 ))}
                 {colTasks.length === 0 && (
-                  <div className="text-center py-8 text-zinc-700 text-sm border-2 border-dashed border-zinc-800 rounded-xl">
+                  <div className="text-center py-8 text-zinc-700 text-sm border-2 border-dashed border-[#111] rounded-xl">
                     Arrastra o agrega tareas
                   </div>
                 )}

@@ -21,7 +21,7 @@ function TaskCard({ task }) {
     : null;
 
   return (
-    <div className={`bg-[#080808] border rounded-2xl p-5 transition-all ${task.status === 'done' ? 'border-zinc-800/30 opacity-60' : 'border-zinc-800/70'}`}>
+    <div className={`bg-[#080808] border rounded-2xl p-5 transition-all ${task.status === 'done' ? 'border-[#111] opacity-60' : 'border-[#111]/70'}`}>
       <div className="flex items-start gap-3">
         <div className="w-1 self-stretch rounded-full flex-shrink-0" style={{ background: status.color }} />
         <div className="flex-1 min-w-0">
@@ -99,7 +99,7 @@ function BrandPortalContent({ clientId, onLogout }) {
   return (
     <>
       {/* Top bar — fixed at top */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800/40 flex-shrink-0">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[#111] flex-shrink-0">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-black text-xs"
             style={{ background: '#faff05' }}>SG</div>
@@ -143,7 +143,7 @@ function BrandPortalContent({ clientId, onLogout }) {
             { label: 'En Progreso', value: allTasks.filter(t => t.status === 'inprogress').length, color: '#faff05' },
             { label: 'Completadas', value: doneTasks.length, color: '#34d399' },
           ].map(s => (
-            <div key={s.label} className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-4 text-center">
+            <div key={s.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4 text-center">
               <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
               <p className="text-zinc-500 text-xs mt-1">{s.label}</p>
             </div>

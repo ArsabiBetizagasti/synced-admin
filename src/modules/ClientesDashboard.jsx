@@ -135,7 +135,7 @@ function ClientCard({ client, onClick }) {
   const initials = client.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
   return (
     <button onClick={onClick}
-      className="bg-[#080808] border border-zinc-800/60 rounded-2xl overflow-hidden hover:border-zinc-600 hover:scale-[1.02] transition-all text-left group">
+      className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden hover:border-zinc-600 hover:scale-[1.02] transition-all text-left group">
       <div className="h-20 flex items-center justify-center relative"
         style={{ background: `linear-gradient(135deg, ${client.color}cc, ${client.color}55)` }}>
         {icon ? (
@@ -173,7 +173,7 @@ function SectionHeader({ title, count, color, icon }) {
 function MiniTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2 text-xs shadow-xl">
+    <div className="bg-[#080808] border border-[#111] rounded-xl px-3 py-2 text-xs shadow-xl">
       <p className="text-zinc-500 mb-0.5">{label}</p>
       <p className="text-green-400 font-semibold">${payload[0]?.value?.toLocaleString()}</p>
     </div>
@@ -197,7 +197,7 @@ function ClientTaskCard({ task, clientColor, onMove, onDelete }) {
     <div
       draggable
       onDragStart={handleDragStart}
-      className="bg-[#080808] border border-zinc-800/80 rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-zinc-700 transition-all group"
+      className="bg-[#080808] border border-[#111] rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-[#1a1a1a] transition-all group"
       style={{ borderLeft: `3px solid ${clientColor}` }}>
       <div className="flex items-center justify-between mb-2">
         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${pr.bg} ${pr.text}`}>{task.priority}</span>
@@ -226,7 +226,7 @@ function ClientTaskCard({ task, clientColor, onMove, onDelete }) {
           </span>
         )}
       </div>
-      <div className="mt-2 pt-2 border-t border-zinc-800/50 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="mt-2 pt-2 border-t border-[#111] flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         {COLUMNS.filter(c => c !== task.status).map(col => (
           <button key={col} onClick={() => onMove(task.id, col)}
             className="text-zinc-500 hover:text-white text-[10px] px-2 py-1 rounded-lg bg-[#222] hover:bg-[#2a2a2a] transition-all">
@@ -268,7 +268,7 @@ function ContractUpload({ client }) {
 
   if (client.contractFile?.dataUrl) {
     return (
-      <div className="mt-3 pt-3 border-t border-zinc-800/40">
+      <div className="mt-3 pt-3 border-t border-[#111]">
         <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-2">Contrato adjunto</p>
         <div className="flex items-center gap-2 bg-[#080808] rounded-xl px-3 py-2.5">
           <svg className="w-4 h-4 flex-shrink-0" style={{ color: client.color }} fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -294,11 +294,11 @@ function ContractUpload({ client }) {
   }
 
   return (
-    <div className="mt-3 pt-3 border-t border-zinc-800/40">
+    <div className="mt-3 pt-3 border-t border-[#111]">
       <input ref={fileRef} type="file" className="hidden" accept=".pdf,.doc,.docx,.png,.jpg"
         onChange={handleFile} />
       <button onClick={() => fileRef.current?.click()}
-        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-zinc-700 text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-all text-xs">
+        className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-dashed border-[#1a1a1a] text-zinc-500 hover:text-zinc-300 hover:border-zinc-500 transition-all text-xs">
         <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
         </svg>
@@ -382,7 +382,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
       </button>
 
       {/* Header card */}
-      <div className="rounded-2xl overflow-hidden border border-zinc-800/60">
+      <div className="rounded-2xl overflow-hidden border border-[#111]">
         <div className="h-3 w-full" style={{ background: `linear-gradient(90deg, ${client.color}, ${client.color}44)` }} />
         <div className="bg-[#080808] px-6 py-5 flex items-center gap-5">
           <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
@@ -425,7 +425,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
           { label: 'Gastos',            value: totalExpenses, color: '#f87171', icon: '↓', neg: true },
           { label: 'Margen neto',       value: margin,        color: margin >= 0 ? '#4ade80' : '#f87171', icon: '=' },
         ].map(k => (
-          <div key={k.label} className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-4">
+          <div key={k.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-zinc-500 text-xs uppercase tracking-wider">{k.label}</p>
               <span className="font-bold text-sm" style={{ color: k.color }}>{k.icon}</span>
@@ -440,7 +440,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
       {/* Mini chart + Contract info */}
       <div className="grid grid-cols-5 gap-4">
         {/* Income chart */}
-        <div className="col-span-3 bg-[#080808] border border-zinc-800/50 rounded-2xl p-5">
+        <div className="col-span-3 bg-[#080808] border border-[#111] rounded-2xl p-5">
           <SectionHeader title="Ingresos mensuales" color={client.color}
             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>} />
           {chartData.length === 0
@@ -465,7 +465,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
         </div>
 
         {/* Contract details + upload */}
-        <div className="col-span-2 bg-[#080808] border border-zinc-800/50 rounded-2xl p-5 flex flex-col">
+        <div className="col-span-2 bg-[#080808] border border-[#111] rounded-2xl p-5 flex flex-col">
           <SectionHeader title="Contrato" color={client.color}
             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>} />
           <div className="space-y-2 text-xs flex-1">
@@ -493,7 +493,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
         <SectionHeader title="Documentos" count={`${totalDocs} archivos`} color={client.color}
           icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>} />
         <button onClick={openDocumentos}
-          className="w-full bg-[#080808] border border-zinc-800/50 rounded-2xl p-5 flex items-center justify-between hover:border-zinc-600 transition-all group text-left">
+          className="w-full bg-[#080808] border border-[#111] rounded-2xl p-5 flex items-center justify-between hover:border-zinc-600 transition-all group text-left">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0"
               style={{ background: client.color + '18', border: `1.5px solid ${client.color}40` }}>
@@ -538,7 +538,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
                 </div>
                 <div className="space-y-2">
                   {colTasks.length === 0
-                    ? <div className="text-center py-6 text-zinc-700 text-xs border-2 border-dashed border-zinc-800/60 rounded-xl">Sin tareas</div>
+                    ? <div className="text-center py-6 text-zinc-700 text-xs border-2 border-dashed border-[#111] rounded-xl">Sin tareas</div>
                     : colTasks.map(t => (
                         <ClientTaskCard key={t.id} task={t} clientColor={client.color}
                           onMove={moveTask} onDelete={deleteTask} />
@@ -556,7 +556,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
         <div>
           <SectionHeader title="Proyectos" count={`${clientProjects.length} proyectos`} color={client.color}
             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>} />
-          <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl overflow-hidden">
+          <div className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden">
             {clientProjects.map(p => {
               const badge = {
                 paid:    { label: 'Cobrado', cls: 'bg-green-500/15 text-green-400' },
@@ -564,7 +564,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
                 unpaid:  { label: 'En deuda', cls: 'bg-red-500/15 text-red-400' },
               }[p.paidStatus] || {};
               return (
-                <div key={p.id} className="flex items-center gap-4 px-4 py-3 border-b border-zinc-800/40 last:border-0">
+                <div key={p.id} className="flex items-center gap-4 px-4 py-3 border-b border-[#111] last:border-0">
                   <div className="w-1 h-8 rounded-full flex-shrink-0" style={{ background: client.color }} />
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm font-medium">{p.clientName}</p>
@@ -587,7 +587,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
         <div>
           <SectionHeader title="Movimientos" count={`${clientFinances.length} registros`} color={client.color}
             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>} />
-          <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-4 space-y-1.5 max-h-72 overflow-y-auto">
+          <div className="bg-[#080808] border border-[#111] rounded-2xl p-4 space-y-1.5 max-h-72 overflow-y-auto">
             {[...clientFinances].sort((a, b) => b.date.localeCompare(a.date)).map(entry => (
               <div key={entry.id} className="flex items-center gap-3 bg-[#080808] rounded-xl px-3 py-2.5">
                 <div className={`w-1.5 h-8 rounded-full flex-shrink-0 ${entry.type === 'income' ? 'bg-green-400' : 'bg-red-400'}`} />
@@ -609,8 +609,8 @@ function ClientDetail({ client, onBack, onNavigate }) {
         <div>
           <SectionHeader title="Historial mensual" color={client.color}
             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>} />
-          <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl overflow-hidden">
-            <div className={`grid gap-2 text-[10px] text-zinc-500 uppercase tracking-wider px-5 py-3 border-b border-zinc-800 ${client.hasCommissions ? 'grid-cols-5' : 'grid-cols-3'}`}>
+          <div className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden">
+            <div className={`grid gap-2 text-[10px] text-zinc-500 uppercase tracking-wider px-5 py-3 border-b border-[#111] ${client.hasCommissions ? 'grid-cols-5' : 'grid-cols-3'}`}>
               <span>Mes</span><span>Ingreso real</span><span>Gasto</span>
               {client.hasCommissions && <><span>Ventas cliente</span><span>Comisión</span></>}
             </div>
@@ -711,7 +711,7 @@ export default function ClientesDashboard({ onNavigate }) {
               const clientProjects = projects.filter(p => p.clientName === name);
               const paid = clientProjects.filter(p => p.paidStatus === 'paid').length;
               return (
-                <div key={name} className="bg-[#080808] border border-zinc-800/60 rounded-2xl overflow-hidden">
+                <div key={name} className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden">
                   <div className="h-20 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #a78bfacc, #a78bfa33)' }}>
                     {getBrandIcon(name)
                       ? <div className="w-10 h-10 text-black/70">{getBrandIcon(name)}</div>

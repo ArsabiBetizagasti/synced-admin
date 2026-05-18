@@ -20,7 +20,7 @@ function CustomTooltip({ active, payload, label, symbol, chartData }) {
   const incomeBreakdown = (monthData?._breakdown || []).filter(b => !b.isDebt);
   const debtBreakdown   = (monthData?._breakdown || []).filter(b => b.isDebt);
   return (
-    <div className="bg-[#1c1c1c] border border-zinc-700 rounded-xl px-4 py-3 shadow-xl min-w-[200px]">
+    <div className="bg-[#1c1c1c] border border-[#1a1a1a] rounded-xl px-4 py-3 shadow-xl min-w-[200px]">
       <p className="text-zinc-400 text-xs mb-2 font-medium">{label}</p>
       {items.map(p => (
         <div key={p.name} className="flex items-center gap-2 text-sm mb-0.5">
@@ -91,7 +91,7 @@ function ContractGantt({ clients, months }) {
   }
 
   return (
-    <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-5">
+    <div className="bg-[#080808] border border-[#111] rounded-2xl p-5">
       <div className="flex items-center gap-2 mb-4">
         <h3 className="text-white font-medium text-sm">Timeline de contratos</h3>
         <span className="text-zinc-600 text-xs">— últimos 2 años hasta fin de contratos activos</span>
@@ -210,8 +210,8 @@ function AddEntryModal({ onClose, defaultType = 'income' }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-md">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-md">
+        <div className="flex items-center justify-between p-5 border-b border-[#111]">
           <h2 className="text-white font-semibold">Registrar movimiento</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -233,7 +233,7 @@ function AddEntryModal({ onClose, defaultType = 'income' }) {
             <div className="flex gap-1.5">
               {incomeSubTypes.map(st => (
                 <button key={st.value} type="button" onClick={() => handleSubType(st.value)}
-                  className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${form.paymentType===st.value?'border-[#faff05] text-white bg-[#faff05]/10':'border-zinc-800 text-zinc-500'}`}>
+                  className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-medium border transition-all ${form.paymentType===st.value?'border-[#faff05] text-white bg-[#faff05]/10':'border-[#111] text-zinc-500'}`}>
                   {st.label}
                 </button>
               ))}
@@ -243,33 +243,33 @@ function AddEntryModal({ onClose, defaultType = 'income' }) {
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Monto (USD) *</label>
               <input type="number" value={form.amount} onChange={e => setForm(p=>({...p,amount:e.target.value}))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
                 placeholder="0" min="0" step="0.01" required />
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Fecha *</label>
               <input type="date" value={form.date} onChange={e => setForm(p=>({...p,date:e.target.value}))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]" required />
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]" required />
             </div>
           </div>
           <div>
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Descripción *</label>
             <input value={form.description} onChange={e => setForm(p=>({...p,description:e.target.value}))}
-              className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+              className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
               placeholder="Ej. Retainer Mayo — Hollywood Browzer" required />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Categoría</label>
               <select value={form.category} onChange={e => setForm(p=>({...p,category:e.target.value}))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {cats.map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Cliente</label>
               <select value={form.clientId} onChange={e => setForm(p=>({...p,clientId:e.target.value}))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 <option value="">— Sin cliente —</option>
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
@@ -305,12 +305,12 @@ function RecurringCostModal({ cost, onClose }) {
     onClose();
   };
 
-  const inputCls = 'w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]';
+  const inputCls = 'w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]';
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-sm">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-sm">
+        <div className="flex items-center justify-between p-5 border-b border-[#111]">
           <h2 className="text-white font-semibold text-sm">{isEdit ? 'Editar costo fijo' : 'Nuevo costo fijo mensual'}</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -378,7 +378,7 @@ function SyncedCostSection({ onAddExpense }) {
   const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
   return (
-    <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-5 space-y-5">
+    <div className="bg-[#080808] border border-[#111] rounded-2xl p-5 space-y-5">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -401,7 +401,7 @@ function SyncedCostSection({ onAddExpense }) {
         <div className="flex items-center justify-between mb-2">
           <span className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Costos fijos mensuales</span>
           <button onClick={() => setShowRecurringModal(true)}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-zinc-700 text-zinc-400 hover:border-[#faff05]/60 hover:text-[#faff05] transition-colors bg-[#080808]">
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-[#1a1a1a] text-zinc-400 hover:border-[#faff05]/60 hover:text-[#faff05] transition-colors bg-[#080808]">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             Agregar
           </button>
@@ -447,7 +447,7 @@ function SyncedCostSection({ onAddExpense }) {
         <div className="flex items-center justify-between mb-2">
           <span className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Gastos variables registrados</span>
           <button onClick={onAddExpense}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-zinc-700 text-zinc-400 hover:border-red-500/60 hover:text-red-400 transition-colors bg-[#080808]">
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium border border-[#1a1a1a] text-zinc-400 hover:border-red-500/60 hover:text-red-400 transition-colors bg-[#080808]">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
             Registrar gasto
           </button>
@@ -456,7 +456,7 @@ function SyncedCostSection({ onAddExpense }) {
         {topCategories.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
             {topCategories.map(([cat, amt]) => (
-              <div key={cat} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#080808] rounded-xl border border-zinc-800">
+              <div key={cat} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#080808] rounded-xl border border-[#111]">
                 <span className="text-zinc-400 text-xs">{cat}</span>
                 <span className="text-red-400 text-xs font-semibold">{fmtAmount(amt)}</span>
               </div>
@@ -714,7 +714,7 @@ export default function FinanzasPortal() {
           { label: 'Margen %',   usd: null, icon:'%', color: netProfit>=0?'#4ade80':'#f87171',
             display: totalIncome ? `${Math.round((netProfit/totalIncome)*100)}%` : '—' },
         ].map(item => (
-          <div key={item.label} className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-4">
+          <div key={item.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4">
             <div className="flex items-center justify-between mb-2">
               <p className="text-zinc-500 text-xs uppercase tracking-wider">{item.label}</p>
               <span className="font-bold" style={{color:item.color}}>{item.icon}</span>
@@ -747,7 +747,7 @@ export default function FinanzasPortal() {
             ? '#f87171'
             : item.value >= 0 ? '#4ade80' : '#f87171';
           return (
-            <div key={item.label} className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-4">
+            <div key={item.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4">
               <div className="flex items-center justify-between mb-2">
                 <p className="text-zinc-500 text-xs uppercase tracking-wider">{item.label}</p>
                 <div className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-black flex-shrink-0"
@@ -791,7 +791,7 @@ export default function FinanzasPortal() {
       </div>
 
       {/* ── Main Chart with future prediction ── */}
-      <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-5">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl p-5">
         <div className="flex items-center justify-between mb-1">
           <div>
             <h3 className="text-white font-medium">Flujo de caja</h3>
@@ -899,18 +899,18 @@ export default function FinanzasPortal() {
       {/* ── Forecast + Transactions ── */}
       <div className="grid grid-cols-2 gap-4">
         {/* Forecast */}
-        <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-5">
+        <div className="bg-[#080808] border border-[#111] rounded-2xl p-5">
           <h3 className="text-white font-medium mb-1">Forecast — próximos 6 meses</h3>
           <p className="text-zinc-600 text-xs mb-4">
             Retainers activos: {fmtAmount(monthlyForecastUSD)}/mes
           </p>
           <div>
-            <div className="grid grid-cols-4 gap-2 text-[10px] text-zinc-500 uppercase tracking-wider pb-2 border-b border-zinc-800">
+            <div className="grid grid-cols-4 gap-2 text-[10px] text-zinc-500 uppercase tracking-wider pb-2 border-b border-[#111]">
               <span>Mes</span><span className="text-right">Ingresos</span>
               <span className="text-right">Gastos</span><span className="text-right">Neto</span>
             </div>
             {forecastMonths.map(row => (
-              <div key={row.month} className="grid grid-cols-4 gap-2 py-2 border-b border-zinc-800/30 text-xs">
+              <div key={row.month} className="grid grid-cols-4 gap-2 py-2 border-b border-[#111] text-xs">
                 <span className="text-zinc-400">{row.month}</span>
                 <span className="text-right text-green-400">{fmtAmount(row.income)}</span>
                 <span className="text-right text-red-400">{fmtAmount(row.expenses)}</span>
@@ -921,7 +921,7 @@ export default function FinanzasPortal() {
         </div>
 
         {/* Transactions */}
-        <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-5">
+        <div className="bg-[#080808] border border-[#111] rounded-2xl p-5">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-white font-medium">Movimientos</h3>
             <div className="flex gap-1">

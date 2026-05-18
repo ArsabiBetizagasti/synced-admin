@@ -16,7 +16,7 @@ const COLOR_SWATCHES = [
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-sm p-6 text-center">
         <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -61,7 +61,7 @@ function YesNo({ label, value, onChange }) {
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium border transition-all ${
               value === v
                 ? v ? 'border-green-500 bg-green-500/10 text-green-400' : 'border-red-500 bg-red-500/10 text-red-400'
-                : 'border-zinc-800 text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
+                : 'border-[#111] text-zinc-500 hover:border-zinc-600 hover:text-zinc-300'
             }`}>
             <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${value === v ? (v ? 'border-green-500' : 'border-red-500') : 'border-zinc-600'}`}>
               {value === v && <span className={`w-2 h-2 rounded-full ${v ? 'bg-green-500' : 'bg-red-500'}`} />}
@@ -74,7 +74,7 @@ function YesNo({ label, value, onChange }) {
   );
 }
 
-const inputCls = 'w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]';
+const inputCls = 'w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]';
 
 // ── Add Client Modal (retainer/commission) ─────────────────────────────────────
 function AddClientModal({ onClose }) {
@@ -111,8 +111,8 @@ function AddClientModal({ onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-[#111]">
           <h2 className="text-white font-semibold">Nuevo cliente (retainer / comisión)</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -162,10 +162,10 @@ function AddClientModal({ onClose }) {
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Monto mensual</label>
               <div className="flex gap-2">
                 <input type="number" value={form.monthlyRevenue} onChange={e => set('monthlyRevenue', e.target.value)}
-                  className="flex-1 bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+                  className="flex-1 bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
                   placeholder="3500" min="0" required={form.hasMonthlyPayment} />
                 <select value={form.revenueCurrency} onChange={e => set('revenueCurrency', e.target.value)}
-                  className="bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                  className="bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                   {CURRENCIES.map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
@@ -178,7 +178,7 @@ function AddClientModal({ onClose }) {
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Porcentaje de comisión</label>
               <div className="flex items-center gap-2">
                 <input type="number" value={form.commissionRate} onChange={e => set('commissionRate', e.target.value)}
-                  className="w-24 bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+                  className="w-24 bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
                   placeholder="10" min="0" max="100" step="0.5" />
                 <span className="text-zinc-400 text-sm font-medium">%</span>
               </div>
@@ -236,8 +236,8 @@ function EditClientModal({ client, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-[#111]">
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 rounded-full" style={{ background: form.color }} />
             <h2 className="text-white font-semibold">Editar cliente</h2>
@@ -294,10 +294,10 @@ function EditClientModal({ client, onClose }) {
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Monto mensual</label>
               <div className="flex gap-2">
                 <input type="number" value={form.monthlyRevenue} onChange={e => set('monthlyRevenue', e.target.value)}
-                  className="flex-1 bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+                  className="flex-1 bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
                   placeholder="3500" min="0" />
                 <select value={form.revenueCurrency} onChange={e => set('revenueCurrency', e.target.value)}
-                  className="bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                  className="bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                   {CURRENCIES.map(c => <option key={c}>{c}</option>)}
                 </select>
               </div>
@@ -310,7 +310,7 @@ function EditClientModal({ client, onClose }) {
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Porcentaje de comisión</label>
               <div className="flex items-center gap-2">
                 <input type="number" value={form.commissionRate} onChange={e => set('commissionRate', e.target.value)}
-                  className="w-24 bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+                  className="w-24 bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
                   placeholder="10" min="0" max="100" step="0.5" />
                 <span className="text-zinc-400 text-sm font-medium">%</span>
               </div>
@@ -416,8 +416,8 @@ function ProjectModal({ project, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-[#111]">
           <h2 className="text-white font-semibold">{isEdit ? 'Editar proyecto' : 'Registrar proyecto'}</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -450,10 +450,10 @@ function ProjectModal({ project, onClose }) {
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Monto del proyecto</label>
             <div className="flex gap-2">
               <input type="number" value={form.originalAmount} onChange={e => set('originalAmount', e.target.value)}
-                className="flex-1 bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+                className="flex-1 bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
                 placeholder="0" min="0" step="0.01" />
               <select value={form.originalCurrency} onChange={e => set('originalCurrency', e.target.value)}
-                className="bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {CURRENCIES.map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
@@ -472,7 +472,7 @@ function ProjectModal({ project, onClose }) {
             <div className="flex gap-2">
               {statusOpts.map(s => (
                 <button key={s.value} type="button" onClick={() => set('paidStatus', s.value)}
-                  className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all ${form.paidStatus === s.value ? 'border-transparent' : 'border-zinc-800 text-zinc-500 hover:border-zinc-600'}`}
+                  className={`flex-1 py-2 rounded-xl text-xs font-semibold border transition-all ${form.paidStatus === s.value ? 'border-transparent' : 'border-[#111] text-zinc-500 hover:border-zinc-600'}`}
                   style={form.paidStatus === s.value ? { background: s.color + '22', color: s.color, borderColor: s.color + '44' } : {}}>
                   {s.label}
                 </button>
@@ -497,7 +497,7 @@ function ProjectModal({ project, onClose }) {
           <div>
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Comprobante de pago</label>
             {form.receiptFile ? (
-              <div className="flex items-center gap-2 bg-[#080808] border border-zinc-700 rounded-xl px-3 py-2.5">
+              <div className="flex items-center gap-2 bg-[#080808] border border-[#1a1a1a] rounded-xl px-3 py-2.5">
                 <svg className="w-4 h-4 text-zinc-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
                 </svg>
@@ -505,7 +505,7 @@ function ProjectModal({ project, onClose }) {
                 <button type="button" onClick={() => set('receiptFile', null)} className="text-zinc-600 hover:text-red-400 transition-colors text-xs">✕</button>
               </div>
             ) : (
-              <label className="flex items-center gap-2 bg-[#080808] border border-dashed border-zinc-700 rounded-xl px-3 py-2.5 cursor-pointer hover:border-zinc-500 transition-colors">
+              <label className="flex items-center gap-2 bg-[#080808] border border-dashed border-[#1a1a1a] rounded-xl px-3 py-2.5 cursor-pointer hover:border-zinc-500 transition-colors">
                 <svg className="w-4 h-4 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                 </svg>
@@ -532,7 +532,7 @@ function ProjectModal({ project, onClose }) {
                 return (
                   <div key={m.key} className="flex items-center gap-3">
                     <button type="button" onClick={() => toggleSplitMember(m.key)}
-                      className={`flex items-center gap-2 flex-1 px-3 py-2 rounded-xl border transition-all ${active ? 'border-zinc-600' : 'border-zinc-800 opacity-40'}`}
+                      className={`flex items-center gap-2 flex-1 px-3 py-2 rounded-xl border transition-all ${active ? 'border-zinc-600' : 'border-[#111] opacity-40'}`}
                       style={active ? { background: m.bg + '15' } : {}}>
                       <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
                         style={{ background: m.bg, color: m.color }}>{m.key}</div>
@@ -542,7 +542,7 @@ function ProjectModal({ project, onClose }) {
                       <div className="flex items-center gap-1.5">
                         <input type="number" min="0" max="100" value={active.pct}
                           onChange={e => setSplitPct(m.key, e.target.value)}
-                          className="w-16 bg-[#080808] border border-zinc-700 rounded-lg px-2 py-1.5 text-white text-sm text-center focus:outline-none focus:border-[#faff05]" />
+                          className="w-16 bg-[#080808] border border-[#1a1a1a] rounded-lg px-2 py-1.5 text-white text-sm text-center focus:outline-none focus:border-[#faff05]" />
                         <span className="text-zinc-500 text-sm">%</span>
                       </div>
                     )}
@@ -619,7 +619,7 @@ function ClientExpanded({ client }) {
   const colClass = { 3:'grid-cols-3', 4:'grid-cols-4', 5:'grid-cols-5' }[totalCols] || 'grid-cols-5';
 
   return (
-    <div className="bg-[#0c0c0c] border-t border-zinc-800/60 px-6 py-5">
+    <div className="bg-[#0c0c0c] border-t border-[#111] px-6 py-5">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-5">
           {hasPayment && <span className="text-xs text-zinc-500">Retainer: <span className="text-green-400 font-semibold">{sym}{(client.monthlyRevenue || 0).toLocaleString()}/{client.revenueCurrency}/mes</span></span>}
@@ -641,8 +641,8 @@ function ClientExpanded({ client }) {
         </div>
       </div>
       {rows.length > 0 && (
-        <div className="bg-[#080808] rounded-xl overflow-hidden border border-zinc-800/50">
-          <div className={`grid ${colClass} gap-3 text-[10px] text-zinc-500 uppercase tracking-wider px-4 py-2.5 border-b border-zinc-800`}>
+        <div className="bg-[#080808] rounded-xl overflow-hidden border border-[#111]">
+          <div className={`grid ${colClass} gap-3 text-[10px] text-zinc-500 uppercase tracking-wider px-4 py-2.5 border-b border-[#111]`}>
             <span>Mes</span>
             <span>Ingreso real</span>
             <span>Gasto</span>
@@ -662,14 +662,14 @@ function ClientExpanded({ client }) {
                   </span>
                   {/* Ingreso real */}
                   {editing
-                    ? <input type="number" min="0" value={row.actualRevenue} onChange={e => updateRow(row.month, 'actualRevenue', e.target.value)} placeholder="0" className="bg-[#222] border border-zinc-700 rounded-lg px-2 py-1 text-green-400 text-xs focus:outline-none focus:border-[#faff05] w-full" />
+                    ? <input type="number" min="0" value={row.actualRevenue} onChange={e => updateRow(row.month, 'actualRevenue', e.target.value)} placeholder="0" className="bg-[#222] border border-[#1a1a1a] rounded-lg px-2 py-1 text-green-400 text-xs focus:outline-none focus:border-[#faff05] w-full" />
                     : <span className="text-green-400 text-xs font-medium">{row.actualRevenue !== '' ? `${sym}${Number(row.actualRevenue).toLocaleString()}` : (hasPayment ? `${sym}${(client.monthlyRevenue||0).toLocaleString()}` : '—')}</span>
                   }
                   {/* Gasto + Nota */}
                   {editing
                     ? <div className="space-y-1">
-                        <input type="number" min="0" value={row.expense} onChange={e => updateRow(row.month, 'expense', e.target.value)} placeholder="0" className="bg-[#222] border border-zinc-700 rounded-lg px-2 py-1 text-red-400 text-xs focus:outline-none focus:border-[#faff05] w-full" />
-                        <input type="text" value={row.expenseNote} onChange={e => updateRow(row.month, 'expenseNote', e.target.value)} placeholder="Nota (ej. software...)" className="bg-[#222] border border-zinc-700 rounded-lg px-2 py-1 text-zinc-400 text-[10px] focus:outline-none focus:border-[#faff05] w-full" />
+                        <input type="number" min="0" value={row.expense} onChange={e => updateRow(row.month, 'expense', e.target.value)} placeholder="0" className="bg-[#222] border border-[#1a1a1a] rounded-lg px-2 py-1 text-red-400 text-xs focus:outline-none focus:border-[#faff05] w-full" />
+                        <input type="text" value={row.expenseNote} onChange={e => updateRow(row.month, 'expenseNote', e.target.value)} placeholder="Nota (ej. software...)" className="bg-[#222] border border-[#1a1a1a] rounded-lg px-2 py-1 text-zinc-400 text-[10px] focus:outline-none focus:border-[#faff05] w-full" />
                       </div>
                     : <div>
                         <span className="text-xs">{row.expense !== '' ? <span className="text-red-400">-{sym}{Number(row.expense).toLocaleString()}</span> : <span className="text-zinc-600">—</span>}</span>
@@ -677,11 +677,11 @@ function ClientExpanded({ client }) {
                       </div>
                   }
                   {hasComm && (editing
-                    ? <input type="number" min="0" value={row.clientSales} onChange={e => updateRow(row.month, 'clientSales', e.target.value)} placeholder="0" className="bg-[#222] border border-zinc-700 rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-[#faff05] w-full" />
+                    ? <input type="number" min="0" value={row.clientSales} onChange={e => updateRow(row.month, 'clientSales', e.target.value)} placeholder="0" className="bg-[#222] border border-[#1a1a1a] rounded-lg px-2 py-1 text-white text-xs focus:outline-none focus:border-[#faff05] w-full" />
                     : <span className="text-zinc-400 text-xs">{row.clientSales !== '' ? `${sym}${Number(row.clientSales).toLocaleString()}` : '—'}</span>
                   )}
                   {hasComm && (editing
-                    ? <input type="number" min="0" value={row.commissionAmount} onChange={e => updateRow(row.month, 'commissionAmount', e.target.value)} placeholder="0" className="bg-[#222] border border-zinc-700 rounded-lg px-2 py-1 text-green-400 text-xs focus:outline-none focus:border-[#faff05] w-full" />
+                    ? <input type="number" min="0" value={row.commissionAmount} onChange={e => updateRow(row.month, 'commissionAmount', e.target.value)} placeholder="0" className="bg-[#222] border border-[#1a1a1a] rounded-lg px-2 py-1 text-green-400 text-xs focus:outline-none focus:border-[#faff05] w-full" />
                     : <span className={`text-xs font-medium ${Number(row.commissionAmount) > 0 ? 'text-green-400' : 'text-zinc-600'}`}>
                         {Number(row.commissionAmount) > 0 ? `${sym}${Number(row.commissionAmount).toLocaleString()}` : '—'}
                       </span>
@@ -762,12 +762,12 @@ function ProjectsSection() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input value={search} onChange={e => setSearch(e.target.value)}
-              className="bg-[#080808] border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-44"
+              className="bg-[#080808] border border-[#111] rounded-xl pl-9 pr-3 py-2 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-44"
               placeholder="Buscar proyecto..." />
           </div>
           {/* Sort toggle */}
           <button onClick={() => setSortOrder(o => o === 'newest' ? 'oldest' : 'newest')}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border border-zinc-800 bg-[#080808] text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium border border-[#111] bg-[#080808] text-zinc-400 hover:text-white hover:border-zinc-600 transition-colors">
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
             </svg>
@@ -776,7 +776,7 @@ function ProjectsSection() {
           <span className="text-zinc-600 text-xs">{projects.length} proyectos registrados</span>
         </div>
         <button onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors bg-[#080808] flex-shrink-0">
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium border border-[#1a1a1a] text-zinc-300 hover:border-zinc-500 hover:text-white transition-colors bg-[#080808] flex-shrink-0">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
@@ -784,10 +784,10 @@ function ProjectsSection() {
         </button>
       </div>
 
-      <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl overflow-hidden">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-zinc-800">
+            <tr className="border-b border-[#111]">
               {['Empresa', 'País', 'Fechas', 'Monto', 'Estado', 'Equipo', 'Nota', ''].map(h => (
                 <th key={h} className="text-left text-zinc-500 text-xs uppercase tracking-wider px-4 py-3 font-medium">{h}</th>
               ))}
@@ -799,7 +799,7 @@ function ProjectsSection() {
               const debt = debtLine(p);
               const split = p.splitDetails || [{ key: 'K', pct: 30 }, { key: 'J', pct: 30 }, { key: 'SG', pct: 40 }];
               return (
-                <tr key={p.id} className="border-b border-zinc-800/40 hover:bg-white/[0.02] transition-colors group">
+                <tr key={p.id} className="border-b border-[#111] hover:bg-white/[0.02] transition-colors group">
 
                   {/* Empresa */}
                   <td className="px-4 py-3 text-white text-sm font-medium">{displayNames.get(p.id) || p.clientName}</td>
@@ -931,7 +931,7 @@ export default function ClientesPortal() {
     <div className="space-y-5">
       {/* 4 KPI Cards */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-4">
+        <div className="bg-[#080808] border border-[#111] rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
             <p className="text-zinc-500 text-xs uppercase tracking-wider">Clientes Totales</p>
             <span className="text-lg">👥</span>
@@ -940,7 +940,7 @@ export default function ClientesPortal() {
           <p className="text-zinc-600 text-xs mt-0.5">{activeClients.length} activos · {pastRetainers.length} pasados · {projects.length} proyectos</p>
         </div>
 
-        <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-4">
+        <div className="bg-[#080808] border border-[#111] rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
             <p className="text-zinc-500 text-xs uppercase tracking-wider">Clientes Activos</p>
             <span className="text-lg">🟢</span>
@@ -984,7 +984,7 @@ export default function ClientesPortal() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input value={search} onChange={e => setSearch(e.target.value)}
-              className="bg-[#080808] border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-48"
+              className="bg-[#080808] border border-[#111] rounded-xl pl-9 pr-3 py-2 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-48"
               placeholder="Buscar cliente..." />
           </div>
           <div className="flex gap-1 flex-wrap">
@@ -1008,10 +1008,10 @@ export default function ClientesPortal() {
       </div>
 
       {/* Clients Table (retainer/commission) */}
-      <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl overflow-hidden">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-zinc-800">
+            <tr className="border-b border-[#111]">
               {['Cliente', 'País', 'Categoría', 'Pago Mensual', 'Comisiones', 'Gastos', 'Margen', 'Estado', ''].map(h => (
                 <th key={h} className="text-left text-zinc-500 text-xs uppercase tracking-wider px-4 py-3 font-medium">{h}</th>
               ))}
@@ -1028,7 +1028,7 @@ export default function ClientesPortal() {
               return (
                 <React.Fragment key={client.id}>
                   <tr onClick={() => toggle(client.id)}
-                    className="border-b border-zinc-800/50 hover:bg-white/[0.02] cursor-pointer transition-colors group">
+                    className="border-b border-[#111] hover:bg-white/[0.02] cursor-pointer transition-colors group">
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-2 h-8 rounded-full flex-shrink-0" style={{ background: client.color }} />
@@ -1134,10 +1134,10 @@ export default function ClientesPortal() {
             <span className="text-zinc-500 text-xs uppercase tracking-wider font-medium px-2">Retainers Pasados</span>
             <div className="flex-1 h-px bg-zinc-800" />
           </div>
-          <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl overflow-hidden">
+          <div className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-zinc-800">
+                <tr className="border-b border-[#111]">
                   {['Cliente','País','Categoría','Retainer','Comisiones','Período',''].map(h => (
                     <th key={h} className="text-left text-zinc-500 text-xs uppercase tracking-wider px-4 py-3 font-medium">{h}</th>
                   ))}
@@ -1150,7 +1150,7 @@ export default function ClientesPortal() {
                   const endDate = client.contractStart ? (() => { const d = new Date(client.contractStart); d.setMonth(d.getMonth() + (client.contractMonths || 6)); return d.toISOString().slice(0,7); })() : '—';
                   return (
                     <React.Fragment key={client.id}>
-                      <tr onClick={() => toggle(client.id)} className="border-b border-zinc-800/50 hover:bg-white/[0.02] cursor-pointer transition-colors group">
+                      <tr onClick={() => toggle(client.id)} className="border-b border-[#111] hover:bg-white/[0.02] cursor-pointer transition-colors group">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-8 rounded-full flex-shrink-0" style={{ background: '#60a5fa' }} />

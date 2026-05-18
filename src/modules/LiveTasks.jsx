@@ -48,8 +48,8 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-5 border-b border-zinc-800">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-[#111]">
           <h2 className="text-white font-semibold">{isEdit ? 'Editar tarea' : 'Nueva tarea live'}</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -62,7 +62,7 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
           <div>
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Título *</label>
             <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-              className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+              className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
               placeholder="Ej. Contenido semana 3" required />
           </div>
 
@@ -70,7 +70,7 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Descripción</label>
             <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
               rows={2}
-              className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
+              className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
               placeholder="Detalle visible para la marca..." />
           </div>
 
@@ -78,14 +78,14 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Marca</label>
               <select value={form.clientId} onChange={e => setForm(p => ({ ...p, clientId: e.target.value }))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Estado</label>
               <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
             </div>
@@ -95,14 +95,14 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Prioridad</label>
               <select value={form.priority} onChange={e => setForm(p => ({ ...p, priority: e.target.value }))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {Object.keys(PRIORITIES).map(p => <option key={p}>{p}</option>)}
               </select>
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Deadline</label>
               <input type="date" value={form.deadline} onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
-                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]" />
+                className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]" />
             </div>
           </div>
 
@@ -111,7 +111,7 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
             <div className="flex gap-2">
               {Object.entries(ASSIGNEES).map(([key, a]) => (
                 <button key={key} type="button" onClick={() => toggle('assignees', key)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${form.assignees.includes(key) ? 'border-[#faff05]' : 'border-zinc-800 text-zinc-500'}`}>
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${form.assignees.includes(key) ? 'border-[#faff05]' : 'border-[#111] text-zinc-500'}`}>
                   <div className="w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold"
                     style={{ background: a.bg, color: a.text }}>{a.initials}</div>
                   {key.charAt(0).toUpperCase() + key.slice(1)}
@@ -147,7 +147,7 @@ function TaskRow({ task, onEdit, onCycleStatus }) {
     : null;
 
   return (
-    <div className="flex items-start gap-3 px-4 py-3 border-b border-zinc-800/40 last:border-0 hover:bg-white/[0.02] transition-colors">
+    <div className="flex items-start gap-3 px-4 py-3 border-b border-[#111] last:border-0 hover:bg-white/[0.02] transition-colors">
       <button
         onClick={() => { const o = ['todo','inprogress','done']; onCycleStatus(task.id, o[(o.indexOf(task.status)+1)%3]); }}
         title="Cambiar estado"
@@ -199,8 +199,8 @@ function BrandColumn({ client, tasks, onAdd, onEdit, onCycleStatus }) {
   const doneCount = tasks.filter(t => t.status === 'done').length;
 
   return (
-    <div className="bg-[#141414] border border-zinc-800/50 rounded-2xl flex flex-col">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800/50">
+    <div className="bg-[#141414] border border-[#111] rounded-2xl flex flex-col">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-[#111]">
         <div className="flex items-center gap-2.5">
           <div className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold text-black flex-shrink-0"
             style={{ background: client.color }}>
@@ -228,7 +228,7 @@ function BrandColumn({ client, tasks, onAdd, onEdit, onCycleStatus }) {
         ))}
       </div>
 
-      <div className="px-4 py-2.5 border-t border-zinc-800/40">
+      <div className="px-4 py-2.5 border-t border-[#111]">
         <button onClick={() => onAdd(client.id)}
           className="w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-300 hover:bg-zinc-800/60 transition-all">
           <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
