@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { db } from '../firebase';
 import { ref, set, remove, onValue, get, update as fbUpdate } from 'firebase/database';
 
+
 const AppContext = createContext(null);
 
 export const CLIENT_COLORS = [
@@ -148,6 +149,7 @@ export function AppProvider({ children }) {
   const [liveTasks, setLiveTasks] = useState(() => load('sg_live_tasks', []));
   const [notifications, setNotifications] = useState(() => load('sg_notifications', []));
   const [docFocusClientId, setDocFocusClientId] = useState(null);
+  const [gcalEvents, setGcalEventsState] = useState({});
   // Tracks which Firebase paths have fired at least once (so empty = user deleted everything)
   const fbSyncedRef = useRef(new Set());
 
@@ -209,6 +211,31 @@ export function AppProvider({ children }) {
     });
 
     return () => unsubscribes.forEach(u => u());
+  }, []);
+
+  useEffect(() => {
+    const unsub = onValue(ref(db, 'gcalEvents'), snap => {
+      if (!snap.exists()) return;
+      const val = snap.val();
+      const result = {};
+      Object.keys(val).forEach(uid => {
+        result[uid] = Object.values(val[uid] || {});
+      });
+      setGcalEventsState(result);
+    });
+    return () => unsub();
+  }, []);
+
+  const syncGcalEvents = useCallback((userId, events) => {
+    const map = {};
+    events.forEach(e => { map[e.id] = e; });
+    setGcalEventsState(prev => ({ ...prev, [userId]: events }));
+    fb(set(ref(db, `gcalEvents/${userId}`), map));
+  }, []);
+
+  const clearGcalEvents = useCallback((userId) => {
+    setGcalEventsState(prev => ({ ...prev, [userId]: [] }));
+    fb(remove(ref(db, `gcalEvents/${userId}`)));
   }, []);
 
   useEffect(() => {
@@ -428,6 +455,7 @@ export function AppProvider({ children }) {
       meetings, addMeeting, updateMeeting, deleteMeeting,
       liveTasks, addLiveTask, updateLiveTask, deleteLiveTask, moveLiveTask,
       docFocusClientId, setDocFocusClientId,
+      gcalEvents, syncGcalEvents, clearGcalEvents,
     }}>
       {children}
     </AppContext.Provider>
