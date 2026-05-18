@@ -48,7 +48,7 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b border-zinc-800">
           <h2 className="text-white font-semibold">{isEdit ? 'Editar tarea' : 'Nueva tarea live'}</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white">
@@ -62,7 +62,7 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
           <div>
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Título *</label>
             <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-              className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+              className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
               placeholder="Ej. Contenido semana 3" required />
           </div>
 
@@ -70,7 +70,7 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Descripción</label>
             <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
               rows={2}
-              className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
+              className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
               placeholder="Detalle visible para la marca..." />
           </div>
 
@@ -78,14 +78,14 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Marca</label>
               <select value={form.clientId} onChange={e => setForm(p => ({ ...p, clientId: e.target.value }))}
-                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Estado</label>
               <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
-                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
               </select>
             </div>
@@ -95,14 +95,14 @@ function LiveTaskModal({ task, defaultClientId, clients, onSave, onDelete, onClo
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Prioridad</label>
               <select value={form.priority} onChange={e => setForm(p => ({ ...p, priority: e.target.value }))}
-                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {Object.keys(PRIORITIES).map(p => <option key={p}>{p}</option>)}
               </select>
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Deadline</label>
               <input type="date" value={form.deadline} onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
-                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]" />
+                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]" />
             </div>
           </div>
 

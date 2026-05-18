@@ -13,11 +13,11 @@ function AddIdeaModal({ onClose }) {
     onClose();
   };
 
-  const inputCls = 'w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]';
+  const inputCls = 'w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]';
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-md">
+      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-md">
         <div className="flex items-center justify-between p-5 border-b border-zinc-800">
           <h2 className="text-white font-semibold text-sm">Nueva idea</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
@@ -39,12 +39,12 @@ function AddIdeaModal({ onClose }) {
               value={form.text}
               onChange={e => setForm(p => ({ ...p, text: e.target.value }))}
               rows={4}
-              className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
+              className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
               placeholder="Describí la idea..."
               required
             />
           </div>
-          <div className="flex items-center gap-2 px-3 py-2 bg-[#0a0a0a] rounded-xl border border-zinc-800">
+          <div className="flex items-center gap-2 px-3 py-2 bg-[#080808] rounded-xl border border-zinc-800">
             <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
               style={{ background: currentUser === 'kann' ? '#faff05' : '#60a5fa', color: '#000' }}>
               {currentUser === 'kann' ? 'K' : 'J'}
@@ -65,7 +65,7 @@ function AddIdeaModal({ onClose }) {
 function ConfirmDialog({ message, onConfirm, onCancel }) {
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
+      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-sm p-6 text-center">
         <div className="w-12 h-12 rounded-full bg-red-500/15 flex items-center justify-center mx-auto mb-4">
           <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -120,13 +120,13 @@ export default function IdeaBank() {
           {clientsWithIdeas.length > 0 && (
             <div className="flex gap-1 flex-wrap">
               <button onClick={() => setFilterClient('all')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${filterClient === 'all' ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a] hover:text-white'}`}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all ${filterClient === 'all' ? 'text-black' : 'text-zinc-500 bg-[#080808] hover:text-white'}`}
                 style={filterClient === 'all' ? { background: '#faff05' } : {}}>
                 Todos
               </button>
               {clientsWithIdeas.map(c => (
                 <button key={c.id} onClick={() => setFilterClient(filterClient === c.id ? 'all' : c.id)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all border-l-2 ${filterClient === c.id ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a] hover:text-white'}`}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-all border-l-2 ${filterClient === c.id ? 'text-black' : 'text-zinc-500 bg-[#080808] hover:text-white'}`}
                   style={filterClient === c.id ? { background: c.color, borderLeftColor: c.color } : { borderLeftColor: c.color }}>
                   {c.name}
                 </button>

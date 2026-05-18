@@ -58,7 +58,7 @@ export default function Tasks({ filters: extFilters }) {
           { label: 'En Progreso', value: tasks.filter(t => t.status === 'inprogress').length, color: '#faff05' },
           { label: 'Completadas', value: tasks.filter(t => t.status === 'done').length, color: '#34d399' },
         ].map(s => (
-          <div key={s.label} className="bg-[#0a0a0a] border border-zinc-800/50 rounded-2xl p-4">
+          <div key={s.label} className="bg-[#080808] border border-zinc-800/50 rounded-2xl p-4">
             <p className="text-zinc-500 text-xs uppercase tracking-wider mb-2">{s.label}</p>
             <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
           </div>
@@ -72,14 +72,14 @@ export default function Tasks({ filters: extFilters }) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input value={search} onChange={e => setSearch(e.target.value)}
-            className="bg-[#0a0a0a] border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-48"
+            className="bg-[#080808] border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-white text-sm placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-48"
             placeholder="Buscar tarea..." />
         </div>
 
         {/* Assignee filter */}
         <div className="flex gap-1">
           <button onClick={() => setFilterAssignee('all')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterAssignee === 'all' ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a]'}`}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterAssignee === 'all' ? 'text-black' : 'text-zinc-500 bg-[#080808]'}`}
             style={filterAssignee === 'all' ? { background: '#faff05' } : {}}>
             Todos
           </button>
@@ -98,7 +98,7 @@ export default function Tasks({ filters: extFilters }) {
         <div className="flex gap-1">
           {['all', 'Alta', 'Media', 'Baja'].map(p => (
             <button key={p} onClick={() => setFilterPriority(p)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterPriority === p ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a]'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterPriority === p ? 'text-black' : 'text-zinc-500 bg-[#080808]'}`}
               style={filterPriority === p ? { background: p === 'all' ? '#faff05' : PRIORITIES[p]?.color } : {}}>
               {p === 'all' ? 'Prioridad' : p}
             </button>
@@ -109,7 +109,7 @@ export default function Tasks({ filters: extFilters }) {
         <div className="flex gap-1">
           {['all', 'todo', 'inprogress', 'done'].map(s => (
             <button key={s} onClick={() => setFilterStatus(s)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterStatus === s ? 'text-black' : 'text-zinc-500 bg-[#0a0a0a]'}`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${filterStatus === s ? 'text-black' : 'text-zinc-500 bg-[#080808]'}`}
               style={filterStatus === s ? { background: s === 'all' ? '#faff05' : STATUS_COLORS[s] } : {}}>
               {s === 'all' ? 'Estado' : STATUS_LABELS[s]}
             </button>
@@ -130,7 +130,7 @@ export default function Tasks({ filters: extFilters }) {
 
 
       {/* Task table */}
-      <div className="bg-[#0a0a0a] border border-zinc-800/50 rounded-2xl overflow-hidden">
+      <div className="bg-[#080808] border border-zinc-800/50 rounded-2xl overflow-hidden">
         <table className="w-full">
           <thead>
             <tr className="border-b border-zinc-800">
@@ -197,7 +197,7 @@ export default function Tasks({ filters: extFilters }) {
                     <select
                       value={task.status}
                       onChange={e => moveTask(task.id, e.target.value)}
-                      className="bg-[#0a0a0a] border border-zinc-800 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-[#faff05]"
+                      className="bg-[#080808] border border-zinc-800 rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-[#faff05]"
                       style={{ color: STATUS_COLORS[task.status] }}>
                       {Object.entries(STATUS_LABELS).map(([val, lbl]) => (
                         <option key={val} value={val}>{lbl}</option>
@@ -247,7 +247,7 @@ export function AddTaskInline({ onClose, defaultClientId }) {
 
   return (
     <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-[#0a0a0a] border border-zinc-800 rounded-2xl w-full max-w-md">
+      <div className="bg-[#080808] border border-zinc-800 rounded-2xl w-full max-w-md">
         <div className="flex items-center justify-between p-5 border-b border-zinc-800">
           <h2 className="text-white font-semibold">Nueva tarea</h2>
           <button onClick={onClose} className="text-zinc-600 hover:text-white">
@@ -260,27 +260,27 @@ export function AddTaskInline({ onClose, defaultClientId }) {
           <div>
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Título *</label>
             <input value={form.title} onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
-              className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
+              className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]"
               placeholder="Nombre de la tarea" required />
           </div>
           <div>
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Descripción</label>
             <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-              rows={2} className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
+              rows={2} className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
               placeholder="Detalle del alcance..." />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Cliente</label>
               <select value={form.clientId} onChange={e => setForm(p => ({ ...p, clientId: e.target.value }))}
-                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 {clients.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Prioridad</label>
               <select value={form.priority} onChange={e => setForm(p => ({ ...p, priority: e.target.value }))}
-                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 <option>Alta</option><option>Media</option><option>Baja</option>
               </select>
             </div>
@@ -289,12 +289,12 @@ export function AddTaskInline({ onClose, defaultClientId }) {
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Deadline *</label>
               <input type="date" value={form.deadline} onChange={e => setForm(p => ({ ...p, deadline: e.target.value }))}
-                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]" required />
+                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]" required />
             </div>
             <div>
               <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Estado</label>
               <select value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}
-                className="w-full bg-[#0a0a0a] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
+                className="w-full bg-[#080808] border border-zinc-800 rounded-xl px-3 py-2.5 text-white text-sm focus:outline-none focus:border-[#faff05]">
                 <option value="todo">To Do</option>
                 <option value="inprogress">En Progreso</option>
                 <option value="done">Completado</option>
