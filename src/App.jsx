@@ -24,7 +24,7 @@ export default function App() {
   };
 
   return (
-    <div className="fixed inset-0 bg-[#080808] sm:p-6 flex">
+    <div className="fixed inset-0 bg-[#080808] sm:p-[72px] flex">
       <div className="flex-1 bg-[#0f0f0f] sm:border border-zinc-800/60 sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col">
         {!user ? (
           <Login onLogin={handleLogin} />
