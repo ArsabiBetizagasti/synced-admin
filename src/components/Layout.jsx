@@ -367,7 +367,7 @@ export function AppHeader({ activeTab, setActiveTab, currentUser, onLogout }) {
 
         <div className="w-px h-5 bg-zinc-800 flex-shrink-0 mx-1" />
 
-        <nav className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-2xl p-1 border border-white/5">
+        <nav className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-full p-1 border border-white/5">
           {TABS_MAIN.map(tab => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={tabCls(tab.id)}

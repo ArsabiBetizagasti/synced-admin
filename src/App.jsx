@@ -38,8 +38,8 @@ export default function App() {
     return (
       <AppProvider>
         <div className="fixed inset-0 flex flex-col" style={BG_STYLE}>
-          {/* Header floats above the rectangle in the top margin */}
-          <div className="flex-shrink-0 flex items-center px-4 py-3 sm:px-[72px] sm:h-[72px] sm:py-0">
+          {/* Header floats above the rectangle in the top margin, nudged toward the rectangle */}
+          <div className="flex-shrink-0 flex items-end px-4 py-3 sm:px-[72px] sm:h-[72px] sm:pb-3 sm:py-0">
             <AppHeader
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -49,7 +49,8 @@ export default function App() {
           </div>
           {/* Rectangle with side + bottom margins */}
           <div className="flex-1 flex min-h-0 sm:px-[72px] sm:pb-[72px]">
-            <div className="flex-1 bg-black sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+            <div className="flex-1 bg-black sm:rounded-3xl overflow-hidden flex flex-col"
+              style={{ boxShadow: '0 0 0 6px #000, 0 25px 50px -12px rgba(0,0,0,0.8)' }}>
               <LayoutContent activeTab={activeTab} currentUser={user} />
             </div>
           </div>
