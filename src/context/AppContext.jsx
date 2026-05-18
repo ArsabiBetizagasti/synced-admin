@@ -242,6 +242,22 @@ export function AppProvider({ children }) {
     localStorage.setItem('sg_notifications', JSON.stringify(notifications));
   }, [notifications]);
 
+  // Listen for cross-user notifications (e.g. document comments from other users)
+  useEffect(() => {
+    const notifRef = ref(db, `userNotifs/${currentUser}`);
+    const unsub = onValue(notifRef, snap => {
+      if (!snap.exists()) return;
+      const fbNotifs = Object.values(snap.val());
+      setNotifications(prev => {
+        const existingIds = new Set(prev.map(n => n.id));
+        const fresh = fbNotifs.filter(n => !existingIds.has(n.id));
+        if (fresh.length === 0) return prev;
+        return [...fresh, ...prev].slice(0, 100);
+      });
+    });
+    return () => unsub();
+  }, [currentUser]);
+
   const convertAmount = useCallback((usdAmount) =>
     Math.round(usdAmount * exchangeRates[currency]), [currency, exchangeRates]);
 
@@ -295,9 +311,24 @@ export function AppProvider({ children }) {
     }));
     const client = clients.find(c => c.id === clientId);
     if (client) {
+      const doc = (client.documents || []).find(d => d.id === docId);
       const updatedDocs = (client.documents || []).map(d =>
         d.id === docId ? { ...d, notes: [...(d.notes || []), newNote] } : d);
       fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: updatedDocs }));
+      // Notify all other users
+      const TEAM = ['kann', 'jero', 'facu'];
+      const userName = user === 'kann' ? 'Kann' : user === 'jero' ? 'Jero' : 'Facu';
+      const notifId = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      TEAM.filter(u => u !== user).forEach(target => {
+        fb(set(ref(db, `userNotifs/${target}/${notifId}`), {
+          id: notifId,
+          user: 'system',
+          action: `${userName} comentó en "${doc?.name || 'un archivo'}"`,
+          location: `Documentos › ${client.name}`,
+          timestamp: new Date().toISOString(),
+          read: false,
+        }));
+      });
     }
   }, [clients]);
 
