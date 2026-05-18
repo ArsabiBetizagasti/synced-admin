@@ -1,11 +1,10 @@
-﻿import React, { useMemo } from 'react';
-import { AppProvider } from '../context/AppContext';
+import React, { useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 
 const STATUS = {
   todo:       { label: 'To Do',       color: '#71717a' },
-  inprogress: { label: 'En Progreso', color: '#faff05' },
-  done:       { label: 'Listo',        color: '#34d399' },
+  inprogress: { label: 'In Progress', color: '#faff05' },
+  done:       { label: 'Done',        color: '#34d399' },
 };
 
 const ASSIGNEES = {
@@ -44,12 +43,12 @@ function TaskCard({ task }) {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                {days < 0 ? 'Vencida' : days === 0 ? 'Hoy' : `${days} días`}
+                {days < 0 ? 'Overdue' : days === 0 ? 'Today' : `${days} days`}
               </div>
             )}
             {(task.assignees || []).length > 0 && (
               <div className="flex items-center gap-1.5 ml-auto">
-                <span className="text-zinc-600 text-xs">Trabajando:</span>
+                <span className="text-zinc-600 text-xs">Working on it:</span>
                 <div className="flex -space-x-1">
                   {(task.assignees || []).map(a => {
                     const av = ASSIGNEES[a];
@@ -71,7 +70,7 @@ function TaskCard({ task }) {
   );
 }
 
-function BrandPortalContent({ clientId, onLogout }) {
+function BrandPortalContent({ clientId }) {
   const { liveTasks, clients } = useApp();
   const client = clients.find(c => c.id === clientId);
 
@@ -89,7 +88,7 @@ function BrandPortalContent({ clientId, onLogout }) {
   if (!client) {
     return (
       <div className="flex-1 flex items-center justify-center text-zinc-500">
-        Marca no encontrada
+        Brand not found
       </div>
     );
   }
@@ -97,103 +96,75 @@ function BrandPortalContent({ clientId, onLogout }) {
   const initials = (client.name || '').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
   return (
-    <>
-      {/* Top bar — fixed at top */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-[#111] flex-shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg flex items-center justify-center font-bold text-black text-xs"
-            style={{ background: '#faff05' }}>SG</div>
-          <div>
-            <span className="text-white font-semibold text-sm">Synced</span>
-            <span className="text-sm font-light ml-1" style={{ color: '#faff05' }}>Live</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#34d399] animate-pulse" />
-          En tiempo real
-        </div>
-        <button onClick={onLogout}
-          className="text-zinc-600 hover:text-zinc-400 text-sm transition-colors flex items-center gap-1.5">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-          </svg>
-          Salir
-        </button>
-      </div>
-
+    <div className="flex-1 flex flex-col min-h-0">
       <div className="flex-1 overflow-y-auto">
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        {/* Brand header */}
-        <div className="flex items-center gap-4 mb-8">
-          <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-black"
-            style={{ background: client.color }}>
-            {initials}
+        <div className="max-w-2xl mx-auto px-6 py-10">
+          {/* Brand header */}
+          <div className="flex items-center gap-4 mb-8">
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl font-black text-black"
+              style={{ background: client.color }}>
+              {initials}
+            </div>
+            <div>
+              <h1 className="text-white font-bold text-2xl">{client.name}</h1>
+              <p className="text-zinc-500 text-sm mt-0.5">Your tasks with Synced Graphics · live</p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-white font-bold text-2xl">{client.name}</h1>
-            <p className="text-zinc-500 text-sm mt-0.5">Tus tareas con Synced Graphics · en tiempo real</p>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-3 mb-10">
+            {[
+              { label: 'Total',       value: allTasks.length,                                        color: 'white'    },
+              { label: 'In Progress', value: allTasks.filter(t => t.status === 'inprogress').length, color: '#faff05'  },
+              { label: 'Completed',   value: doneTasks.length,                                       color: '#34d399'  },
+            ].map(s => (
+              <div key={s.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4 text-center">
+                <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+                <p className="text-zinc-500 text-xs mt-1">{s.label}</p>
+              </div>
+            ))}
           </div>
+
+          {/* Active tasks */}
+          {activeTasks.length > 0 && (
+            <div className="mb-8">
+              <p className="text-zinc-500 text-xs uppercase tracking-wider mb-4">Active & Pending · {activeTasks.length}</p>
+              <div className="space-y-3">
+                {activeTasks.map(t => <TaskCard key={t.id} task={t} />)}
+              </div>
+            </div>
+          )}
+
+          {/* Done tasks */}
+          {doneTasks.length > 0 && (
+            <div className="mb-8">
+              <p className="text-zinc-500 text-xs uppercase tracking-wider mb-4">Completed · {doneTasks.length}</p>
+              <div className="space-y-3">
+                {doneTasks.map(t => <TaskCard key={t.id} task={t} />)}
+              </div>
+            </div>
+          )}
+
+          {allTasks.length === 0 && (
+            <div className="text-center py-16">
+              <div className="w-14 h-14 rounded-full bg-zinc-900 flex items-center justify-center mx-auto mb-4">
+                <svg className="w-7 h-7 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+              </div>
+              <p className="text-zinc-500 text-lg font-medium mb-1">No tasks yet</p>
+              <p className="text-zinc-600 text-sm">Your Synced Graphics team is getting to work</p>
+            </div>
+          )}
+
+          <p className="text-center text-zinc-700 text-xs mt-12">© 2026 Synced Graphics — All rights reserved.</p>
         </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 mb-10">
-          {[
-            { label: 'Total', value: allTasks.length, color: 'white' },
-            { label: 'En Progreso', value: allTasks.filter(t => t.status === 'inprogress').length, color: '#faff05' },
-            { label: 'Completadas', value: doneTasks.length, color: '#34d399' },
-          ].map(s => (
-            <div key={s.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4 text-center">
-              <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
-              <p className="text-zinc-500 text-xs mt-1">{s.label}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Active tasks */}
-        {activeTasks.length > 0 && (
-          <div className="mb-8">
-            <p className="text-zinc-500 text-xs uppercase tracking-wider mb-4">En curso y pendiente · {activeTasks.length}</p>
-            <div className="space-y-3">
-              {activeTasks.map(t => <TaskCard key={t.id} task={t} />)}
-            </div>
-          </div>
-        )}
-
-        {/* Done tasks */}
-        {doneTasks.length > 0 && (
-          <div className="mb-8">
-            <p className="text-zinc-500 text-xs uppercase tracking-wider mb-4">Completado · {doneTasks.length}</p>
-            <div className="space-y-3">
-              {doneTasks.map(t => <TaskCard key={t.id} task={t} />)}
-            </div>
-          </div>
-        )}
-
-        {allTasks.length === 0 && (
-          <div className="text-center py-16">
-            <div className="w-14 h-14 rounded-full bg-zinc-900 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-7 h-7 text-zinc-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.2}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-            <p className="text-zinc-500 text-lg font-medium mb-1">Sin tareas por ahora</p>
-            <p className="text-zinc-600 text-sm">Tu equipo de Synced Graphics está preparando el trabajo</p>
-          </div>
-        )}
-
-        <p className="text-center text-zinc-800 text-xs mt-12">© 2026 Synced Graphics · Acceso exclusivo de marca</p>
       </div>
-      </div>
-    </>
+    </div>
   );
 }
 
-export default function BrandPortal({ clientId, onLogout }) {
-  return (
-    <AppProvider>
-      <BrandPortalContent clientId={clientId} onLogout={onLogout} />
-    </AppProvider>
-  );
+export default function BrandPortal({ clientId }) {
+  return <BrandPortalContent clientId={clientId} />;
 }
