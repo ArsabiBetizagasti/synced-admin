@@ -1,8 +1,16 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { AppProvider } from './context/AppContext';
 import Login from './components/Login';
-import Layout from './components/Layout';
+import { AppHeader, LayoutContent } from './components/Layout';
 import BrandPortal from './modules/BrandPortal';
+
+const BG_STYLE = {
+  backgroundImage: [
+    'radial-gradient(circle, #141414 1px, transparent 1px)',
+    'linear-gradient(to bottom, #0c0c0c 0%, #060606 55%, #000000 100%)',
+  ].join(', '),
+  backgroundSize: '22px 22px, 100% 100%',
+};
 
 export default function App() {
   const [user, setUser] = useState(() => {
@@ -10,6 +18,7 @@ export default function App() {
     const authed = sessionStorage.getItem('sg_auth') === 'true';
     return authed && stored ? stored : null;
   });
+  const [activeTab, setActiveTab] = useState('kanban');
 
   const handleLogin = (userId) => {
     sessionStorage.setItem('sg_auth', 'true');
@@ -23,27 +32,40 @@ export default function App() {
     setUser(null);
   };
 
+  const isTeam = user && !user.startsWith('brand_');
+
+  if (isTeam) {
+    return (
+      <AppProvider>
+        <div className="fixed inset-0 flex flex-col" style={BG_STYLE}>
+          {/* Header floats above the rectangle in the top margin */}
+          <div className="flex-shrink-0 flex items-center px-4 py-3 sm:px-[72px] sm:h-[72px] sm:py-0">
+            <AppHeader
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              currentUser={user}
+              onLogout={handleLogout}
+            />
+          </div>
+          {/* Rectangle with side + bottom margins */}
+          <div className="flex-1 flex min-h-0 sm:px-[72px] sm:pb-[72px]">
+            <div className="flex-1 bg-black sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+              <LayoutContent activeTab={activeTab} currentUser={user} />
+            </div>
+          </div>
+        </div>
+      </AppProvider>
+    );
+  }
+
   return (
-    <div
-      className="fixed inset-0 sm:p-[72px] flex"
-      style={{
-        backgroundImage: [
-          'radial-gradient(circle, #141414 1px, transparent 1px)',
-          'linear-gradient(to bottom, #0c0c0c 0%, #060606 55%, #000000 100%)',
-        ].join(', '),
-        backgroundSize: '22px 22px, 100% 100%',
-      }}
-    >
+    <div className="fixed inset-0 sm:p-[72px] flex" style={BG_STYLE}>
       <div className="flex-1 bg-black sm:rounded-3xl overflow-hidden shadow-2xl flex flex-col">
         {!user ? (
           <Login onLogin={handleLogin} />
-        ) : user.startsWith('brand_') ? (
-          <AppProvider>
-            <BrandPortal clientId={user.slice(6)} onLogout={handleLogout} />
-          </AppProvider>
         ) : (
           <AppProvider>
-            <Layout onLogout={handleLogout} currentUser={user} />
+            <BrandPortal clientId={user.slice(6)} onLogout={handleLogout} />
           </AppProvider>
         )}
       </div>

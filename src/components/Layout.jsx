@@ -9,6 +9,7 @@ import CalendarModule from '../modules/Calendar';
 import LiveTasks from '../modules/LiveTasks';
 import { useApp } from '../context/AppContext';
 
+// ── REC dot icon ───────────────────────────────────────────────────────────────
 const RecDot = () => (
   <span className="relative flex items-center justify-center w-3.5 h-3.5 flex-shrink-0">
     <span className="absolute inset-0 rounded-full bg-red-500/40 animate-ping" />
@@ -16,6 +17,7 @@ const RecDot = () => (
   </span>
 );
 
+// ── Tab definitions ────────────────────────────────────────────────────────────
 const TABS_MAIN = [
   {
     id: 'kanban', label: 'Kanban',
@@ -78,32 +80,42 @@ const relativeTime = (iso) => {
   return `hace ${Math.floor(diff / 86400)} d`;
 };
 
-function NotificationBell({ onNavigate }) {
+// ── Account dropdown (includes notifications) ──────────────────────────────────
+function AccountDropdown({ currentUser, onLogout }) {
   const { notifications, markAllRead } = useApp();
   const [open, setOpen] = useState(false);
+  const [showNotifs, setShowNotifs] = useState(false);
   const ref = useRef(null);
+  const info = USER_INFO[currentUser] || { label: currentUser, initials: '?', bg: '#444', text: '#fff' };
   const unread = notifications.filter(n => !n.read).length;
 
   useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) { setOpen(false); setShowNotifs(false); } };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const handleOpen = () => {
-    setOpen(o => !o);
-    if (!open && unread > 0) markAllRead();
+  const handleMouseLeave = () => { setOpen(false); setShowNotifs(false); };
+
+  const handleNotifsClick = () => {
+    if (!showNotifs && unread > 0) markAllRead();
+    setShowNotifs(o => !o);
   };
 
   return (
-    <div className="relative" ref={ref}>
-      <button onClick={handleOpen}
-        className="relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-zinc-900 transition-colors text-zinc-500 hover:text-zinc-300">
-        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-        </svg>
+    <div className="relative" ref={ref}
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={handleMouseLeave}>
+
+      {/* Avatar — padded for a larger hover/click area */}
+      <button onClick={() => setOpen(o => !o)}
+        className="relative flex items-center justify-center p-2 rounded-2xl hover:bg-white/5 transition-colors">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+          style={{ background: info.bg, color: info.text }}>
+          {info.initials}
+        </div>
         {unread > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 rounded-full text-black text-[9px] font-bold flex items-center justify-center"
+          <span className="absolute top-0.5 right-0.5 w-4 h-4 rounded-full text-black text-[9px] font-bold flex items-center justify-center"
             style={{ background: '#faff05' }}>
             {unread > 9 ? '9+' : unread}
           </span>
@@ -111,64 +123,8 @@ function NotificationBell({ onNavigate }) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-10 w-80 bg-[#080808] border border-[#111] rounded-2xl shadow-2xl z-50 overflow-hidden">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-[#111]">
-            <span className="text-white font-semibold text-sm">Actividad reciente</span>
-            <span className="text-zinc-600 text-xs">{notifications.length} eventos</span>
-          </div>
-          <div className="max-h-80 overflow-y-auto">
-            {notifications.length === 0 ? (
-              <div className="px-4 py-6 text-center text-zinc-600 text-sm">Sin actividad aún</div>
-            ) : (
-              notifications.map(n => (
-                <div key={n.id} className="flex gap-3 px-4 py-3 border-b border-[#111] hover:bg-zinc-900/40 transition-colors cursor-default">
-                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5"
-                    style={{ background: n.user === 'kann' ? '#faff05' : '#60a5fa', color: '#000' }}>
-                    {n.user === 'kann' ? 'K' : 'J'}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-zinc-300 text-xs leading-relaxed">
-                      <span className="text-white font-medium">{n.user === 'kann' ? 'Kann' : 'Jero'}</span>{' '}
-                      {n.action}
-                      {n.location && <span className="text-zinc-500"> en {n.location}</span>}
-                    </p>
-                    <p className="text-zinc-600 text-xs mt-0.5">{relativeTime(n.timestamp)}</p>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function AccountDropdown({ currentUser, onLogout }) {
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-  const info = USER_INFO[currentUser] || { label: currentUser, initials: '?', bg: '#444', text: '#fff' };
-
-  useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
-
-  return (
-    <div className="relative" ref={ref}
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}>
-      <button onClick={() => setOpen(o => !o)}
-        className="flex items-center justify-center w-10 h-10 rounded-full hover:bg-zinc-900/60 transition-colors">
-        <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
-          style={{ background: info.bg, color: info.text }}>
-          {info.initials}
-        </div>
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full mt-1 bg-[#080808] border border-[#111] rounded-2xl shadow-2xl z-50 overflow-hidden min-w-[160px]">
+        <div className="absolute right-0 top-full mt-1 bg-[#080808] border border-[#111] rounded-2xl shadow-2xl z-50 overflow-hidden min-w-[220px]">
+          {/* Account name */}
           <div className="flex items-center gap-2.5 px-4 py-3 border-b border-[#111]">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
               style={{ background: info.bg, color: info.text }}>
@@ -176,6 +132,55 @@ function AccountDropdown({ currentUser, onLogout }) {
             </div>
             <span className="text-white text-sm font-medium">{info.label}</span>
           </div>
+
+          {/* Notificaciones toggle row */}
+          <button onClick={handleNotifsClick}
+            className="w-full flex items-center justify-between px-4 py-3 hover:bg-zinc-900/40 transition-colors border-b border-[#111]">
+            <div className="flex items-center gap-2.5">
+              <svg className="w-4 h-4 text-zinc-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+              <span className="text-zinc-300 text-sm">Notificaciones</span>
+              {unread > 0 && (
+                <span className="w-4 h-4 rounded-full text-black text-[9px] font-bold flex items-center justify-center"
+                  style={{ background: '#faff05' }}>
+                  {unread}
+                </span>
+              )}
+            </div>
+            <svg className={`w-3.5 h-3.5 text-zinc-600 transition-transform duration-200 ${showNotifs ? 'rotate-180' : ''}`}
+              fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Notifications list — shown when expanded */}
+          {showNotifs && (
+            <div className="max-h-52 overflow-y-auto border-b border-[#111]">
+              {notifications.length === 0 ? (
+                <div className="px-4 py-4 text-center text-zinc-600 text-xs">Sin actividad aún</div>
+              ) : (
+                notifications.slice(0, 8).map(n => (
+                  <div key={n.id} className="flex gap-2.5 px-4 py-2.5 border-b border-[#111]/50 last:border-0 hover:bg-zinc-900/30 transition-colors">
+                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
+                      style={{ background: n.user === 'kann' ? '#faff05' : '#60a5fa', color: '#000' }}>
+                      {n.user === 'kann' ? 'K' : 'J'}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-zinc-400 text-xs leading-relaxed">
+                        <span className="text-white font-medium">{n.user === 'kann' ? 'Kann' : 'Jero'}</span>{' '}
+                        {n.action}
+                        {n.location && <span className="text-zinc-600"> en {n.location}</span>}
+                      </p>
+                      <p className="text-zinc-700 text-[10px] mt-0.5">{relativeTime(n.timestamp)}</p>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {/* Salir */}
           <button onClick={onLogout}
             className="w-full flex items-center gap-2 px-4 py-3 text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors text-sm">
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -189,6 +194,7 @@ function AccountDropdown({ currentUser, onLogout }) {
   );
 }
 
+// ── Kanban section (with inline filter bar) ────────────────────────────────────
 const KB_ASSIGNEES = {
   kann: { label: 'Kann', initials: 'K', bg: '#faff05', text: '#000' },
   jero: { label: 'Jero', initials: 'J', bg: '#60a5fa', text: '#000' },
@@ -227,22 +233,19 @@ function KanbanSection() {
       {/* Filter bar */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          {/* Search */}
           <div className="relative">
             <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
             <input value={search} onChange={e => setSearch(e.target.value)}
-              className="bg-black border border-[#111] rounded-2xl pl-8 pr-3 py-1.5 text-white text-xs placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-36 transition-colors"
+              className="bg-black border border-[#111] rounded-full pl-8 pr-3 py-1.5 text-white text-xs placeholder-zinc-600 focus:outline-none focus:border-[#faff05] w-36 transition-colors"
               placeholder="Buscar tarea..." />
           </div>
 
-          {/* Filtros dropdown */}
           <div ref={filterWrapRef} className="relative"
             onMouseEnter={() => setShowFilters(true)}
             onMouseLeave={() => setShowFilters(false)}>
-            <button
-              onClick={() => setShowFilters(o => !o)}
+            <button onClick={() => setShowFilters(o => !o)}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all border ${
                 activeCount > 0
                   ? 'bg-[#faff05] text-black border-[#faff05]'
@@ -342,14 +345,67 @@ function KanbanSection() {
   );
 }
 
-export default function Layout({ onLogout, currentUser }) {
-  const [activeTab, setActiveTab] = useState('kanban');
+// ── Header (exported for App.jsx to render outside the rectangle) ──────────────
+export function AppHeader({ activeTab, setActiveTab, currentUser, onLogout }) {
   const canSeeRestricted = currentUser !== 'facu';
 
+  const tabCls = (id) =>
+    `flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+      activeTab === id ? 'text-black' : 'text-zinc-400 hover:text-white'
+    }`;
+
+  return (
+    <div className="flex items-center w-full gap-2">
+      {/* Left: Live Tasks + separator + main tabs */}
+      <div className="flex items-center gap-2">
+        <button onClick={() => setActiveTab(TAB_LIVE.id)}
+          className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeTab === TAB_LIVE.id ? 'text-black' : 'text-zinc-400 hover:text-white'}`}
+          style={activeTab === TAB_LIVE.id ? { background: '#faff05' } : {}}>
+          <RecDot />
+          {TAB_LIVE.label}
+        </button>
+
+        <div className="w-px h-5 bg-zinc-800 flex-shrink-0 mx-1" />
+
+        <nav className="flex items-center gap-1 bg-black/40 backdrop-blur-sm rounded-2xl p-1 border border-white/5">
+          {TABS_MAIN.map(tab => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+              className={tabCls(tab.id)}
+              style={activeTab === tab.id ? { background: '#faff05' } : {}}>
+              {tab.icon}
+              {tab.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+
+      {/* Right: Clientes + Finanzas + account */}
+      <div className="ml-auto flex items-center gap-1">
+        {canSeeRestricted && (
+          <>
+            {TABS_RESTRICTED.map(tab => (
+              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                className={tabCls(tab.id)}
+                style={activeTab === tab.id ? { background: '#faff05' } : {}}>
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
+            <div className="w-px h-5 bg-zinc-800 mx-2 flex-shrink-0" />
+          </>
+        )}
+        <AccountDropdown currentUser={currentUser} onLogout={onLogout} />
+      </div>
+    </div>
+  );
+}
+
+// ── Content area (rendered inside the rectangle) ───────────────────────────────
+export function LayoutContent({ activeTab, currentUser }) {
   const renderModule = () => {
     switch (activeTab) {
       case 'kanban': return <KanbanSection />;
-      case 'clientes': return <ClientesDashboard onNavigate={setActiveTab} />;
+      case 'clientes': return <ClientesDashboard />;
       case 'finanzas': return <FinanzasPortal />;
       case 'documentos': return <Documentos />;
       case 'calendar': return <CalendarModule />;
@@ -358,63 +414,20 @@ export default function Layout({ onLogout, currentUser }) {
     }
   };
 
-  const tabCls = (id) =>
-    `flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-      activeTab === id ? 'text-black' : 'text-zinc-500 hover:text-zinc-300'
-    }`;
+  return (
+    <div className="flex-1 overflow-y-auto p-6">
+      {renderModule()}
+    </div>
+  );
+}
 
+// ── Default export kept for backwards compatibility ────────────────────────────
+export default function Layout({ onLogout, currentUser }) {
+  const [activeTab, setActiveTab] = useState('kanban');
   return (
     <>
-      {/* Top bar */}
-      <div className="flex items-center px-4 py-2 border-b border-[#111] flex-shrink-0 bg-black z-40">
-
-        {/* Left group: Live Tasks + separator + main tabs */}
-        <div className="flex items-center gap-2">
-          <button onClick={() => setActiveTab(TAB_LIVE.id)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeTab === TAB_LIVE.id ? 'text-black' : 'text-zinc-500 hover:text-zinc-300'}`}
-            style={activeTab === TAB_LIVE.id ? { background: '#faff05' } : {}}>
-            <RecDot />
-            {TAB_LIVE.label}
-          </button>
-
-          <div className="w-px h-5 bg-zinc-800 flex-shrink-0 mx-1" />
-
-          <nav className="flex items-center gap-1 bg-[#080808] rounded-2xl p-1">
-            {TABS_MAIN.map(tab => (
-              <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                className={tabCls(tab.id)}
-                style={activeTab === tab.id ? { background: '#faff05' } : {}}>
-                {tab.icon}
-                {tab.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-
-        {/* Right group: Clientes + Finanzas + account */}
-        <div className="ml-auto flex items-center gap-1">
-          {canSeeRestricted && (
-            <>
-              {TABS_RESTRICTED.map(tab => (
-                <button key={tab.id} onClick={() => setActiveTab(tab.id)}
-                  className={tabCls(tab.id)}
-                  style={activeTab === tab.id ? { background: '#faff05' } : {}}>
-                  {tab.icon}
-                  {tab.label}
-                </button>
-              ))}
-              <div className="w-px h-5 bg-zinc-800 mx-2 flex-shrink-0" />
-            </>
-          )}
-          <NotificationBell onNavigate={setActiveTab} />
-          <AccountDropdown currentUser={currentUser} onLogout={onLogout} />
-        </div>
-      </div>
-
-      {/* Module content */}
-      <div className="flex-1 overflow-y-auto p-6">
-        {renderModule()}
-      </div>
+      <AppHeader activeTab={activeTab} setActiveTab={setActiveTab} currentUser={currentUser} onLogout={onLogout} />
+      <LayoutContent activeTab={activeTab} currentUser={currentUser} />
     </>
   );
 }

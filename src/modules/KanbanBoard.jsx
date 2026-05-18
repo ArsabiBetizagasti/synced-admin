@@ -41,8 +41,8 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
         <p className="text-white font-semibold mb-1">¿Confirmar eliminación?</p>
         <p className="text-zinc-400 text-sm mb-6">{message}</p>
         <div className="flex gap-3">
-          <button onClick={onCancel} className="flex-1 py-2.5 rounded-xl text-sm font-medium text-zinc-400 bg-zinc-800 hover:text-white transition-colors">Cancelar</button>
-          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-red-500 hover:bg-red-400 transition-colors">Eliminar</button>
+          <button onClick={onCancel} className="flex-1 py-2.5 rounded-full text-sm font-medium text-zinc-400 bg-zinc-800 hover:text-white transition-colors">Cancelar</button>
+          <button onClick={onConfirm} className="flex-1 py-2.5 rounded-full text-sm font-semibold text-white bg-red-500 hover:bg-red-400 transition-colors">Eliminar</button>
         </div>
       </div>
     </div>
@@ -429,7 +429,7 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
             <div className="flex gap-3">
               {Object.entries(ASSIGNEES).map(([key, a]) => (
                 <button key={key} type="button" onClick={() => toggleAssignee(key)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-medium transition-all ${
                     form.assignees.includes(key) ? 'border-[#faff05]' : 'border-[#111] text-zinc-500'
                   }`}>
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
@@ -443,7 +443,7 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
           </div>
 
           <button type="submit"
-            className="w-full py-2.5 rounded-xl text-sm font-semibold text-black"
+            className="w-full py-2.5 rounded-full text-sm font-semibold text-black"
             style={{ background: '#faff05' }}>
             {isEdit ? 'Guardar cambios' : 'Crear tarea'}
           </button>
@@ -490,7 +490,7 @@ export default function KanbanBoard({ filters: extFilters }) {
         <h2 className="text-white font-semibold text-lg">Kanban Board</h2>
         {!extFilters && (
           <button onClick={() => { setAddToColumn('todo'); setShowAdd(true); }}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-black"
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-black"
             style={{ background: '#faff05' }}>
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

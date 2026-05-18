@@ -217,7 +217,7 @@ export default function Tasks({ filters: extFilters, hideStats }) {
                     <select
                       value={task.status}
                       onChange={e => moveTask(task.id, e.target.value)}
-                      className="bg-[#080808] border border-[#111] rounded-lg px-2 py-1 text-xs focus:outline-none focus:border-[#faff05]"
+                      className="bg-[#080808] border border-[#111] rounded-full px-2 py-1 text-xs focus:outline-none focus:border-[#faff05]"
                       style={{ color: STATUS_COLORS[task.status] }}>
                       {Object.entries(STATUS_LABELS).map(([val, lbl]) => (
                         <option key={val} value={val}>{lbl}</option>
@@ -326,7 +326,7 @@ export function AddTaskInline({ onClose, defaultClientId }) {
             <div className="flex gap-3">
               {Object.entries(ASSIGNEES).map(([key, a]) => (
                 <button key={key} type="button" onClick={() => toggleAssignee(key)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm font-medium transition-all ${form.assignees.includes(key) ? 'border-[#faff05]' : 'border-[#111] text-zinc-500'}`}>
+                  className={`flex items-center gap-2 px-3 py-2 rounded-full border text-sm font-medium transition-all ${form.assignees.includes(key) ? 'border-[#faff05]' : 'border-[#111] text-zinc-500'}`}>
                   <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
                     style={{ background: a.bg, color: a.text }}>{a.initials}</div>
                   {a.label}
@@ -334,7 +334,7 @@ export function AddTaskInline({ onClose, defaultClientId }) {
               ))}
             </div>
           </div>
-          <button type="submit" className="w-full py-2.5 rounded-xl text-sm font-semibold text-black"
+          <button type="submit" className="w-full py-2.5 rounded-full text-sm font-semibold text-black"
             style={{ background: '#faff05' }}>
             Crear tarea
           </button>
