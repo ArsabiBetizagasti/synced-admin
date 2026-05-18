@@ -6,8 +6,8 @@ import BrandPortal from './modules/BrandPortal';
 
 const BG_STYLE = {
   backgroundImage: [
-    'radial-gradient(circle, #1c1c1c 1px, transparent 1px)',
-    'linear-gradient(to bottom, #141414 0%, #0c0c0c 55%, #060606 100%)',
+    'radial-gradient(circle, #222 1px, transparent 1px)',
+    'linear-gradient(to bottom, #1a1a1a 0%, #111 55%, #080808 100%)',
   ].join(', '),
   backgroundSize: '22px 22px, 100% 100%',
 };

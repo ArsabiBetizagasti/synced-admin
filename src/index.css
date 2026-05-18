@@ -14,8 +14,8 @@ body {
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+::-webkit-scrollbar-thumb { background: #000; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #111; }
 
 .drag-over { border-color: #faff05 !important; background: rgba(250,255,5,0.04) !important; }
 
