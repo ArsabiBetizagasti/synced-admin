@@ -1,5 +1,11 @@
 ﻿import React, { useState, useRef } from 'react';
 import { useApp } from '../context/AppContext';
+import RichTextEditor from '../components/RichTextEditor';
+
+const stripHtml = (html) => {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+};
 
 const ASSIGNEES = {
   kann: { label: 'Kann', initials: 'K', bg: '#faff05', text: '#000' },
@@ -159,7 +165,7 @@ function TaskCard({ task, onMove, onEdit, onDelete }) {
         {/* Title */}
         <h4 className="text-white text-sm font-medium mb-1 leading-snug">{task.title}</h4>
         {task.description && (
-          <p className="text-zinc-500 text-xs mb-2 leading-relaxed line-clamp-2">{task.description}</p>
+          <p className="text-zinc-500 text-xs mb-2 leading-relaxed line-clamp-2">{stripHtml(task.description)}</p>
         )}
 
         {/* Platform tags */}
@@ -326,10 +332,10 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
           {/* Description */}
           <div>
             <label className="text-zinc-500 text-xs uppercase tracking-wider mb-1.5 block">Descripción</label>
-            <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
-              rows={2}
-              className="w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none"
-              placeholder="Detalla el alcance de la tarea..." />
+            <RichTextEditor
+              value={form.description}
+              onChange={html => setForm(p => ({ ...p, description: html }))}
+            />
           </div>
 
           {/* Client + Priority */}

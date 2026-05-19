@@ -29,3 +29,28 @@ body {
   90%       { transform: translateX(3px); }
 }
 .pin-shake { animation: shake 0.45s ease; }
+
+/* ─── Rich text editor (Tiptap) ─────────────────────────────────────────── */
+.rich-editor:focus { outline: none; }
+.rich-editor .tiptap { outline: none; min-height: 100px; }
+.rich-editor .tiptap p { margin: 0 0 0.5em; line-height: 1.6; color: #e4e4e7; }
+.rich-editor .tiptap p:last-child { margin-bottom: 0; }
+.rich-editor .tiptap h2 { font-size: 1rem; font-weight: 700; color: #fff; margin: 0.75em 0 0.35em; }
+.rich-editor .tiptap h3 { font-size: 0.875rem; font-weight: 600; color: #e4e4e7; margin: 0.6em 0 0.3em; }
+.rich-editor .tiptap strong { font-weight: 700; color: #fff; }
+.rich-editor .tiptap em { font-style: italic; color: #d4d4d8; }
+.rich-editor .tiptap u { text-decoration: underline; }
+.rich-editor .tiptap s { text-decoration: line-through; color: #71717a; }
+.rich-editor .tiptap ul { list-style: disc; padding-left: 1.25rem; margin: 0.4em 0; color: #d4d4d8; }
+.rich-editor .tiptap ol { list-style: decimal; padding-left: 1.25rem; margin: 0.4em 0; color: #d4d4d8; }
+.rich-editor .tiptap li { margin: 0.15em 0; line-height: 1.5; }
+.rich-editor .tiptap blockquote { border-left: 3px solid #faff05; padding-left: 0.75rem; margin: 0.5em 0; color: #a1a1aa; font-style: italic; }
+.rich-editor .tiptap a { color: #60a5fa; text-decoration: underline; }
+.rich-editor .tiptap img { max-width: 100%; border-radius: 10px; margin: 0.5em 0; display: block; }
+.rich-editor .tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  color: #3f3f46;
+  pointer-events: none;
+  float: left;
+  height: 0;
+}
