@@ -335,9 +335,9 @@ function KanbanSection() {
         </div>
       </div>
 
-      <Tasks filters={filters} hideStats />
+      <KanbanBoard filters={filters} />
 
-      <div className="border-t border-[#111] pt-8"><KanbanBoard filters={filters} /></div>
+      <div className="border-t border-[#111] pt-8"><Tasks filters={filters} hideStats /></div>
       <div className="border-t border-[#111] pt-8"><IdeaBank /></div>
 
       {showAdd && <AddTaskInline onClose={() => setShowAdd(false)} />}

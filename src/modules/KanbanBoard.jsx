@@ -32,6 +32,11 @@ const PLATFORMS = [
   { id: 'youtube',   label: 'YouTube',    color: '#ef4444', bg: '#ef444418' },
   { id: 'google',    label: 'Google Ads', color: '#e4e4e7', bg: '#e4e4e712' },
   { id: 'linkedin',  label: 'LinkedIn',   color: '#67e8f9', bg: '#67e8f918' },
+  { id: 'amazon',    label: 'Amazon',     color: '#facc15', bg: '#facc1518' },
+  { id: 'web',       label: 'Web',        color: '#f0f0f0', bg: '#f0f0f012' },
+  { id: 'instagram', label: 'Instagram',  color: '#e1306c', bg: '#e1306c18' },
+  { id: 'facebook',  label: 'Facebook',   color: '#60a5fa', bg: '#60a5fa18' },
+  { id: 'shopify',   label: 'Shopify',    color: '#96bf48', bg: '#96bf4818' },
 ];
 
 // ── Confirm dialog ─────────────────────────────────────────────────────────────
@@ -80,7 +85,7 @@ function Lightbox({ img, onClose }) {
 }
 
 // ── Task card ──────────────────────────────────────────────────────────────────
-function TaskCard({ task, onMove, onEdit, onDelete }) {
+function TaskCard({ task, onMove, onEdit, onDelete, onDuplicate }) {
   const { clients } = useApp();
   const client = clients.find(c => c.id === task.clientId);
   const priority = PRIORITIES[task.priority] || PRIORITIES['Media'];
@@ -113,7 +118,7 @@ function TaskCard({ task, onMove, onEdit, onDelete }) {
         className="relative bg-[#080808] border border-[#111] rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-[#1a1a1a] transition-all group"
         style={{ borderLeft: `3px solid ${client?.color || '#333'}` }}
       >
-        {/* Top-right: edit + delete */}
+        {/* Top-right: edit + duplicate + delete */}
         <div className="absolute top-2.5 right-2.5 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
           <button
             onClick={(e) => { e.stopPropagation(); onEdit(task); }}
@@ -121,6 +126,14 @@ function TaskCard({ task, onMove, onEdit, onDelete }) {
             className="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
             <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+          </button>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDuplicate(task); }}
+            title="Duplicar"
+            className="w-6 h-6 rounded-lg bg-zinc-800 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors">
+            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
             </svg>
           </button>
           <button
@@ -246,7 +259,7 @@ function TaskCard({ task, onMove, onEdit, onDelete }) {
 }
 
 // ── Task modal ─────────────────────────────────────────────────────────────────
-function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
+export function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
   const { addTask, updateTask, clients } = useApp();
   const isEdit = !!task;
   const fileRef = useRef(null);
@@ -461,13 +474,18 @@ function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
 
 // ── Main board ─────────────────────────────────────────────────────────────────
 export default function KanbanBoard({ filters: extFilters }) {
-  const { tasks, moveTask, deleteTask, clients } = useApp();
+  const { tasks, moveTask, deleteTask, addTask, clients } = useApp();
   const [showAdd, setShowAdd] = useState(false);
   const [addToColumn, setAddToColumn] = useState('todo');
   const [editTask, setEditTask] = useState(null);
   const [dragOver, setDragOver] = useState(null);
   const [filterClient, setFilterClient] = useState('all');
   const [confirmDelete, setConfirmDelete] = useState(null);
+
+  const handleDuplicate = (task) => {
+    const { id, ...rest } = task;
+    addTask({ ...rest, title: task.title + ' (copy)' });
+  };
 
   const handleDrop = (e, colId) => {
     e.preventDefault();
@@ -563,6 +581,7 @@ export default function KanbanBoard({ filters: extFilters }) {
                     onMove={moveTask}
                     onEdit={setEditTask}
                     onDelete={(t) => setConfirmDelete(t)}
+                    onDuplicate={handleDuplicate}
                   />
                 ))}
                 {colTasks.length === 0 && (
