@@ -394,6 +394,15 @@ export function AppProvider({ children }) {
     if (proj) pushNotif(`eliminó proyecto "${proj.clientName}"`, 'Finanzas', TEAM_FINANCE);
   };
 
+  const reorderTask = (id, updates) => {
+    const task = tasks.find(t => t.id === id);
+    setTasks(p => p.map(t => t.id === id ? { ...t, ...updates } : t));
+    fb(fbUpdate(ref(db, `tasks/${id}`), updates));
+    if (task && updates.status && updates.status !== task.status) {
+      pushNotif(`movió "${task.title}" → ${STATUS_NAMES[updates.status] || updates.status}`, 'Kanban');
+    }
+  };
+
   const addTask = (data) => {
     const id = Date.now().toString();
     const task = { ...data, id, status: data.status || 'todo' };
@@ -526,7 +535,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       clients, tasks, finances,
       addClient, updateClient, deleteClient,
-      addTask, updateTask, moveTask, deleteTask,
+      addTask, updateTask, moveTask, deleteTask, reorderTask,
       addFinanceEntry, deleteFinanceEntry,
       getClientExpenses, getClientRevenue,
       currency, setCurrency, exchangeRates, ratesUpdatedAt,

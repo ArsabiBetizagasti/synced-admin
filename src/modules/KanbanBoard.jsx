@@ -1,6 +1,9 @@
-﻿import React, { useState, useRef } from 'react';
+﻿import React, { useState, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import RichTextEditor from '../components/RichTextEditor';
+
+const getSortIndex = (task) =>
+  task.sortIndex !== undefined ? task.sortIndex : parseInt(task.id) || 0;
 
 const stripHtml = (html) => {
   if (!html) return '';
@@ -85,7 +88,7 @@ function Lightbox({ img, onClose }) {
 }
 
 // ── Task card ──────────────────────────────────────────────────────────────────
-function TaskCard({ task, onMove, onEdit, onDelete, onDuplicate }) {
+function TaskCard({ task, onMove, onEdit, onDelete, onDuplicate, onDropOnCard, onDragOverCard, onDragLeaveCard, cardDropTarget }) {
   const { clients } = useApp();
   const client = clients.find(c => c.id === task.clientId);
   const priority = PRIORITIES[task.priority] || PRIORITIES['Media'];
@@ -99,6 +102,21 @@ function TaskCard({ task, onMove, onEdit, onDelete, onDuplicate }) {
     e.dataTransfer.effectAllowed = 'move';
   };
 
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pos = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+    onDragOverCard && onDragOverCard(task.id, pos);
+  };
+
+  const handleCardDrop = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const pos = e.clientY < rect.top + rect.height / 2 ? 'before' : 'after';
+    onDropOnCard && onDropOnCard(e, task.id, pos);
+  };
+
   const days = task.deadline
     ? Math.ceil((new Date(task.deadline) - new Date()) / 86400000)
     : null;
@@ -109,12 +127,21 @@ function TaskCard({ task, onMove, onEdit, onDelete, onDuplicate }) {
 
   const images = task.images || [];
 
+  const showBefore = cardDropTarget?.position === 'before';
+  const showAfter = cardDropTarget?.position === 'after';
+
   return (
     <>
+      <div className="relative">
+        {showBefore && <div className="absolute -top-1 left-0 right-0 h-0.5 bg-[#faff05] rounded-full z-20 pointer-events-none" />}
+        {showAfter && <div className="absolute -bottom-1 left-0 right-0 h-0.5 bg-[#faff05] rounded-full z-20 pointer-events-none" />}
       <div
         ref={dragRef}
         draggable
         onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
+        onDragLeave={() => onDragLeaveCard && onDragLeaveCard()}
+        onDrop={handleCardDrop}
         className="relative bg-[#080808] border border-[#111] rounded-xl p-3.5 cursor-grab active:cursor-grabbing hover:border-[#1a1a1a] transition-all group"
         style={{ borderLeft: `3px solid ${client?.color || '#333'}` }}
       >
@@ -182,13 +209,19 @@ function TaskCard({ task, onMove, onEdit, onDelete, onDuplicate }) {
         )}
 
         {/* Platform tags */}
-        {platforms.length > 0 && (
+        {(platforms.length > 0 || (task.customPlatforms || []).length > 0) && (
           <div className="flex flex-wrap gap-1 mb-2">
             {platforms.map(p => (
               <span key={p.id}
                 className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide"
                 style={{ background: p.bg, color: p.color }}>
                 {p.label}
+              </span>
+            ))}
+            {(task.customPlatforms || []).map(cp => (
+              <span key={cp}
+                className="text-[9px] px-1.5 py-0.5 rounded-full font-semibold uppercase tracking-wide bg-zinc-700/60 text-zinc-300">
+                {cp}
               </span>
             ))}
           </div>
@@ -251,6 +284,7 @@ function TaskCard({ task, onMove, onEdit, onDelete, onDuplicate }) {
         )}
 
       </div>
+      </div>
 
       {/* Lightbox — fixed overlay, rendered outside the card in DOM but still inside the component */}
       {lightbox && <Lightbox img={lightbox} onClose={() => setLightbox(null)} />}
@@ -265,16 +299,33 @@ export function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
   const fileRef = useRef(null);
 
   const [form, setForm] = useState({
-    title:       task?.title || '',
-    description: task?.description || '',
-    clientId:    task?.clientId || clients[0]?.id || '',
-    priority:    task?.priority || 'Media',
-    deadline:    task?.deadline || '',
-    assignees:   task?.assignees || [],
-    status:      task?.status || defaultStatus,
-    platforms:   task?.platforms || [],
-    images:      task?.images || [],
+    title:           task?.title || '',
+    description:     task?.description || '',
+    clientId:        task?.clientId || clients[0]?.id || '',
+    priority:        task?.priority || 'Media',
+    deadline:        task?.deadline || '',
+    assignees:       task?.assignees || [],
+    status:          task?.status || defaultStatus,
+    platforms:       task?.platforms || [],
+    customPlatforms: task?.customPlatforms || [],
+    images:          task?.images || [],
   });
+
+  const [customPlatInput, setCustomPlatInput] = useState('');
+  const [showCustomPlat, setShowCustomPlat] = useState(false);
+
+  const addCustomPlatform = () => {
+    const val = customPlatInput.trim();
+    if (!val) { setShowCustomPlat(false); return; }
+    if (!form.customPlatforms.includes(val)) {
+      setForm(p => ({ ...p, customPlatforms: [...p.customPlatforms, val] }));
+    }
+    setCustomPlatInput('');
+    setShowCustomPlat(false);
+  };
+
+  const removeCustomPlatform = (val) =>
+    setForm(p => ({ ...p, customPlatforms: p.customPlatforms.filter(x => x !== val) }));
 
   const toggleAssignee = (a) => {
     setForm(p => ({
@@ -403,6 +454,36 @@ export function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
                   </button>
                 );
               })}
+              {/* Custom platforms */}
+              {form.customPlatforms.map(cp => (
+                <div key={cp} className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-xs font-semibold bg-zinc-700/50 text-zinc-300 border border-zinc-600">
+                  {cp}
+                  <button type="button" onClick={() => removeCustomPlatform(cp)}
+                    className="text-zinc-500 hover:text-white transition-colors ml-0.5">×</button>
+                </div>
+              ))}
+              {/* Otro button / input */}
+              {showCustomPlat ? (
+                <div className="flex items-center gap-1">
+                  <input
+                    autoFocus
+                    value={customPlatInput}
+                    onChange={e => setCustomPlatInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addCustomPlatform(); } if (e.key === 'Escape') { setShowCustomPlat(false); setCustomPlatInput(''); } }}
+                    placeholder="Nombre..."
+                    className="bg-[#080808] border border-[#faff05] rounded-full px-2.5 py-1 text-xs text-white placeholder-zinc-600 focus:outline-none w-24"
+                  />
+                  <button type="button" onClick={addCustomPlatform}
+                    className="px-2 py-1 rounded-full text-xs font-semibold text-black"
+                    style={{ background: '#faff05' }}>+</button>
+                </div>
+              ) : (
+                <button type="button" onClick={() => setShowCustomPlat(true)}
+                  className="px-2.5 py-1.5 rounded-full text-xs font-semibold transition-all border border-dashed"
+                  style={{ background: 'transparent', color: '#52525b', borderColor: '#27272a' }}>
+                  + Otro
+                </button>
+              )}
             </div>
           </div>
 
@@ -474,24 +555,63 @@ export function TaskModal({ onClose, defaultStatus = 'todo', task = null }) {
 
 // ── Main board ─────────────────────────────────────────────────────────────────
 export default function KanbanBoard({ filters: extFilters }) {
-  const { tasks, moveTask, deleteTask, addTask, clients } = useApp();
+  const { tasks, moveTask, deleteTask, addTask, clients, reorderTask } = useApp();
   const [showAdd, setShowAdd] = useState(false);
   const [addToColumn, setAddToColumn] = useState('todo');
   const [editTask, setEditTask] = useState(null);
   const [dragOver, setDragOver] = useState(null);
   const [filterClient, setFilterClient] = useState('all');
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [dropTarget, setDropTarget] = useState(null); // { taskId, position: 'before'|'after' }
 
   const handleDuplicate = (task) => {
     const { id, ...rest } = task;
     addTask({ ...rest, title: task.title + ' (copy)' });
   };
 
+  const handleDropOnCard = (e, targetTaskId, position) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const draggedId = e.dataTransfer.getData('taskId');
+    if (!draggedId || draggedId === targetTaskId) { setDropTarget(null); return; }
+    const draggedTask = tasks.find(t => t.id === draggedId);
+    const targetTask = tasks.find(t => t.id === targetTaskId);
+    if (!draggedTask || !targetTask) { setDropTarget(null); return; }
+    const colId = targetTask.status;
+    const colTasks = tasks.filter(t => t.status === colId).sort((a, b) => getSortIndex(a) - getSortIndex(b));
+    const withoutDragged = colTasks.filter(t => t.id !== draggedId);
+    const targetIdx = withoutDragged.findIndex(t => t.id === targetTaskId);
+    const insertIdx = position === 'before' ? targetIdx : targetIdx + 1;
+    const before = withoutDragged[insertIdx - 1];
+    const after = withoutDragged[insertIdx];
+    let newSortIndex;
+    if (!before && !after) newSortIndex = getSortIndex(targetTask);
+    else if (!before) newSortIndex = getSortIndex(after) - 1000;
+    else if (!after) newSortIndex = getSortIndex(before) + 1000;
+    else newSortIndex = (getSortIndex(before) + getSortIndex(after)) / 2;
+    const updates = { sortIndex: newSortIndex };
+    if (draggedTask.status !== colId) updates.status = colId;
+    reorderTask(draggedId, updates);
+    setDropTarget(null);
+    setDragOver(null);
+  };
+
   const handleDrop = (e, colId) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('taskId');
-    if (taskId) moveTask(taskId, colId);
+    if (taskId) {
+      const draggedTask = tasks.find(t => t.id === taskId);
+      if (draggedTask) {
+        const colTasks = tasks.filter(t => t.status === colId).sort((a, b) => getSortIndex(a) - getSortIndex(b));
+        const last = colTasks[colTasks.length - 1];
+        const newSortIndex = last ? getSortIndex(last) + 1000 : Date.now();
+        const updates = { sortIndex: newSortIndex };
+        if (draggedTask.status !== colId) updates.status = colId;
+        reorderTask(taskId, updates);
+      }
+    }
     setDragOver(null);
+    setDropTarget(null);
   };
 
   const f = extFilters || { filterClient, filterAssignee: 'all', filterPriority: 'all', filterStatus: 'all', search: '' };
@@ -502,7 +622,7 @@ export default function KanbanBoard({ filters: extFilters }) {
     if (f.search && !t.title.toLowerCase().includes(f.search.toLowerCase())) return false;
     return true;
   });
-  const columnTasks = (colId) => filteredTasks.filter(t => t.status === colId);
+  const columnTasks = (colId) => filteredTasks.filter(t => t.status === colId).sort((a, b) => getSortIndex(a) - getSortIndex(b));
   const clientsWithTasks = clients.filter(c => tasks.some(t => t.clientId === c.id));
 
   const colHeaderColor = { todo: '#71717a', inprogress: '#faff05', done: '#34d399' };
@@ -582,6 +702,10 @@ export default function KanbanBoard({ filters: extFilters }) {
                     onEdit={setEditTask}
                     onDelete={(t) => setConfirmDelete(t)}
                     onDuplicate={handleDuplicate}
+                    onDropOnCard={handleDropOnCard}
+                    onDragOverCard={(taskId, pos) => setDropTarget({ taskId, position: pos })}
+                    onDragLeaveCard={() => setDropTarget(null)}
+                    cardDropTarget={dropTarget?.taskId === task.id ? dropTarget : null}
                   />
                 ))}
                 {colTasks.length === 0 && (
