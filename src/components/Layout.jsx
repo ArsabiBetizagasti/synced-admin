@@ -201,6 +201,124 @@ const KB_ASSIGNEES = {
   facu: { label: 'Facu', initials: 'F', bg: '#a78bfa', text: '#000' },
 };
 const KB_PRIORITIES = { Alta: '#f87171', Media: '#fbbf24', Baja: '#34d399' };
+const KB_STATUS_COLORS = { todo: '#71717a', inprogress: '#faff05', done: '#34d399' };
+const KB_STATUS_LABELS = { todo: 'To Do', inprogress: 'In Progress', done: 'Done' };
+
+function TodayModal({ onClose }) {
+  const { tasks, clients, currentUser } = useApp();
+
+  const daysLeft = (deadline) => {
+    if (!deadline) return null;
+    return Math.ceil((new Date(deadline + 'T00:00:00') - new Date()) / 86400000);
+  };
+
+  const byDeadline = (a, b) => {
+    if (!a.deadline && !b.deadline) return 0;
+    if (!a.deadline) return 1;
+    if (!b.deadline) return -1;
+    return new Date(a.deadline) - new Date(b.deadline);
+  };
+
+  const active = tasks.filter(t => t.status !== 'done');
+  const done = tasks.filter(t => t.status === 'done');
+  const mine = active.filter(t => (t.assignees || []).includes(currentUser)).sort(byDeadline);
+  const others = active.filter(t => !(t.assignees || []).includes(currentUser)).sort(byDeadline);
+  const allSorted = [...mine, ...others, ...done.sort(byDeadline)];
+
+  const renderRow = (task, isMine) => {
+    const client = clients.find(c => c.id === task.clientId);
+    const days = daysLeft(task.deadline);
+    const isDone = task.status === 'done';
+    return (
+      <div key={task.id}
+        className={`flex items-center gap-3 px-4 py-3 border-b border-[#111] last:border-0 ${isDone ? 'opacity-40' : 'hover:bg-white/[0.02]'} transition-colors`}>
+        <div className="w-1 self-stretch rounded-full flex-shrink-0 min-h-[32px]"
+          style={{ background: client?.color || '#333' }} />
+        <div className="flex-1 min-w-0">
+          <p className={`text-sm font-medium leading-tight ${isDone ? 'line-through text-zinc-500' : 'text-white'}`}>{task.title}</p>
+          {client && <p className="text-zinc-600 text-xs mt-0.5">{client.name}</p>}
+        </div>
+        {task.deadline && (
+          <span className={`text-xs font-medium flex-shrink-0 px-2 py-0.5 rounded-full ${
+            isDone ? 'text-zinc-600' :
+            days < 0 ? 'bg-red-500/20 text-red-400' :
+            days === 0 ? 'bg-orange-500/20 text-orange-400' :
+            days <= 3 ? 'bg-yellow-500/20 text-yellow-400' : 'text-zinc-500'
+          }`}>
+            {days === null ? '' : days < 0 ? `${Math.abs(days)}d late` : days === 0 ? 'Today' : `${days}d`}
+          </span>
+        )}
+        <span className="text-[10px] px-2 py-0.5 rounded-full font-medium flex-shrink-0"
+          style={{ background: KB_STATUS_COLORS[task.status] + '22', color: KB_STATUS_COLORS[task.status] }}>
+          {KB_STATUS_LABELS[task.status]}
+        </span>
+        <div className="flex -space-x-1 flex-shrink-0">
+          {(task.assignees || []).map(a => {
+            const av = KB_ASSIGNEES[a];
+            return av ? (
+              <div key={a} title={av.label}
+                className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold ring-2 ring-[#111]"
+                style={{ background: av.bg, color: av.text }}>
+                {av.initials}
+              </div>
+            ) : null;
+          })}
+        </div>
+      </div>
+    );
+  };
+
+  const userName = KB_ASSIGNEES[currentUser]?.label || currentUser;
+
+  return (
+    <div className="fixed inset-0 bg-black/75 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-[#080808] border border-[#111] rounded-2xl w-full max-w-2xl max-h-[85vh] flex flex-col shadow-2xl"
+        onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#111] flex-shrink-0">
+          <div>
+            <h2 className="text-white font-semibold text-lg">¿Qué hago hoy?</h2>
+            <p className="text-zinc-500 text-xs mt-0.5">Tasks for {userName} · sorted by deadline</p>
+          </div>
+          <button onClick={onClose} className="text-zinc-600 hover:text-white transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto">
+          {mine.length > 0 && (
+            <div>
+              <p className="text-zinc-600 text-[10px] uppercase tracking-wider px-4 pt-4 pb-2">
+                Mis tareas · {mine.length}
+              </p>
+              {mine.map(t => renderRow(t, true))}
+            </div>
+          )}
+          {others.length > 0 && (
+            <div>
+              <p className="text-zinc-600 text-[10px] uppercase tracking-wider px-4 pt-4 pb-2">
+                Otras tareas · {others.length}
+              </p>
+              {others.map(t => renderRow(t, false))}
+            </div>
+          )}
+          {done.length > 0 && (
+            <div>
+              <p className="text-zinc-600 text-[10px] uppercase tracking-wider px-4 pt-4 pb-2">
+                Completadas · {done.length}
+              </p>
+              {done.sort(byDeadline).map(t => renderRow(t, false))}
+            </div>
+          )}
+          {tasks.length === 0 && (
+            <p className="text-zinc-600 text-sm text-center py-16">No hay tareas</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function KanbanSection() {
   const { tasks, clients } = useApp();
@@ -209,6 +327,7 @@ function KanbanSection() {
   const [filterAssignee, setFilterAssignee] = useState('all');
   const [filterPriority, setFilterPriority] = useState('all');
   const [showAdd, setShowAdd] = useState(false);
+  const [showToday, setShowToday] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const filterWrapRef = useRef(null);
 
@@ -323,7 +442,14 @@ function KanbanSection() {
           </div>
         </div>
 
-        <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <button onClick={() => setShowToday(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium text-zinc-400 bg-black border border-[#111] hover:border-[#faff05] hover:text-[#faff05] transition-all">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            ¿Qué hago hoy?
+          </button>
           <button onClick={() => setShowAdd(true)}
             className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-black hover:opacity-90 transition-opacity"
             style={{ background: '#faff05' }}>
@@ -341,6 +467,7 @@ function KanbanSection() {
       <div className="border-t border-[#111] pt-8"><IdeaBank /></div>
 
       {showAdd && <AddTaskInline onClose={() => setShowAdd(false)} />}
+      {showToday && <TodayModal onClose={() => setShowToday(false)} />}
     </div>
   );
 }

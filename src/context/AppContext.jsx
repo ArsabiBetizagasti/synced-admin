@@ -283,6 +283,23 @@ export function AppProvider({ children }) {
     setNotifications(p => p.map(n => ({ ...n, read: true })));
   }, []);
 
+  const TEAM_ALL = ['kann', 'jero', 'facu'];
+  const TEAM_FINANCE = ['kann', 'jero'];
+  const USER_LABELS = { kann: 'Kann', jero: 'Jero', facu: 'Facu' };
+  const STATUS_NAMES = { todo: 'To Do', inprogress: 'In Progress', done: 'Done' };
+
+  // Send a notification to all specified recipients; current user gets it locally, others via Firebase
+  const pushNotif = (action, location, recipients = TEAM_ALL) => {
+    const user = sessionStorage.getItem('sg_user') || 'kann';
+    const who = USER_LABELS[user] || user;
+    const notifId = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
+    const notif = { id: notifId, user, action: `${who} ${action}`, location, timestamp: new Date().toISOString(), read: false };
+    setNotifications(p => [notif, ...p].slice(0, 100));
+    recipients.filter(u => u !== user).forEach(target => {
+      fb(set(ref(db, `userNotifs/${target}/${notifId}`), notif));
+    });
+  };
+
   // Helpers: update local state immediately + sync to Firebase in background
   const fb = (promise) => promise.catch(e => console.warn('[Firebase]', e));
 
@@ -292,14 +309,16 @@ export function AppProvider({ children }) {
     setClients(p => p.map(c => c.id === clientId ? { ...c, documents: [...(c.documents || []), newDoc] } : c));
     const client = clients.find(c => c.id === clientId);
     if (client) fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: [...(client.documents || []), newDoc] }));
-    addNotification(`subió "${doc.name}"`, `Documentos › ${clientId}`);
-  }, [clients, addNotification]);
+    pushNotif(`subió "${doc.name}"`, `Documentos › ${client?.name || clientId}`);
+  }, [clients]);
 
   const removeDocument = useCallback((clientId, docId) => {
+    const client = clients.find(c => c.id === clientId);
+    const doc = (client?.documents || []).find(d => d.id === docId);
     setClients(p => p.map(c => c.id === clientId
       ? { ...c, documents: (c.documents || []).filter(d => d.id !== docId) } : c));
-    const client = clients.find(c => c.id === clientId);
     if (client) fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: (client.documents || []).filter(d => d.id !== docId) }));
+    if (doc) pushNotif(`eliminó "${doc.name}"`, `Documentos › ${client?.name || clientId}`);
   }, [clients]);
 
   const addDocumentNote = useCallback((clientId, docId, note) => {
@@ -360,14 +379,19 @@ export function AppProvider({ children }) {
     const p = { ...data, id };
     setProjects(prev => [...prev, p]);
     fb(set(ref(db, `projects/${id}`), p));
+    pushNotif(`agregó el proyecto "${data.clientName}"`, 'Finanzas', TEAM_FINANCE);
   };
   const updateProject = (id, updates) => {
+    const proj = projects.find(p => p.id === id);
     setProjects(p => p.map(pr => pr.id === id ? { ...pr, ...updates } : pr));
     fb(fbUpdate(ref(db, `projects/${id}`), updates));
+    if (proj) pushNotif(`actualizó proyecto "${proj.clientName}"`, 'Finanzas', TEAM_FINANCE);
   };
   const deleteProject = (id) => {
+    const proj = projects.find(p => p.id === id);
     setProjects(p => p.filter(pr => pr.id !== id));
     fb(remove(ref(db, `projects/${id}`)));
+    if (proj) pushNotif(`eliminó proyecto "${proj.clientName}"`, 'Finanzas', TEAM_FINANCE);
   };
 
   const addTask = (data) => {
@@ -375,18 +399,25 @@ export function AppProvider({ children }) {
     const task = { ...data, id, status: data.status || 'todo' };
     setTasks(p => [...p, task]);
     fb(set(ref(db, `tasks/${id}`), task));
+    pushNotif(`creó la tarea "${data.title}"`, 'Kanban');
   };
   const updateTask = (id, updates) => {
+    const task = tasks.find(t => t.id === id);
     setTasks(p => p.map(t => t.id === id ? { ...t, ...updates } : t));
     fb(fbUpdate(ref(db, `tasks/${id}`), updates));
+    if (task) pushNotif(`editó "${updates.title || task.title}"`, 'Kanban');
   };
   const moveTask = (id, status) => {
+    const task = tasks.find(t => t.id === id);
     setTasks(p => p.map(t => t.id === id ? { ...t, status } : t));
     fb(fbUpdate(ref(db, `tasks/${id}`), { status }));
+    if (task) pushNotif(`movió "${task.title}" → ${STATUS_NAMES[status] || status}`, 'Kanban');
   };
   const deleteTask = (id) => {
+    const task = tasks.find(t => t.id === id);
     setTasks(p => p.filter(t => t.id !== id));
     fb(remove(ref(db, `tasks/${id}`)));
+    if (task) pushNotif(`eliminó "${task.title}"`, 'Kanban');
   };
 
   const addFinanceEntry = (data) => {
@@ -394,10 +425,13 @@ export function AppProvider({ children }) {
     const entry = { ...data, id };
     setFinances(p => [...p, entry]);
     fb(set(ref(db, `finances/${id}`), entry));
+    pushNotif(`registró ${data.type === 'income' ? 'un ingreso' : 'un gasto'}: "${data.description}"`, 'Finanzas', TEAM_FINANCE);
   };
   const deleteFinanceEntry = (id) => {
+    const entry = finances.find(f => f.id === id);
     setFinances(p => p.filter(f => f.id !== id));
     fb(remove(ref(db, `finances/${id}`)));
+    if (entry) pushNotif(`eliminó "${entry.description}"`, 'Finanzas', TEAM_FINANCE);
   };
 
   const addIdea = (data) => {
@@ -405,10 +439,13 @@ export function AppProvider({ children }) {
     const idea = { ...data, id, createdAt: new Date().toISOString() };
     setIdeas(p => [...p, idea]);
     fb(set(ref(db, `ideas/${id}`), idea));
+    pushNotif(`agregó una idea: "${data.title || (data.content || '').slice(0, 40)}"`, 'Banco de ideas');
   };
   const deleteIdea = (id) => {
+    const idea = ideas.find(i => i.id === id);
     setIdeas(p => p.filter(i => i.id !== id));
     fb(remove(ref(db, `ideas/${id}`)));
+    if (idea) pushNotif(`eliminó una idea: "${idea.title || (idea.content || '').slice(0, 40)}"`, 'Banco de ideas');
   };
 
   const addMeeting = (data) => {
@@ -416,14 +453,19 @@ export function AppProvider({ children }) {
     const meeting = { ...data, id, createdAt: new Date().toISOString() };
     setMeetings(p => [...p, meeting]);
     fb(set(ref(db, `meetings/${id}`), meeting));
+    pushNotif(`agendó "${data.title || data.name || 'una reunión'}"`, 'Calendario');
   };
   const updateMeeting = (id, updates) => {
+    const meeting = meetings.find(m => m.id === id);
     setMeetings(p => p.map(m => m.id === id ? { ...m, ...updates } : m));
     fb(fbUpdate(ref(db, `meetings/${id}`), updates));
+    if (meeting) pushNotif(`actualizó "${updates.title || meeting.title || meeting.name || 'reunión'}"`, 'Calendario');
   };
   const deleteMeeting = (id) => {
+    const meeting = meetings.find(m => m.id === id);
     setMeetings(p => p.filter(m => m.id !== id));
     fb(remove(ref(db, `meetings/${id}`)));
+    if (meeting) pushNotif(`eliminó "${meeting.title || meeting.name || 'una reunión'}"`, 'Calendario');
   };
 
   const addLiveTask = (data) => {
@@ -431,18 +473,25 @@ export function AppProvider({ children }) {
     const task = { ...data, id, createdAt: new Date().toISOString(), status: data.status || 'todo' };
     setLiveTasks(p => [...p, task]);
     fb(set(ref(db, `liveTasks/${id}`), task));
+    pushNotif(`agregó live task "${data.title || ''}"`, 'Live Tasks');
   };
   const updateLiveTask = (id, updates) => {
+    const task = liveTasks.find(t => t.id === id);
     setLiveTasks(p => p.map(t => t.id === id ? { ...t, ...updates } : t));
     fb(fbUpdate(ref(db, `liveTasks/${id}`), updates));
+    if (task) pushNotif(`actualizó "${updates.title || task.title || ''}"`, 'Live Tasks');
   };
   const deleteLiveTask = (id) => {
+    const task = liveTasks.find(t => t.id === id);
     setLiveTasks(p => p.filter(t => t.id !== id));
     fb(remove(ref(db, `liveTasks/${id}`)));
+    if (task) pushNotif(`eliminó "${task.title || ''}"`, 'Live Tasks');
   };
   const moveLiveTask = (id, status) => {
+    const task = liveTasks.find(t => t.id === id);
     setLiveTasks(p => p.map(t => t.id === id ? { ...t, status } : t));
     fb(fbUpdate(ref(db, `liveTasks/${id}`), { status }));
+    if (task) pushNotif(`movió "${task.title}" → ${STATUS_NAMES[status] || status}`, 'Live Tasks');
   };
 
   const addRecurringCost = (data) => {
@@ -450,14 +499,19 @@ export function AppProvider({ children }) {
     const cost = { ...data, id };
     setRecurringCosts(p => [...p, cost]);
     fb(set(ref(db, `recurringCosts/${id}`), cost));
+    pushNotif(`agregó costo fijo "${data.name}"`, 'Finanzas', TEAM_FINANCE);
   };
   const updateRecurringCost = (id, updates) => {
+    const cost = recurringCosts.find(c => c.id === id);
     setRecurringCosts(p => p.map(c => c.id === id ? { ...c, ...updates } : c));
     fb(fbUpdate(ref(db, `recurringCosts/${id}`), updates));
+    if (cost) pushNotif(`actualizó costo "${updates.name || cost.name}"`, 'Finanzas', TEAM_FINANCE);
   };
   const deleteRecurringCost = (id) => {
+    const cost = recurringCosts.find(c => c.id === id);
     setRecurringCosts(p => p.filter(c => c.id !== id));
     fb(remove(ref(db, `recurringCosts/${id}`)));
+    if (cost) pushNotif(`eliminó costo "${cost.name}"`, 'Finanzas', TEAM_FINANCE);
   };
 
   const getClientExpenses = (clientId) =>
