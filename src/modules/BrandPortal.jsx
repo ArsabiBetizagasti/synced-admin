@@ -1,5 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
+import { db } from '../firebase';
+import { ref, set } from 'firebase/database';
 
 const STATUS = {
   todo:       { label: 'To Do',       color: '#71717a' },
@@ -73,6 +75,17 @@ function TaskCard({ task }) {
 function BrandPortalContent({ clientId, onLogout }) {
   const { liveTasks, clients } = useApp();
   const client = clients.find(c => c.id === clientId);
+  const visitRecorded = useRef(false);
+
+  useEffect(() => {
+    if (!clientId || !client || visitRecorded.current) return;
+    visitRecorded.current = true;
+    set(ref(db, `clientActivity/${clientId}`), {
+      clientId,
+      clientName: client.name,
+      accessedAt: new Date().toISOString(),
+    }).catch(() => {});
+  }, [clientId, client]);
 
   const allTasks = useMemo(
     () => liveTasks.filter(t => t.clientId === clientId),

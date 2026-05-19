@@ -148,6 +148,7 @@ export function AppProvider({ children }) {
   const [meetings, setMeetings] = useState(() => load('sg_meetings', []));
   const [liveTasks, setLiveTasks] = useState(() => load('sg_live_tasks', []));
   const [notifications, setNotifications] = useState(() => load('sg_notifications', []));
+  const [clientActivity, setClientActivity] = useState({});
   const [docFocusClientId, setDocFocusClientId] = useState(null);
   const [gcalEvents, setGcalEventsState] = useState({});
   // Tracks which Firebase paths have fired at least once (so empty = user deleted everything)
@@ -211,6 +212,13 @@ export function AppProvider({ children }) {
     });
 
     return () => unsubscribes.forEach(u => u());
+  }, []);
+
+  useEffect(() => {
+    const unsub = onValue(ref(db, 'clientActivity'), snap => {
+      setClientActivity(snap.exists() ? snap.val() : {});
+    });
+    return () => unsub();
   }, []);
 
   useEffect(() => {
@@ -288,13 +296,12 @@ export function AppProvider({ children }) {
   const USER_LABELS = { kann: 'Kann', jero: 'Jero', facu: 'Facu' };
   const STATUS_NAMES = { todo: 'To Do', inprogress: 'In Progress', done: 'Done' };
 
-  // Send a notification to all specified recipients; current user gets it locally, others via Firebase
+  // Send a notification to all specified recipients via Firebase only (never self)
   const pushNotif = (action, location, recipients = TEAM_ALL) => {
     const user = sessionStorage.getItem('sg_user') || 'kann';
     const who = USER_LABELS[user] || user;
     const notifId = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const notif = { id: notifId, user, action: `${who} ${action}`, location, timestamp: new Date().toISOString(), read: false };
-    setNotifications(p => [notif, ...p].slice(0, 100));
     recipients.filter(u => u !== user).forEach(target => {
       fb(set(ref(db, `userNotifs/${target}/${notifId}`), notif));
     });
@@ -548,6 +555,7 @@ export function AppProvider({ children }) {
       ideas, addIdea, deleteIdea,
       meetings, addMeeting, updateMeeting, deleteMeeting,
       liveTasks, addLiveTask, updateLiveTask, deleteLiveTask, moveLiveTask,
+      clientActivity,
       docFocusClientId, setDocFocusClientId,
       gcalEvents, syncGcalEvents, clearGcalEvents,
     }}>

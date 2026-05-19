@@ -3,6 +3,13 @@ import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useApp } from '../context/AppContext';
 
 const CURR_SYM = { USD: '$', EUR: '€', GBP: '£' };
+
+const BRAND_CREDENTIALS = {
+  c1: { username: 'hollywood browzer', pin: '012026' },
+  c2: { username: '360 optimum',       pin: '032026' },
+  c3: { username: 'foreshank',         pin: '022026' },
+  c4: { username: 'adam',              pin: '042026' },
+};
 const MONTH_LABELS = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
 const PRIORITY_STYLE = {
   Alta:  { bg: 'bg-red-500/15',   text: 'text-red-400' },
@@ -310,8 +317,9 @@ function ContractUpload({ client }) {
 
 // ── Client detail view ─────────────────────────────────────────────────────────
 function ClientDetail({ client, onBack, onNavigate }) {
-  const { tasks, finances, projects, fmtAmount, moveTask, deleteTask, setDocFocusClientId } = useApp();
+  const { tasks, finances, projects, fmtAmount, moveTask, deleteTask, setDocFocusClientId, updateClient } = useApp();
   const [dragOver, setDragOver] = useState(null);
+  const [notes, setNotes] = useState(client.portalNotes || '');
 
   const sym = CURR_SYM[client.revenueCurrency] || '$';
   const clientTasks    = tasks.filter(t => t.clientId === client.id);
@@ -485,6 +493,38 @@ function ClientDetail({ client, onBack, onNavigate }) {
           </div>
           {/* Contract file upload */}
           <ContractUpload client={client} />
+        </div>
+      </div>
+
+      {/* ── Portal access + Notes ── */}
+      <div className={`grid gap-4 ${BRAND_CREDENTIALS[client.id] ? 'grid-cols-2' : 'grid-cols-1'}`}>
+        {BRAND_CREDENTIALS[client.id] && (
+          <div className="bg-[#080808] border border-[#111] rounded-2xl p-5">
+            <SectionHeader title="Acceso al Portal" color={client.color}
+              icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>} />
+            <div className="space-y-3 text-sm">
+              <div className="flex items-center justify-between py-2 border-b border-[#111]">
+                <span className="text-zinc-500">Usuario</span>
+                <code className="text-zinc-200 text-xs bg-zinc-900 px-2.5 py-1 rounded-lg">{BRAND_CREDENTIALS[client.id].username}</code>
+              </div>
+              <div className="flex items-center justify-between py-2">
+                <span className="text-zinc-500">PIN</span>
+                <code className="text-zinc-200 text-xs bg-zinc-900 px-2.5 py-1 rounded-lg tracking-widest font-mono">{BRAND_CREDENTIALS[client.id].pin}</code>
+              </div>
+            </div>
+          </div>
+        )}
+        <div className="bg-[#080808] border border-[#111] rounded-2xl p-5 flex flex-col">
+          <SectionHeader title="Notas del Cliente" color={client.color}
+            icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>} />
+          <textarea
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            onBlur={() => updateClient(client.id, { portalNotes: notes })}
+            placeholder="Info interna, notas del cliente, detalles importantes..."
+            rows={BRAND_CREDENTIALS[client.id] ? 4 : 3}
+            className="flex-1 bg-transparent border border-[#1a1a1a] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05] resize-none transition-colors"
+          />
         </div>
       </div>
 

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import KanbanBoard from '../modules/KanbanBoard';
 import FinanzasPortal from '../modules/FinanzasPortal';
 import Tasks, { AddTaskInline, TaskStats } from '../modules/Tasks';
@@ -156,26 +156,28 @@ function AccountDropdown({ currentUser, onLogout }) {
 
           {/* Notifications list — shown when expanded */}
           {showNotifs && (
-            <div className="max-h-52 overflow-y-auto border-b border-[#111]">
+            <div className="max-h-80 overflow-y-auto border-b border-[#111]">
               {notifications.length === 0 ? (
                 <div className="px-4 py-4 text-center text-zinc-600 text-xs">Sin actividad aún</div>
               ) : (
-                notifications.slice(0, 8).map(n => (
-                  <div key={n.id} className="flex gap-2.5 px-4 py-2.5 border-b border-[#111]/50 last:border-0 hover:bg-zinc-900/30 transition-colors">
-                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
-                      style={{ background: n.user === 'kann' ? '#faff05' : '#60a5fa', color: '#000' }}>
-                      {n.user === 'kann' ? 'K' : 'J'}
+                notifications.slice(0, 30).map(n => {
+                  const u = USER_INFO[n.user] || { initials: (n.user || '?').slice(0, 1).toUpperCase(), bg: '#3f3f46', text: '#fff' };
+                  return (
+                    <div key={n.id} className="flex gap-2.5 px-4 py-2.5 border-b border-[#111]/50 last:border-0 hover:bg-zinc-900/30 transition-colors">
+                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5"
+                        style={{ background: u.bg, color: u.text }}>
+                        {u.initials}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-zinc-400 text-xs leading-relaxed">
+                          {n.action}
+                          {n.location && <span className="text-zinc-600"> · {n.location}</span>}
+                        </p>
+                        <p className="text-zinc-700 text-[10px] mt-0.5">{relativeTime(n.timestamp)}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-zinc-400 text-xs leading-relaxed">
-                        <span className="text-white font-medium">{n.user === 'kann' ? 'Kann' : 'Jero'}</span>{' '}
-                        {n.action}
-                        {n.location && <span className="text-zinc-600"> en {n.location}</span>}
-                      </p>
-                      <p className="text-zinc-700 text-[10px] mt-0.5">{relativeTime(n.timestamp)}</p>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           )}
@@ -475,6 +477,16 @@ function KanbanSection() {
 // ── Header (exported for App.jsx to render outside the rectangle) ──────────────
 export function AppHeader({ activeTab, setActiveTab, currentUser, onLogout }) {
   const canSeeRestricted = currentUser !== 'facu';
+  const { clientActivity } = useApp();
+  const [liveHover, setLiveHover] = useState(false);
+
+  const recentVisitors = useMemo(() => {
+    const now = Date.now();
+    return Object.values(clientActivity || {})
+      .filter(a => a.accessedAt && (now - new Date(a.accessedAt).getTime()) < 24 * 3600 * 1000)
+      .sort((a, b) => new Date(b.accessedAt) - new Date(a.accessedAt));
+  }, [clientActivity]);
+  const hasActivity = recentVisitors.length > 0;
 
   const tabCls = (id) =>
     `flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
@@ -485,12 +497,31 @@ export function AppHeader({ activeTab, setActiveTab, currentUser, onLogout }) {
     <div className="flex items-center w-full gap-2">
       {/* Left: Live Tasks + separator + main tabs */}
       <div className="flex items-center gap-2">
-        <button onClick={() => setActiveTab(TAB_LIVE.id)}
-          className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeTab === TAB_LIVE.id ? 'text-black' : 'text-zinc-400 hover:text-white'}`}
-          style={activeTab === TAB_LIVE.id ? { background: '#faff05' } : {}}>
-          <RecDot />
-          {TAB_LIVE.label}
-        </button>
+        <div className="relative"
+          onMouseEnter={() => setLiveHover(true)}
+          onMouseLeave={() => setLiveHover(false)}>
+          <button onClick={() => setActiveTab(TAB_LIVE.id)}
+            className={`flex items-center gap-2 px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${activeTab === TAB_LIVE.id ? 'text-black' : 'text-zinc-400 hover:text-white'}`}
+            style={activeTab === TAB_LIVE.id ? { background: '#faff05' } : {}}>
+            {hasActivity && (
+              <span className="text-red-400 text-xs font-bold leading-none">!</span>
+            )}
+            <RecDot />
+            {TAB_LIVE.label}
+          </button>
+          {liveHover && hasActivity && (
+            <div className="absolute top-full left-0 mt-1.5 bg-[#080808] border border-[#111] rounded-xl shadow-2xl z-50 p-3 min-w-[220px]">
+              <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-2">Clientes que entraron</p>
+              {recentVisitors.map(a => (
+                <div key={a.clientId} className="flex items-center gap-2 py-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                  <span className="text-white text-xs flex-1">{a.clientName}</span>
+                  <span className="text-zinc-600 text-[10px]">{relativeTime(a.accessedAt)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="w-px h-5 bg-zinc-800 flex-shrink-0 mx-1" />
 

@@ -1,6 +1,15 @@
 ﻿import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 
+const relTime = (iso) => {
+  if (!iso) return '';
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (diff < 60) return 'hace un momento';
+  if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;
+  return `hace ${Math.floor(diff / 86400)} d`;
+};
+
 const STATUS = {
   todo:       { label: 'To Do',       color: '#71717a' },
   inprogress: { label: 'En Progreso', color: '#faff05' },
@@ -191,6 +200,8 @@ function TaskRow({ task, onEdit, onCycleStatus }) {
 
 // ── Brand column ──────────────────────────────────────────────────────────────
 function BrandColumn({ client, tasks, onAdd, onEdit, onCycleStatus }) {
+  const { clientActivity } = useApp();
+  const activity = clientActivity?.[client.id];
   const sorted = [...tasks].sort((a, b) => {
     const o = { inprogress: 0, todo: 1, done: 2 };
     return (o[a.status] ?? 1) - (o[b.status] ?? 1);
@@ -213,6 +224,15 @@ function BrandColumn({ client, tasks, onAdd, onEdit, onCycleStatus }) {
           {doneCount > 0 && <span className="text-[10px] px-1.5 py-0.5 rounded-full text-[#34d399]" style={{ background: '#34d39920' }}>{doneCount} ✓</span>}
         </div>
       </div>
+
+      {activity && (
+        <div className="flex items-center gap-2 px-4 py-2 border-b border-[#111] bg-red-500/5">
+          <span className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0 animate-pulse" />
+          <p className="text-red-400 text-[10px]">
+            {activity.clientName} entró a ver las tasks {relTime(activity.accessedAt)}
+          </p>
+        </div>
+      )}
 
       <div className="flex-1 min-h-[100px]">
         {sorted.length === 0 ? (
