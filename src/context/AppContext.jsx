@@ -151,6 +151,7 @@ export function AppProvider({ children }) {
   const [clientActivity, setClientActivity] = useState({});
   const [docFocusClientId, setDocFocusClientId] = useState(null);
   const [gcalEvents, setGcalEventsState] = useState({});
+  const [brands, setBrands] = useState(() => load('sg_brands', {}));
   // Tracks which Firebase paths have fired at least once (so empty = user deleted everything)
   const fbSyncedRef = useRef(new Set());
 
@@ -217,6 +218,15 @@ export function AppProvider({ children }) {
   useEffect(() => {
     const unsub = onValue(ref(db, 'clientActivity'), snap => {
       setClientActivity(snap.exists() ? snap.val() : {});
+    });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    const unsub = onValue(ref(db, 'brands'), snap => {
+      const val = snap.exists() ? snap.val() : {};
+      setBrands(val);
+      localStorage.setItem('sg_brands', JSON.stringify(val));
     });
     return () => unsub();
   }, []);
@@ -510,6 +520,15 @@ export function AppProvider({ children }) {
     if (task) pushNotif(`movió "${task.title}" → ${STATUS_NAMES[status] || status}`, 'Live Tasks');
   };
 
+  const saveBrand = (slug, data) => {
+    const brandData = { ...data, slug, updatedAt: new Date().toISOString() };
+    setBrands(p => ({ ...p, [slug]: brandData }));
+    fb(set(ref(db, `brands/${slug}`), brandData));
+    pushNotif(`guardó brand setup "${data.config?.display_name || slug}"`, 'Brand Setup');
+  };
+
+  const getBrand = (slug) => brands[slug] || null;
+
   const addRecurringCost = (data) => {
     const id = Date.now().toString();
     const cost = { ...data, id };
@@ -558,6 +577,7 @@ export function AppProvider({ children }) {
       clientActivity,
       docFocusClientId, setDocFocusClientId,
       gcalEvents, syncGcalEvents, clearGcalEvents,
+      brands, saveBrand, getBrand,
     }}>
       {children}
     </AppContext.Provider>
