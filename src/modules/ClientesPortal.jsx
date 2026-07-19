@@ -77,7 +77,7 @@ function YesNo({ label, value, onChange }) {
 const inputCls = 'w-full bg-[#080808] border border-[#111] rounded-xl px-3 py-2.5 text-white text-sm placeholder-zinc-700 focus:outline-none focus:border-[#faff05]';
 
 // ── Add Client Modal (retainer/commission) ─────────────────────────────────────
-function AddClientModal({ onClose }) {
+export function AddClientModal({ onClose }) {
   const { addClient, addNotification } = useApp();
   const [form, setForm] = useState({
     name: '', contact: '', country: '', category: 'Beauty',
@@ -890,7 +890,6 @@ function ProjectsSection() {
 export default function ClientesPortal() {
   const { clients, projects, deleteClient, updateClient, getClientExpenses, getClientRevenue, toUSD, fmtAmount } = useApp();
   const [expandedId, setExpandedId] = useState(null);
-  const [showAddClient, setShowAddClient] = useState(false);
   const [search, setSearch] = useState('');
   const [filterCat, setFilterCat] = useState('All');
   const [confirmDelete, setConfirmDelete] = useState(null); // { id, name }
@@ -1067,14 +1066,6 @@ export default function ClientesPortal() {
             ))}
           </div>
         </div>
-        <button onClick={() => setShowAddClient(true)}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-black flex-shrink-0"
-          style={{ background: '#faff05' }}>
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
-          Nuevo cliente
-        </button>
       </div>
 
       {/* Clients Table (retainer/commission) */}
@@ -1282,7 +1273,6 @@ export default function ClientesPortal() {
 
       <ProjectsSection />
 
-      {showAddClient && <AddClientModal onClose={() => setShowAddClient(false)} />}
       {editClient && <EditClientModal client={editClient} onClose={() => setEditClient(null)} />}
       {confirmDelete && (
         <ConfirmDialog

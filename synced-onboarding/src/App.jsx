@@ -26,6 +26,7 @@ function buildFirebasePayload(answers, slug, clientId, token) {
     },
     config: {},
     art_direction: {},
+    strategy: { objectives: {} },
     products: [{ name: '', sku: '', hero: true, benefits: [], heroImageUrl: '' }],
   };
 
@@ -38,6 +39,10 @@ function buildFirebasePayload(answers, slug, clientId, token) {
       data.config[path.replace('config.', '')] = val;
     } else if (path.startsWith('art_direction.')) {
       data.art_direction[path.replace('art_direction.', '')] = val;
+    } else if (path.startsWith('strategy.objectives.')) {
+      data.strategy.objectives[path.replace('strategy.objectives.', '')] = val;
+    } else if (path.startsWith('strategy.')) {
+      data.strategy[path.replace('strategy.', '')] = val;
     } else if (path === 'products[0].heroImageUrl') {
       data.products[0].heroImageUrl = val;
     } else if (path === 'products[0].name') {
@@ -374,7 +379,7 @@ function WelcomeScreen({ onStart, clientName }) {
         {WELCOME.cta}
       </button>
       <p className="text-zinc-300 text-xs mt-5 font-light">
-        Takes about 5 minutes · No account needed
+        Takes about 10–12 minutes · No account needed
       </p>
     </div>
   );

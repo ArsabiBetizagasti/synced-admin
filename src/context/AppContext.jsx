@@ -184,6 +184,7 @@ export function AppProvider({ children, currentUser: currentUserProp }) {
   const [docFocusClientId, setDocFocusClientId] = useState(null);
   const [gcalEvents, setGcalEventsState] = useState({});
   const [brands, setBrands] = useState(() => load('sg_brands', {}));
+  const [onboardingTokens, setOnboardingTokens] = useState(() => load('sg_onboarding_tokens', {}));
   // Tracks which Firebase paths have fired at least once (so empty = user deleted everything)
   const fbSyncedRef = useRef(new Set());
   // fbReady: true once tasks + clients + liveTasks have all synced from Firebase (not localStorage)
@@ -373,6 +374,15 @@ export function AppProvider({ children, currentUser: currentUserProp }) {
       const val = snap.exists() ? snap.val() : {};
       setBrands(val);
       try { localStorage.setItem('sg_brands', JSON.stringify(val)); } catch (_) {}
+    });
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    const unsub = onValue(ref(db, 'onboarding_tokens'), snap => {
+      const val = snap.exists() ? snap.val() : {};
+      setOnboardingTokens(val);
+      localStorage.setItem('sg_onboarding_tokens', JSON.stringify(val));
     });
     return () => unsub();
   }, []);
@@ -868,6 +878,19 @@ export function AppProvider({ children, currentUser: currentUserProp }) {
 
   const getBrand = (slug) => brands[slug] || null;
 
+  // Returns the most recent onboarding invite for a client, plus a derived status.
+  const getClientOnboarding = (clientId) => {
+    if (!clientId) return { status: 'not_invited', token: null, tokenId: null };
+    const entries = Object.entries(onboardingTokens || {})
+      .filter(([, t]) => t.clientId === clientId)
+      .sort(([, a], [, b]) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+    if (entries.length === 0) return { status: 'not_invited', token: null, tokenId: null };
+    const [tokenId, token] = entries[0];
+    if (token.used) return { status: 'completed', token, tokenId };
+    if (token.expiresAt && new Date(token.expiresAt) < new Date()) return { status: 'expired', token, tokenId };
+    return { status: 'pending', token, tokenId };
+  };
+
   const addRecurringCost = (data) => {
     const id = Date.now().toString();
     const cost = { ...data, id };
@@ -949,6 +972,7 @@ export function AppProvider({ children, currentUser: currentUserProp }) {
       brands, saveBrand, getBrand,
       sgAccounts, addSgAccount, updateSgAccount, deleteSgAccount,
       sgPersons, addSgPerson, deleteSgPerson,
+      onboardingTokens, getClientOnboarding,
     }}>
       {children}
     </AppContext.Provider>

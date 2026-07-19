@@ -2,6 +2,7 @@
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useApp } from '../context/AppContext';
 import DirectorioSGCard, { DirectorioSGDetail } from './DirectorioSG';
+import { AddClientModal } from './ClientesPortal';
 
 const CURR_SYM = { USD: '$', EUR: '€', GBP: '£' };
 
@@ -697,6 +698,7 @@ export default function ClientesDashboard({ onNavigate }) {
   const { clients, projects } = useApp();
   const [selected, setSelected] = useState(null);
   const [sgOpen, setSgOpen] = useState(false);
+  const [showAddClient, setShowAddClient] = useState(false);
 
   if (sgOpen) return <DirectorioSGDetail onBack={() => setSgOpen(false)} />;
 
@@ -711,6 +713,17 @@ export default function ClientesDashboard({ onNavigate }) {
 
   return (
     <div className="space-y-8">
+      <div className="flex items-center justify-end">
+        <button onClick={() => setShowAddClient(true)}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-black flex-shrink-0"
+          style={{ background: '#faff05' }}>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+          </svg>
+          Nuevo cliente
+        </button>
+      </div>
+
       <DirectorioSGCard onEnter={() => setSgOpen(true)} />
 
       {/* ── Active ── */}
@@ -776,6 +789,8 @@ export default function ClientesDashboard({ onNavigate }) {
           </div>
         </div>
       )}
+
+      {showAddClient && <AddClientModal onClose={() => setShowAddClient(false)} />}
     </div>
   );
 }
