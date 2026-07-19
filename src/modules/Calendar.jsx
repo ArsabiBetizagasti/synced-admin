@@ -4,16 +4,13 @@ import {
   isConfigured, connectGoogle, silentRefresh,
   fetchEvents, normalizeEvent, saveToken, loadToken, clearToken,
 } from '../services/googleCalendar';
+import { TEAM_MEMBERS, TEAM_IDS } from '../constants';
 
 const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
   'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 const DAY_HEADERS = ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
 
-const TEAM = [
-  { id: 'kann', label: 'Kann', initials: 'K', bg: '#faff05', text: '#000' },
-  { id: 'jero', label: 'Jero', initials: 'J', bg: '#60a5fa', text: '#000' },
-  { id: 'facu', label: 'Facu', initials: 'F', bg: '#a78bfa', text: '#000' },
-];
+const TEAM = TEAM_IDS.map(id => ({ id, ...TEAM_MEMBERS[id] }));
 
 const toYMD = d =>
   `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
@@ -593,7 +590,7 @@ function MonthView({ year, month, eventsMap, selectedDay, onDayClick, today }) {
           return (
             <div key={i}
               onClick={() => onDayClick(cell.ymd)}
-              className={`border-r border-b border-[#111] p-1.5 min-h-[90px] cursor-pointer transition-colors last:border-r-0
+              className={`border-r border-b border-[#111] p-1 sm:p-1.5 min-h-[60px] sm:min-h-[90px] cursor-pointer transition-colors last:border-r-0
                 ${!cell.inMonth ? 'opacity-25' : 'hover:bg-zinc-900/40'}
                 ${isSelected ? 'bg-[#818cf8]/5 ring-1 ring-inset ring-[#818cf8]/30' : 'bg-[#080808]'}
               `}>
@@ -713,10 +710,9 @@ function DayView({ ymd, eventsMap, onAddMeeting, onEditMeeting, onRsvp, currentU
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 export default function CalendarModule() {
-  const { tasks, clients, meetings, addMeeting, updateMeeting, deleteMeeting, gcalEvents, syncGcalEvents, clearGcalEvents } = useApp();
+  const { tasks, clients, meetings, addMeeting, updateMeeting, deleteMeeting, gcalEvents, syncGcalEvents, clearGcalEvents, currentUser } = useApp();
   const todayDate = new Date();
   const today = toYMD(todayDate);
-  const currentUser = sessionStorage.getItem('sg_user') || 'kann';
 
   const [view, setView] = useState('month');
   const [currentYear, setCurrentYear] = useState(todayDate.getFullYear());

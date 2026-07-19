@@ -329,9 +329,9 @@ function EditClientModal({ client, onClose }) {
 
 // ── SPLIT_MEMBERS used in ProjectModal and ProjectsSection ────────────────────
 const SPLIT_MEMBERS = [
-  { key: 'K',  bg: '#faff05', color: '#000',    label: 'Kann' },
-  { key: 'J',  bg: '#60a5fa', color: '#000',    label: 'Jero' },
-  { key: 'SG', bg: '#222',    color: '#faff05', label: 'Synced' },
+  { key: 'K',  bg: '#faff05', color: '#000',    label: 'Kann',   avatar: '/admin/kann-avatar.png' },
+  { key: 'J',  bg: '#60a5fa', color: '#000',    label: 'Jero',   avatar: '/admin/jero-avatar.png' },
+  { key: 'SG', bg: '#222',    color: '#faff05', label: 'Synced', avatar: '/admin/sin-activar.png' },
 ];
 
 // ── Add/Edit Project Modal ─────────────────────────────────────────────────────
@@ -339,7 +339,7 @@ function ProjectModal({ project, onClose }) {
   const { addProject, updateProject, addNotification } = useApp();
   const isEdit = !!project;
   const today = new Date().toISOString().split('T')[0];
-  const defaultSplit = [{ key: 'K', pct: 30 }, { key: 'J', pct: 30 }, { key: 'SG', pct: 40 }];
+  const defaultSplit = [{ key: 'K', pct: 40 }, { key: 'J', pct: 40 }, { key: 'SG', pct: 20 }];
   const [form, setForm] = useState({
     clientName:       project?.clientName || '',
     country:          project?.country || '',
@@ -534,8 +534,9 @@ function ProjectModal({ project, onClose }) {
                     <button type="button" onClick={() => toggleSplitMember(m.key)}
                       className={`flex items-center gap-2 flex-1 px-3 py-2 rounded-xl border transition-all ${active ? 'border-zinc-600' : 'border-[#111] opacity-40'}`}
                       style={active ? { background: m.bg + '15' } : {}}>
-                      <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold flex-shrink-0"
-                        style={{ background: m.bg, color: m.color }}>{m.key}</div>
+                      <div className="w-6 h-6 rounded-full overflow-hidden flex-shrink-0">
+                        <img src={m.avatar} alt={m.label} className="w-full h-full object-cover" draggable={false} />
+                      </div>
                       <span className="text-white text-sm">{m.label}</span>
                     </button>
                     {active && (
@@ -847,8 +848,9 @@ function ProjectsSection() {
                         if (!s.pct) return null;
                         return (
                           <div key={m.key} className="flex items-center gap-1" title={`${m.label}: ${s.pct}%`}>
-                            <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
-                              style={{ background: m.bg, color: m.color }}>{m.key}</div>
+                            <div className="w-5 h-5 rounded-full overflow-hidden flex-shrink-0">
+                              <img src={m.avatar} alt={m.label} className="w-full h-full object-cover" draggable={false} />
+                            </div>
                             <span className="text-zinc-500 text-[10px]">{s.pct}%</span>
                           </div>
                         );
@@ -886,7 +888,7 @@ function ProjectsSection() {
 
 // ── Main Component ─────────────────────────────────────────────────────────────
 export default function ClientesPortal() {
-  const { clients, projects, deleteClient, updateClient, getClientExpenses, getClientRevenue } = useApp();
+  const { clients, projects, deleteClient, updateClient, getClientExpenses, getClientRevenue, toUSD, fmtAmount } = useApp();
   const [expandedId, setExpandedId] = useState(null);
   const [showAddClient, setShowAddClient] = useState(false);
   const [search, setSearch] = useState('');
@@ -914,11 +916,54 @@ export default function ClientesPortal() {
     updateClient(client.id, { active: true });
   };
 
-  // Project KPIs
-  const paidProjects = projects.filter(p => p.paidStatus === 'paid');
-  const debtProjects = projects.filter(p => p.paidStatus !== 'paid');
+  // Retainer clients = active clients with monthly revenue contract
+  const retainerClients = clients.filter(c => c.active && c.monthlyRevenue > 0 && !c.isInternal);
+  const retainerNames   = new Set(retainerClients.map(c => c.name));
+
+  // A project is "retainer-type" if client is a retainer OR note says "retainer"
+  const isRetainerProject = p =>
+    retainerNames.has(p.clientName) || (p.note || '').toLowerCase().includes('retainer');
+
+  // Separate retainer projects from one-off projects
+  const retainerProjects    = projects.filter(p => isRetainerProject(p));
+  const nonRetainerProjects = projects.filter(p => !isRetainerProject(p));
+
+  // Project KPIs (one-off only — retainer debt shown separately)
+  const paidProjects = nonRetainerProjects.filter(p => p.paidStatus === 'paid');
+  const debtProjects = nonRetainerProjects.filter(p => p.paidStatus !== 'paid' && p.amountUSD > 0);
   const totalPaid = paidProjects.reduce((s, p) => s + p.paidAmount, 0);
   const totalDebt = debtProjects.reduce((s, p) => s + (p.amountUSD - p.paidAmount), 0);
+
+  // Retainer KPIs
+  // MRR: sum of each client's monthly revenue converted to USD
+  const totalRetainerMRR = retainerClients.reduce(
+    (s, c) => s + toUSD(c.monthlyRevenue || 0, c.revenueCurrency || 'USD'), 0
+  );
+  // Payments made: sum of elapsed contract months per retainer client
+  const nowDate = new Date();
+  const totalRetainerMonthsPaid = retainerClients.reduce((s, c) => {
+    if (!c.contractStart) return s;
+    const start = new Date(c.contractStart);
+    const elapsed = Math.max(0,
+      (nowDate.getFullYear() - start.getFullYear()) * 12 + nowDate.getMonth() - start.getMonth()
+    );
+    const max = c.contractMonths ? Number(c.contractMonths) : elapsed;
+    return s + Math.min(elapsed, max);
+  }, 0);
+  // Total received: elapsed months × MRR per client
+  const totalRetainerReceived = retainerClients.reduce((s, c) => {
+    if (!c.contractStart) return s;
+    const start = new Date(c.contractStart);
+    const elapsed = Math.max(0,
+      (nowDate.getFullYear() - start.getFullYear()) * 12 + nowDate.getMonth() - start.getMonth()
+    );
+    const max = c.contractMonths ? Number(c.contractMonths) : elapsed;
+    const months = Math.min(elapsed, max);
+    return s + toUSD(c.monthlyRevenue || 0, c.revenueCurrency || 'USD') * months;
+  }, 0);
+  // Retainer debt
+  const retainerDebtProjects  = retainerProjects.filter(p => p.paidStatus !== 'paid' && p.amountUSD > 0);
+  const totalRetainerDebt     = retainerDebtProjects.reduce((s, p) => s + (p.amountUSD - p.paidAmount), 0);
 
   const filtered = clients.filter(c => {
     if (c.isInternal || !c.active) return false;
@@ -930,8 +975,8 @@ export default function ClientesPortal() {
 
   return (
     <div className="space-y-5">
-      {/* 4 KPI Cards */}
-      <div className="grid grid-cols-4 gap-4">
+      {/* 6 KPI Cards */}
+      <div className="grid grid-cols-6 gap-4">
         <div className="bg-[#080808] border border-[#111] rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
             <p className="text-zinc-500 text-xs uppercase tracking-wider">Clientes Totales</p>
@@ -966,14 +1011,38 @@ export default function ClientesPortal() {
 
         <div className="bg-[#080808] border border-red-500/10 rounded-2xl p-4">
           <div className="flex items-start justify-between mb-2">
-            <p className="text-zinc-500 text-xs uppercase tracking-wider">Con Deuda</p>
+            <p className="text-zinc-500 text-xs uppercase tracking-wider">Proyectos con Deuda</p>
             <span className="text-lg">🔴</span>
           </div>
           <div className="flex items-baseline justify-between gap-2">
             <p className="text-2xl font-bold text-red-400">{debtProjects.length}</p>
             <p className="text-xl font-bold text-red-400">-${Math.round(totalDebt).toLocaleString()}</p>
           </div>
-          <p className="text-zinc-600 text-xs mt-0.5">{debtProjects.length} clientes en deuda</p>
+          <p className="text-zinc-600 text-xs mt-0.5">{debtProjects.length} proyectos sin cobrar</p>
+        </div>
+
+        <div className="bg-[#080808] border border-green-500/10 rounded-2xl p-4">
+          <div className="flex items-start justify-between mb-2">
+            <p className="text-zinc-500 text-xs uppercase tracking-wider">Retainers cobrados</p>
+            <span className="text-lg">💚</span>
+          </div>
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="text-2xl font-bold text-green-400">{totalRetainerMonthsPaid}</p>
+            <p className="text-xl font-bold text-green-400">${Math.round(totalRetainerReceived).toLocaleString()}</p>
+          </div>
+          <p className="text-zinc-600 text-xs mt-0.5">{totalRetainerMonthsPaid} pagos · {retainerClients.length} contrato{retainerClients.length !== 1 ? 's' : ''} activo{retainerClients.length !== 1 ? 's' : ''}</p>
+        </div>
+
+        <div className="bg-[#080808] border border-red-500/10 rounded-2xl p-4">
+          <div className="flex items-start justify-between mb-2">
+            <p className="text-zinc-500 text-xs uppercase tracking-wider">Retainers con Deuda</p>
+            <span className="text-lg">🔴</span>
+          </div>
+          <div className="flex items-baseline justify-between gap-2">
+            <p className="text-2xl font-bold text-red-400">{retainerDebtProjects.length}</p>
+            <p className="text-xl font-bold text-red-400">-${Math.round(totalRetainerDebt).toLocaleString()}</p>
+          </div>
+          <p className="text-zinc-600 text-xs mt-0.5">{retainerDebtProjects.length} pagos sin cobrar · USD</p>
         </div>
       </div>
 

@@ -2,17 +2,12 @@ import React, { useMemo, useEffect, useRef } from 'react';
 import { useApp } from '../context/AppContext';
 import { db } from '../firebase';
 import { ref, set } from 'firebase/database';
+import { TEAM_MEMBERS as ASSIGNEES } from '../constants';
 
 const STATUS = {
   todo:       { label: 'To Do',       color: '#71717a' },
   inprogress: { label: 'In Progress', color: '#faff05' },
   done:       { label: 'Done',        color: '#34d399' },
-};
-
-const ASSIGNEES = {
-  kann: { label: 'Kann', initials: 'K', bg: '#faff05', text: '#000' },
-  jero: { label: 'Jero', initials: 'J', bg: '#60a5fa', text: '#000' },
-  facu: { label: 'Facu', initials: 'F', bg: '#a78bfa', text: '#000' },
 };
 
 function TaskCard({ task }) {

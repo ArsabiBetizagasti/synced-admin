@@ -557,21 +557,16 @@ function StepMarket({ form, set }) {
 
 // ── Blank form ─────────────────────────────────────────────────────────────────
 const BLANK = {
-  // Step 1 — Website
   websiteUrl: '', slug: '', instagram: '',
-  // Step 2 — Identity
   displayName: '', category: '', tagline: '', mission: '', usp: '', tone: '',
   bannedWords: [],
-  // Step 3 — Visual
   aestheticTagline: '', aestheticDesc: '',
   colors: [],
   fontHeading: '', fontBody: '',
   lightingDesc: '', lightingKelvin: '', lightingNevers: [],
   camera: '',
   neverInFrame: [], maxObjects: 4, adTest: '',
-  // Step 4 — Products
   products: [],
-  // Step 5 — Market
   icp: '', market: '', monthlySpend: '', spendCurrency: 'GBP',
   targetCpa: '', cpaCurrency: 'GBP', aov: '',
   competitors: [], notes: '',
@@ -600,14 +595,12 @@ export default function BrandSetup() {
   const activeClients = clients.filter(c => !c.isInternal && c.active);
   const selectedClient = clients.find(c => c.id === selectedClientId);
 
-  // Load existing brand data when a client is selected
   const selectClient = (client) => {
     setSelectedClientId(client.id);
     setSaved(false);
     const existingSlug = client.brandSlug;
     const existingBrand = existingSlug ? brands[existingSlug] : null;
     if (existingBrand) {
-      // Restore all fields from saved brand data
       setForm({
         ...BLANK,
         websiteUrl:      existingBrand.meta?.websiteUrl || '',
@@ -644,7 +637,6 @@ export default function BrandSetup() {
         notes:           existingBrand.config?.notes || '',
       });
     } else {
-      // Pre-fill display name from client name
       setForm({ ...BLANK, displayName: client.name, slug: slugify(client.name) });
     }
     setStep(1);
@@ -657,18 +649,13 @@ export default function BrandSetup() {
     const token = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     const tokenData = {
-      slug,
-      clientId: selectedClientId,
-      clientName: selectedClient?.name || '',
+      slug, clientId: selectedClientId, clientName: selectedClient?.name || '',
       brandName: form.displayName || selectedClient?.name || '',
-      createdAt: new Date().toISOString(),
-      expiresAt,
-      used: false,
+      createdAt: new Date().toISOString(), expiresAt, used: false,
     };
     try {
       await dbSet(dbRef(db, `onboarding_tokens/${token}`), tokenData);
-      const url = `${ONBOARDING_BASE_URL}?t=${token}`;
-      setInviteUrl(url);
+      setInviteUrl(`${ONBOARDING_BASE_URL}?t=${token}`);
     } catch (e) {
       console.warn('Token write failed', e);
     } finally {
@@ -689,52 +676,26 @@ export default function BrandSetup() {
     try {
       const brandData = {
         slug: form.slug,
-        meta: {
-          clientId: selectedClientId,
-          websiteUrl: form.websiteUrl,
-          createdAt: brands[form.slug]?.meta?.createdAt || new Date().toISOString(),
-          formVersion: '1.0',
-        },
+        meta: { clientId: selectedClientId, websiteUrl: form.websiteUrl, createdAt: brands[form.slug]?.meta?.createdAt || new Date().toISOString(), formVersion: '1.0' },
         config: {
-          slug:             form.slug,
-          display_name:     form.displayName,
-          category:         form.category,
-          market:           form.market,
-          website:          form.websiteUrl,
-          instagram:        form.instagram,
-          tagline:          form.tagline,
-          mission:          form.mission,
-          usp:              form.usp,
-          tone:             form.tone,
-          icp:              form.icp,
-          competitor_brands:form.competitors,
-          banned_words:     form.bannedWords,
-          target_cpa:       parseFloat(form.targetCpa) || 0,
-          cpa_currency:     form.cpaCurrency,
-          monthly_spend:    parseFloat(form.monthlySpend) || 0,
-          spend_currency:   form.spendCurrency,
-          aov:              parseFloat(form.aov) || 0,
-          notes:            form.notes,
+          slug: form.slug, display_name: form.displayName, category: form.category,
+          market: form.market, website: form.websiteUrl, instagram: form.instagram,
+          tagline: form.tagline, mission: form.mission, usp: form.usp, tone: form.tone,
+          icp: form.icp, competitor_brands: form.competitors, banned_words: form.bannedWords,
+          target_cpa: parseFloat(form.targetCpa) || 0, cpa_currency: form.cpaCurrency,
+          monthly_spend: parseFloat(form.monthlySpend) || 0, spend_currency: form.spendCurrency,
+          aov: parseFloat(form.aov) || 0, notes: form.notes,
         },
         art_direction: {
-          aesthetic_tagline: form.aestheticTagline,
-          aesthetic_desc:    form.aestheticDesc,
-          colors:            form.colors,
-          font_heading:      form.fontHeading,
-          font_body:         form.fontBody,
-          lighting_desc:     form.lightingDesc,
-          lighting_kelvin:   form.lightingKelvin,
-          lighting_nevers:   form.lightingNevers,
-          camera:            form.camera,
-          never_in_frame:    form.neverInFrame,
-          max_objects:       form.maxObjects,
-          ad_test:           form.adTest,
+          aesthetic_tagline: form.aestheticTagline, aesthetic_desc: form.aestheticDesc,
+          colors: form.colors, font_heading: form.fontHeading, font_body: form.fontBody,
+          lighting_desc: form.lightingDesc, lighting_kelvin: form.lightingKelvin,
+          lighting_nevers: form.lightingNevers, camera: form.camera,
+          never_in_frame: form.neverInFrame, max_objects: form.maxObjects, ad_test: form.adTest,
         },
         products: form.products,
       };
-
       saveBrand(form.slug, brandData);
-      // Link slug back to client record
       if (selectedClientId) updateClient(selectedClientId, { brandSlug: form.slug });
       setSaved(true);
     } finally {
@@ -742,15 +703,8 @@ export default function BrandSetup() {
     }
   };
 
-  const stepsCompleted = (s) => {
-    if (s > step) return false;
-    if (s < step) return true;
-    return false;
-  };
-
   return (
     <div className="flex h-full min-h-0">
-      {/* ── Left panel: client list ── */}
       <div className="w-56 flex-shrink-0 border-r border-[#111] flex flex-col">
         <div className="px-4 py-4 border-b border-[#111]">
           <p className="text-zinc-500 text-xs uppercase tracking-wider">Brands</p>
@@ -761,17 +715,13 @@ export default function BrandSetup() {
             const isSelected = client.id === selectedClientId;
             return (
               <button key={client.id} onClick={() => selectClient(client)}
-                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all ${
-                  isSelected ? 'bg-[#111]' : 'hover:bg-[#0a0a0a]'
-                }`}>
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all ${isSelected ? 'bg-[#111]' : 'hover:bg-[#0a0a0a]'}`}>
                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
                   style={{ background: client.color, color: '#000' }}>
                   {(client.name || '').slice(0, 1).toUpperCase()}
                 </div>
                 <div className="min-w-0">
-                  <p className={`text-sm font-medium truncate ${isSelected ? 'text-white' : 'text-zinc-400'}`}>
-                    {client.name}
-                  </p>
+                  <p className={`text-sm font-medium truncate ${isSelected ? 'text-white' : 'text-zinc-400'}`}>{client.name}</p>
                   <p className="text-[10px] text-zinc-700 mt-0.5">
                     {hasBrand ? <span className="text-green-500">● Setup done</span> : 'Not set up'}
                   </p>
@@ -782,7 +732,6 @@ export default function BrandSetup() {
         </div>
       </div>
 
-      {/* ── Right panel: form ── */}
       <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {!selectedClientId ? (
           <div className="flex-1 flex items-center justify-center text-zinc-600 text-sm">
@@ -790,7 +739,6 @@ export default function BrandSetup() {
           </div>
         ) : (
           <>
-            {/* Header */}
             <div className="px-6 py-4 border-b border-[#111] flex items-center justify-between flex-shrink-0">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
@@ -811,9 +759,7 @@ export default function BrandSetup() {
                 )}
                 {inviteUrl ? (
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-zinc-500 bg-[#111] rounded-lg px-2.5 py-1.5 max-w-[200px] truncate font-mono">
-                      {inviteUrl}
-                    </span>
+                    <span className="text-xs text-zinc-500 bg-[#111] rounded-lg px-2.5 py-1.5 max-w-[200px] truncate font-mono">{inviteUrl}</span>
                     <button type="button" onClick={copyInviteUrl}
                       className="text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all flex-shrink-0"
                       style={{ background: copied ? '#22c55e22' : '#faff0522', color: copied ? '#22c55e' : '#faff05' }}>
@@ -832,16 +778,11 @@ export default function BrandSetup() {
               </div>
             </div>
 
-            {/* Step indicator */}
             <div className="px-6 pt-4 pb-3 flex gap-1.5 flex-shrink-0">
               {STEPS.map(s => (
                 <button key={s.num} type="button" onClick={() => setStep(s.num)}
                   className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-all ${
-                    step === s.num
-                      ? 'text-black'
-                      : step > s.num
-                        ? 'bg-green-500/15 text-green-400'
-                        : 'bg-[#111] text-zinc-600 hover:text-zinc-400'
+                    step === s.num ? 'text-black' : step > s.num ? 'bg-green-500/15 text-green-400' : 'bg-[#111] text-zinc-600 hover:text-zinc-400'
                   }`}
                   style={step === s.num ? { background: '#faff05' } : {}}>
                   {s.num}. {s.label}
@@ -849,7 +790,6 @@ export default function BrandSetup() {
               ))}
             </div>
 
-            {/* Form content */}
             <div className="flex-1 overflow-y-auto px-6 pb-6">
               {step === 1 && <StepWebsite form={form} set={setForm} />}
               {step === 2 && <StepIdentity form={form} set={setForm} />}
@@ -858,24 +798,19 @@ export default function BrandSetup() {
               {step === 5 && <StepMarket form={form} set={setForm} />}
             </div>
 
-            {/* Footer nav */}
             <div className="px-6 py-4 border-t border-[#111] flex items-center gap-3 flex-shrink-0">
-              <button type="button" onClick={() => setStep(s => Math.max(1, s - 1))}
-                disabled={step === 1}
+              <button type="button" onClick={() => setStep(s => Math.max(1, s - 1))} disabled={step === 1}
                 className="px-4 py-2.5 rounded-xl text-sm font-medium bg-[#111] text-zinc-400 hover:text-white disabled:opacity-30 transition-all">
                 Back
               </button>
-
               {step < 5 ? (
                 <button type="button" onClick={() => setStep(s => Math.min(5, s + 1))}
-                  className="ml-auto px-6 py-2.5 rounded-xl text-sm font-semibold text-black"
-                  style={{ background: '#faff05' }}>
+                  className="ml-auto px-6 py-2.5 rounded-xl text-sm font-semibold text-black" style={{ background: '#faff05' }}>
                   Next
                 </button>
               ) : (
                 <button type="button" onClick={handleSave} disabled={saving || !form.slug}
-                  className="ml-auto px-6 py-2.5 rounded-xl text-sm font-semibold text-black disabled:opacity-50 transition-opacity"
-                  style={{ background: '#faff05' }}>
+                  className="ml-auto px-6 py-2.5 rounded-xl text-sm font-semibold text-black disabled:opacity-50 transition-opacity" style={{ background: '#faff05' }}>
                   {saving ? 'Saving…' : 'Save Brand'}
                 </button>
               )}

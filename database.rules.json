@@ -1,6 +1,99 @@
 {
   "rules": {
-    ".read": true,
-    ".write": true
+    ".read": false,
+    ".write": false,
+
+    "boards": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "boards_backup": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "boards_imgdata": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "presence": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "clients": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "projects": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "tasks": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "finances": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "ideas": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "meetings": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "liveTasks": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "recurringCosts": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "sgPersons": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "sgAccounts": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "userNotifs": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "gcalEvents": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "archivedCount": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "taskMonthlyHistory": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "clientActivity": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    },
+    "brands": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics') || auth == null"
+    },
+    "onboarding_tokens": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics') || auth == null",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics') || auth == null"
+    },
+    "adPipelines": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "mentorias": {
+      ".read": "auth != null && auth.token.email.contains('@synced.graphics')",
+      ".write": "auth != null && auth.token.email.contains('@synced.graphics')"
+    }
   }
 }

@@ -1,6 +1,17 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { db } from '../firebase';
-import { ref, set, remove, onValue, get, update as fbUpdate } from 'firebase/database';
+import { db, auth } from '../firebase';
+import { ref, set, remove, onValue, get, update as fbUpdate, onDisconnect } from 'firebase/database';
+import { signOut } from 'firebase/auth';
+import { TEAM_IDS, TEAM_FINANCE, TASK_STATUS_LABELS } from '../constants';
+
+const USER_LABELS = { kann: 'Kann', jero: 'Jero', facu: 'Facu' };
+
+const NOTIF_MAX = 20;
+const NOTIF_TTL_MS = 24 * 60 * 60 * 1000;
+const pruneNotifs = (arr) => {
+  const cutoff = Date.now() - NOTIF_TTL_MS;
+  return arr.filter(n => new Date(n.timestamp).getTime() > cutoff).slice(0, NOTIF_MAX);
+};
 
 
 const AppContext = createContext(null);
@@ -13,9 +24,10 @@ export const CLIENT_COLORS = [
 const INITIAL_CLIENTS = [
   {
     id: 'c1', name: 'Hollywood Browzer', contact: '', country: 'UK', category: 'Beauty',
-    contractType: 'Monthly', monthlyRevenue: 3500, revenueCurrency: 'GBP', commissions: 0,
+    contractType: 'Monthly', monthlyRevenue: 3400, revenueCurrency: 'GBP', commissions: 0,
     hasMonthlyPayment: true, hasCommissions: true, commissionRate: 10,
     contractStart: '2026-05-01', contractMonths: 6,
+    monthlyRevenueNew: 4400, rateChangeDate: '2026-08-01',
     color: '#f472b6', active: true, weeklyUpdate: '', files: [], contractFile: null,
     proposalFile: null, documents: [], commissionHistory: [],
   },
@@ -109,27 +121,35 @@ const INITIAL_PROJECTS = [
   { id:'pr0a', clientName:'GLAD',           dateStart:'2024-01-01', dateEnd:'2024-02-01', paymentDate:null,         originalAmount:0,    originalCurrency:'GBP', amountUSD:0,       paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
   { id:'pr0b', clientName:'Bloody Bens',    dateStart:'2024-02-01', dateEnd:'2024-03-01', paymentDate:null,         originalAmount:0,    originalCurrency:'GBP', amountUSD:0,       paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
   { id:'pr0c', clientName:'Aquela Kombucha',dateStart:'2024-03-01', dateEnd:'2024-04-01', paymentDate:null,         originalAmount:0,    originalCurrency:'GBP', amountUSD:0,       paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
-  { id:'pr0d', clientName:'Raise',          dateStart:'2024-04-01', dateEnd:'2024-05-01', paymentDate:null,         originalAmount:0,    originalCurrency:'GBP', amountUSD:0,       paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
+  { id:'pr0d', clientName:'Raise',          dateStart:'2024-04-01', dateEnd:'2024-05-01', paymentDate:null,         originalAmount:1200, originalCurrency:'GBP', amountUSD:1524,    paidStatus:'paid',    paidAmount:1524,   receiptFile:null, note:'', splitDetails:[{key:'J',pct:100}] },
   { id:'pr0e', clientName:'Coda',           dateStart:'2024-05-01', dateEnd:'2024-06-01', paymentDate:null,         originalAmount:0,    originalCurrency:'GBP', amountUSD:0,       paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
   { id:'pr1',  clientName:'Helpbnk',        dateStart:'2024-06-01', dateEnd:'2024-07-01', paymentDate:null,         originalAmount:1000, originalCurrency:'GBP', amountUSD:1350,    paidStatus:'paid',    paidAmount:1350,   receiptFile:null, note:'' },
   { id:'pr2',  clientName:'Monaco',         dateStart:'2024-07-01', dateEnd:'2024-09-01', paymentDate:null,         originalAmount:4250, originalCurrency:'USD', amountUSD:4250,    paidStatus:'paid',    paidAmount:4250,   receiptFile:null, note:'' },
   { id:'pr3',  clientName:'PerfectTED',     dateStart:'2024-08-01', dateEnd:'2024-09-01', paymentDate:null,         originalAmount:300,  originalCurrency:'GBP', amountUSD:406,     paidStatus:'paid',    paidAmount:406,    receiptFile:null, note:'Proyecto P1' },
   { id:'pr4',  clientName:'Reeses',         dateStart:'2024-09-01', dateEnd:'2024-10-01', paymentDate:null,         originalAmount:429,  originalCurrency:'GBP', amountUSD:579.60,  paidStatus:'paid',    paidAmount:579.60, receiptFile:null, note:'' },
-  { id:'pr5',  clientName:'Hershey',        dateStart:'2024-10-01', dateEnd:'2024-11-01', paymentDate:null,         originalAmount:475,  originalCurrency:'GBP', amountUSD:641.74,  paidStatus:'paid',    paidAmount:641.74, receiptFile:null, note:'' },
+  { id:'pr5',  clientName:'Hershey',        dateStart:'2024-10-01', dateEnd:'2024-11-01', paymentDate:null,         originalAmount:475,  originalCurrency:'GBP', amountUSD:641.74,  paidStatus:'paid',    paidAmount:641.74, receiptFile:null, note:'', splitDetails:[{key:'J',pct:50},{key:'SG',pct:50}] },
   { id:'pr6',  clientName:'ED-cuchara',     dateStart:'2024-11-01', dateEnd:'2024-12-01', paymentDate:null,         originalAmount:350,  originalCurrency:'GBP', amountUSD:468.64,  paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
   { id:'pr7',  clientName:'PAWZ',           dateStart:'2024-12-01', dateEnd:'2025-01-01', paymentDate:null,         originalAmount:250,  originalCurrency:'GBP', amountUSD:334.74,  paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'' },
   { id:'pr8',  clientName:'PerfectTED',     dateStart:'2025-02-01', dateEnd:'2025-03-01', paymentDate:null,         originalAmount:350,  originalCurrency:'GBP', amountUSD:468.64,  paidStatus:'paid',    paidAmount:468.64, receiptFile:null, note:'Proyecto P2' },
   { id:'pr9',  clientName:'Chotto MAtte',   dateStart:'2025-04-01', dateEnd:'2025-05-01', paymentDate:null,         originalAmount:2000, originalCurrency:'GBP', amountUSD:2677.94, paidStatus:'paid',    paidAmount:2677.94,receiptFile:null, note:'' },
   { id:'pr10', clientName:'Wicker Basket',  dateStart:'2025-09-01', dateEnd:'2025-10-01', paymentDate:'2025-11-16', originalAmount:500,  originalCurrency:'GBP', amountUSD:669.50,  paidStatus:'paid',    paidAmount:669.50, receiptFile:null, note:'Si consigue inversión paga £1300 adicional' },
   { id:'pr11', clientName:'Simply Honest',  dateStart:'2025-11-01', dateEnd:'2025-12-01', paymentDate:'2025-12-02', originalAmount:450,  originalCurrency:'GBP', amountUSD:602.55,  paidStatus:'partial', paidAmount:301.28, receiptFile:null, note:'50% pagado' },
-  { id:'pr12', clientName:'Von Dutch',      dateStart:'2025-10-01', dateEnd:'2026-01-01', paymentDate:null,         originalAmount:6000, originalCurrency:'USD', amountUSD:6000,    paidStatus:'unpaid',  paidAmount:0,      receiptFile:null, note:'Proyecto total $6,000 USD' },
+  { id:'pr12a', clientName:'Von Dutch', dateStart:'2025-12-01', dateEnd:'2026-01-01', paymentDate:null, originalAmount:2000, originalCurrency:'USD', amountUSD:2000, paidStatus:'unpaid', paidAmount:0, receiptFile:null, note:'Retainer Dic 2025' },
+  { id:'pr12b', clientName:'Von Dutch', dateStart:'2026-01-01', dateEnd:'2026-02-01', paymentDate:null, originalAmount:2000, originalCurrency:'USD', amountUSD:2000, paidStatus:'unpaid', paidAmount:0, receiptFile:null, note:'Retainer Ene 2026' },
+  { id:'pr12c', clientName:'Von Dutch', dateStart:'2026-02-01', dateEnd:'2026-03-01', paymentDate:null, originalAmount:2000, originalCurrency:'USD', amountUSD:2000, paidStatus:'unpaid', paidAmount:0, receiptFile:null, note:'Retainer Feb 2026' },
   { id:'pr13', clientName:'Monaco',         dateStart:'2025-12-01', dateEnd:'2026-02-01', paymentDate:null,         originalAmount:2500, originalCurrency:'USD', amountUSD:2500,    paidStatus:'paid',    paidAmount:2500,   receiptFile:null, note:'' },
 ];
 
 function load(key, fallback) {
   try {
     const v = localStorage.getItem(key);
-    return v ? JSON.parse(v) : fallback;
+    if (!v) return fallback;
+    const parsed = JSON.parse(v);
+    // If we expect an array but localStorage has old object format, convert
+    if (Array.isArray(fallback) && parsed && !Array.isArray(parsed)) {
+      return Object.values(parsed);
+    }
+    return parsed;
   } catch { return fallback; }
 }
 
@@ -137,25 +157,109 @@ function objToArr(val) {
   return val ? Object.values(val) : [];
 }
 
-export function AppProvider({ children }) {
+export function AppProvider({ children, currentUser: currentUserProp }) {
   // Initialize from localStorage immediately — app renders right away
   const [clients, setClients] = useState(() => load('sg_clients_v7', INITIAL_CLIENTS));
-  const [tasks, setTasks] = useState(() => load('sg_tasks_v2', INITIAL_TASKS));
+  const [tasks, setTasks] = useState(() => load('sg_tasks_v3', []));
   const [finances, setFinances] = useState(() => load('sg_finances_v2', INITIAL_FINANCES));
   const [projects, setProjects] = useState(() => load('sg_projects_v2', INITIAL_PROJECTS));
   const [recurringCosts, setRecurringCosts] = useState(() => load('sg_recurring_costs', []));
   const [ideas, setIdeas] = useState(() => load('sg_ideas', []));
   const [meetings, setMeetings] = useState(() => load('sg_meetings', []));
   const [liveTasks, setLiveTasks] = useState(() => load('sg_live_tasks', []));
-  const [notifications, setNotifications] = useState(() => load('sg_notifications', []));
+  const [adPipelines, setAdPipelines] = useState(() => load('sg_ad_pipelines_v1', []));
+  const [adPipelinesLoaded, setAdPipelinesLoaded] = useState(false);
+  const [mentorias, setMentorias] = useState(() => load('sg_mentorias_v1', []));
+  const [notifications, setNotifications] = useState(() => pruneNotifs(load('sg_notifications', [])));
+  const [sgAccounts, setSgAccounts] = useState(() => load('sg_accounts_v1', []));
+  const [sgPersons,  setSgPersons]  = useState(() => load('sg_persons_v1',  []));
+  const [archivedCount, setArchivedCount] = useState(() => load('sg_archived_count', 0));
+  const [taskMonthlyHistory, setTaskMonthlyHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('sg_task_monthly') || '{}'); } catch { return {}; }
+  });
+  const taskMonthlyHistoryRef = useRef(taskMonthlyHistory);
+  useEffect(() => { taskMonthlyHistoryRef.current = taskMonthlyHistory; }, [taskMonthlyHistory]);
   const [clientActivity, setClientActivity] = useState({});
+  const [globalOnlineUsers, setGlobalOnlineUsers] = useState({});
   const [docFocusClientId, setDocFocusClientId] = useState(null);
   const [gcalEvents, setGcalEventsState] = useState({});
   const [brands, setBrands] = useState(() => load('sg_brands', {}));
   // Tracks which Firebase paths have fired at least once (so empty = user deleted everything)
   const fbSyncedRef = useRef(new Set());
+  // fbReady: true once tasks + clients + liveTasks have all synced from Firebase (not localStorage)
+  const [fbReady, setFbReady] = useState(false);
+  const fbReadyPathsRef = useRef(new Set());
+  const FB_CRITICAL = ['tasks', 'clients', 'liveTasks'];
+  // Undo stack — stores tasks snapshots before each mutation
+  const undoStack = useRef([]);
+  const tasksRef = useRef(tasks);
+  useEffect(() => { tasksRef.current = tasks; }, [tasks]);
 
-  const currentUser = sessionStorage.getItem('sg_user') || 'kann';
+  const currentUser = currentUserProp || 'kann';
+
+  // One-time migration: fix Hollywood Browzer monthly revenue 3500→3400 + set August rate change
+  useEffect(() => {
+    if (!fbReady) return;
+    get(ref(db, 'clients/c1')).then(snap => {
+      if (!snap.exists()) return;
+      const hb = snap.val();
+      if (hb && !hb.rateChangeDate) {
+        fbUpdate(ref(db, 'clients/c1'), { monthlyRevenue: 3400, monthlyRevenueNew: 4400, rateChangeDate: '2026-08-01' });
+      }
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fbReady]);
+
+  // One-time migration: split Von Dutch pr12 ($6000 single) into 3 monthly $2000 USD debts
+  useEffect(() => {
+    if (!fbReady) return;
+    get(ref(db, 'projects/pr12')).then(snap => {
+      if (!snap.exists()) return;
+      const p = snap.val();
+      if (p && p.amountUSD === 6000) {
+        const updates = {
+          pr12:  null, // delete old entry
+          pr12a: { id:'pr12a', clientName:'Von Dutch', dateStart:'2025-12-01', dateEnd:'2026-01-01', paymentDate:null, originalAmount:2000, originalCurrency:'USD', amountUSD:2000, paidStatus:'unpaid', paidAmount:0, receiptFile:null, note:'Retainer Dic 2025' },
+          pr12b: { id:'pr12b', clientName:'Von Dutch', dateStart:'2026-01-01', dateEnd:'2026-02-01', paymentDate:null, originalAmount:2000, originalCurrency:'USD', amountUSD:2000, paidStatus:'unpaid', paidAmount:0, receiptFile:null, note:'Retainer Ene 2026' },
+          pr12c: { id:'pr12c', clientName:'Von Dutch', dateStart:'2026-02-01', dateEnd:'2026-03-01', paymentDate:null, originalAmount:2000, originalCurrency:'USD', amountUSD:2000, paidStatus:'unpaid', paidAmount:0, receiptFile:null, note:'Retainer Feb 2026' },
+        };
+        fbUpdate(ref(db, 'projects'), updates);
+      }
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fbReady]);
+
+  // Migration: fix Raise (pr0d) — set £1200 paid, 100% Jero
+  useEffect(() => {
+    if (!fbReady) return;
+    get(ref(db, 'projects/pr0d')).then(snap => {
+      if (!snap.exists()) return;
+      const p = snap.val();
+      if (p && (!p.paidAmount || p.paidAmount === 0)) {
+        fbUpdate(ref(db, 'projects/pr0d'), {
+          originalAmount: 1200, originalCurrency: 'GBP', amountUSD: 1524,
+          paidStatus: 'paid', paidAmount: 1524,
+          splitDetails: [{ key: 'J', pct: 100 }],
+        });
+      }
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fbReady]);
+
+  // Migration: fix Hershey (pr5) — 50% Jero / 50% Synced
+  useEffect(() => {
+    if (!fbReady) return;
+    get(ref(db, 'projects/pr5')).then(snap => {
+      if (!snap.exists()) return;
+      const p = snap.val();
+      if (p && !p.splitDetails) {
+        fbUpdate(ref(db, 'projects/pr5'), {
+          splitDetails: [{ key: 'J', pct: 50 }, { key: 'SG', pct: 50 }],
+        });
+      }
+    }).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fbReady]);
 
   const [currency, setCurrency] = useState('USD');
   const [exchangeRates, setExchangeRates] = useState({ USD: 1, EUR: 0.92, GBP: 0.79 });
@@ -173,28 +277,45 @@ export function AppProvider({ children }) {
       .catch(() => {});
   }, []);
 
+  // Auth is managed by App.jsx via onAuthStateChanged — no shared service account here
+
   // Firebase: listeners fire immediately and sync in real-time; seeding happens in background
   useEffect(() => {
     const collections = [
-      { path: 'tasks',          setter: setTasks,          lsKey: 'sg_tasks_v2',        initial: INITIAL_TASKS },
+      { path: 'tasks',          setter: setTasks,          lsKey: 'sg_tasks_v3',        initial: [] },
       { path: 'clients',        setter: setClients,        lsKey: 'sg_clients_v7',      initial: INITIAL_CLIENTS },
       { path: 'finances',       setter: setFinances,       lsKey: 'sg_finances_v2',     initial: INITIAL_FINANCES },
       { path: 'projects',       setter: setProjects,       lsKey: 'sg_projects_v2',     initial: INITIAL_PROJECTS },
       { path: 'ideas',          setter: setIdeas,          lsKey: 'sg_ideas',           initial: [] },
       { path: 'meetings',       setter: setMeetings,       lsKey: 'sg_meetings',        initial: [] },
       { path: 'liveTasks',      setter: setLiveTasks,      lsKey: 'sg_live_tasks',      initial: [] },
+      { path: 'adPipelines',    setter: setAdPipelines,    lsKey: 'sg_ad_pipelines_v1', initial: [] },
       { path: 'recurringCosts', setter: setRecurringCosts, lsKey: 'sg_recurring_costs', initial: [] },
+      { path: 'sgAccounts',     setter: setSgAccounts,     lsKey: 'sg_accounts_v1',    initial: [] },
+      { path: 'sgPersons',      setter: setSgPersons,      lsKey: 'sg_persons_v1',     initial: [] },
+      { path: 'mentorias',      setter: setMentorias,      lsKey: 'sg_mentorias_v1',   initial: [] },
     ];
 
     // Set up real-time listeners immediately — state updates come from Firebase
-    const unsubscribes = collections.map(({ path, setter }) =>
+    const unsubscribes = collections.map(({ path, setter, lsKey }) =>
       onValue(ref(db, path), snap => {
         // First fire with no data: keep localStorage state (Firebase not yet seeded)
         // After first sync: always trust Firebase (empty = user deleted everything)
         if (snap.exists() || fbSyncedRef.current.has(path)) {
-          setter(objToArr(snap.val()));
+          const arr = objToArr(snap.val());
+          setter(arr);
+          try { localStorage.setItem(lsKey, JSON.stringify(arr)); } catch (_) {}
         }
-        fbSyncedRef.current.add(path);
+        if (!fbSyncedRef.current.has(path)) {
+          fbSyncedRef.current.add(path);
+          if (path === 'adPipelines') setAdPipelinesLoaded(true);
+          if (FB_CRITICAL.includes(path)) {
+            fbReadyPathsRef.current.add(path);
+            if (fbReadyPathsRef.current.size >= FB_CRITICAL.length) {
+              setFbReady(true);
+            }
+          }
+        }
       })
     );
 
@@ -212,6 +333,20 @@ export function AppProvider({ children }) {
         .catch(() => {}); // Silently ignore if Firebase is unreachable
     });
 
+    // Mentoria reconciliation: push any local sessions that Firebase doesn't have yet.
+    // Uses update() (not set()) so it never overwrites what's already in Firebase.
+    // This fixes the case where two users each had local sessions that were never merged.
+    get(ref(db, 'mentorias'))
+      .then(snap => {
+        const fbIds = new Set(Object.keys(snap.val() || {}));
+        const local = load('sg_mentorias_v1', []);
+        const missing = local.filter(m => !fbIds.has(String(m.id)));
+        if (missing.length > 0) {
+          fbUpdate(ref(db, 'mentorias'), Object.fromEntries(missing.map(m => [String(m.id), m])));
+        }
+      })
+      .catch(() => {});
+
     return () => unsubscribes.forEach(u => u());
   }, []);
 
@@ -223,10 +358,21 @@ export function AppProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    if (!currentUser || currentUser.startsWith('brand_') || currentUser === 'mentor') return;
+    const presenceRef = ref(db, `presence/global/${currentUser}`);
+    set(presenceRef, true);
+    onDisconnect(presenceRef).remove();
+    const unsub = onValue(ref(db, 'presence/global'), snap => {
+      setGlobalOnlineUsers(snap.val() || {});
+    });
+    return () => { unsub(); remove(presenceRef); };
+  }, [currentUser]);
+
+  useEffect(() => {
     const unsub = onValue(ref(db, 'brands'), snap => {
       const val = snap.exists() ? snap.val() : {};
       setBrands(val);
-      localStorage.setItem('sg_brands', JSON.stringify(val));
+      try { localStorage.setItem('sg_brands', JSON.stringify(val)); } catch (_) {}
     });
     return () => unsub();
   }, []);
@@ -257,8 +403,82 @@ export function AppProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('sg_notifications', JSON.stringify(notifications));
+    const pruned = pruneNotifs(notifications);
+    try { localStorage.setItem('sg_notifications', JSON.stringify(pruned)); } catch (_) {
+      localStorage.removeItem('sg_notifications');
+    }
   }, [notifications]);
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (!(e.ctrlKey || e.metaKey) || e.key !== 'z' || e.shiftKey) return;
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement?.isContentEditable) return;
+      if (undoStack.current.length === 0) return;
+      e.preventDefault();
+      const prev = undoStack.current.pop();
+      const curr = tasksRef.current;
+      const prevById = Object.fromEntries(prev.map(t => [t.id, t]));
+      const currById = Object.fromEntries(curr.map(t => [t.id, t]));
+      prev.forEach(t => {
+        if (!currById[t.id] || JSON.stringify(currById[t.id]) !== JSON.stringify(t))
+          fb(set(ref(db, `tasks/${t.id}`), t));
+      });
+      curr.forEach(t => {
+        if (!prevById[t.id]) fb(remove(ref(db, `tasks/${t.id}`)));
+      });
+      setTasks(prev);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  useEffect(() => {
+    try { localStorage.setItem('sg_archived_count', JSON.stringify(archivedCount)); } catch (_) {}
+  }, [archivedCount]);
+
+  useEffect(() => {
+    const unsub = onValue(ref(db, 'archivedCount'), snap => {
+      if (snap.exists()) setArchivedCount(snap.val());
+    });
+    return () => unsub();
+  }, []);
+
+  const monthInitRef = useRef(false);
+  useEffect(() => {
+    const unsub = onValue(ref(db, 'taskMonthlyHistory'), snap => {
+      const now = new Date();
+      const currentKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      if (snap.exists()) {
+        const val = snap.val();
+        // One-time: if current month has no entry, seed it with the total archivedCount
+        if (!monthInitRef.current && val[currentKey] === undefined) {
+          const prevArchived = load('sg_archived_count', 0);
+          if (prevArchived > 0) {
+            val[currentKey] = prevArchived;
+            fb(fbUpdate(ref(db, 'taskMonthlyHistory'), { [currentKey]: prevArchived }));
+          }
+        }
+        monthInitRef.current = true;
+        setTaskMonthlyHistory(val);
+        try { localStorage.setItem('sg_task_monthly', JSON.stringify(val)); } catch (_) {}
+      } else {
+        const seed = {};
+        for (let i = 6; i >= 1; i--) {
+          const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+          const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+          seed[key] = 0;
+        }
+        const prevArchived = load('sg_archived_count', 0);
+        seed[currentKey] = prevArchived;
+        monthInitRef.current = true;
+        setTaskMonthlyHistory(seed);
+        localStorage.setItem('sg_task_monthly', JSON.stringify(seed));
+        fb(set(ref(db, 'taskMonthlyHistory'), seed));
+      }
+    });
+    return () => unsub();
+  }, []);
 
   // Listen for cross-user notifications (e.g. document comments from other users)
   useEffect(() => {
@@ -270,7 +490,7 @@ export function AppProvider({ children }) {
         const existingIds = new Set(prev.map(n => n.id));
         const fresh = fbNotifs.filter(n => !existingIds.has(n.id));
         if (fresh.length === 0) return prev;
-        return [...fresh, ...prev].slice(0, 100);
+        return pruneNotifs([...fresh, ...prev]);
       });
     });
     return () => unsub();
@@ -292,23 +512,18 @@ export function AppProvider({ children }) {
   }, [exchangeRates]);
 
   const addNotification = useCallback((action, location) => {
-    const user = sessionStorage.getItem('sg_user') || 'kann';
+    const user = currentUser;
     const note = { id: Date.now().toString(), user, action, location, timestamp: new Date().toISOString(), read: false };
-    setNotifications(p => [note, ...p].slice(0, 100));
+    setNotifications(p => pruneNotifs([note, ...p]));
   }, []);
 
   const markAllRead = useCallback(() => {
     setNotifications(p => p.map(n => ({ ...n, read: true })));
   }, []);
 
-  const TEAM_ALL = ['kann', 'jero', 'facu'];
-  const TEAM_FINANCE = ['kann', 'jero'];
-  const USER_LABELS = { kann: 'Kann', jero: 'Jero', facu: 'Facu' };
-  const STATUS_NAMES = { todo: 'To Do', inprogress: 'In Progress', done: 'Done' };
-
   // Send a notification to all specified recipients via Firebase only (never self)
-  const pushNotif = (action, location, recipients = TEAM_ALL) => {
-    const user = sessionStorage.getItem('sg_user') || 'kann';
+  const pushNotif = (action, location, recipients = TEAM_IDS) => {
+    const user = currentUser;
     const who = USER_LABELS[user] || user;
     const notifId = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const notif = { id: notifId, user, action: `${who} ${action}`, location, timestamp: new Date().toISOString(), read: false };
@@ -321,13 +536,49 @@ export function AppProvider({ children }) {
   const fb = (promise) => promise.catch(e => console.warn('[Firebase]', e));
 
   const addDocument = useCallback((clientId, doc) => {
-    const user = sessionStorage.getItem('sg_user') || 'kann';
-    const newDoc = { ...doc, id: Date.now().toString(), uploadedBy: user, uploadedAt: new Date().toISOString(), notes: [] };
-    setClients(p => p.map(c => c.id === clientId ? { ...c, documents: [...(c.documents || []), newDoc] } : c));
+    const user = currentUser;
+    const newDoc = { ...doc, id: doc.id || Date.now().toString(), uploadedBy: user, uploadedAt: new Date().toISOString(), notes: [] };
+    setClients(p => {
+      const updated = p.map(c => {
+        if (c.id !== clientId) return c;
+        const newDocs = [...(c.documents || []), newDoc];
+        fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: newDocs }));
+        return { ...c, documents: newDocs };
+      });
+      return updated;
+    });
     const client = clients.find(c => c.id === clientId);
-    if (client) fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: [...(client.documents || []), newDoc] }));
     pushNotif(`subió "${doc.name}"`, `Documentos › ${client?.name || clientId}`);
   }, [clients]);
+
+  const updateDocument = useCallback((clientId, docId, updates) => {
+    setClients(p => {
+      const updated = p.map(c => {
+        if (c.id !== clientId) return c;
+        const newDocs = (c.documents || []).map(d => d.id === docId ? { ...d, ...updates } : d);
+        fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: newDocs }));
+        return { ...c, documents: newDocs };
+      });
+      return updated;
+    });
+  }, []);
+
+  const createFolderWithFiles = useCallback((clientId, folderName, fileIds, parentId = null) => {
+    const user = currentUser;
+    const folderId = Date.now().toString();
+    const folderDoc = { id: folderId, name: folderName, type: 'folder', parentId: parentId || null, url: null, size: null, mime: null, uploadedBy: user, uploadedAt: new Date().toISOString(), notes: [] };
+    setClients(p => {
+      const updated = p.map(c => {
+        if (c.id !== clientId) return c;
+        const newDocs = (c.documents || []).map(d => fileIds.includes(d.id) ? { ...d, parentId: folderId } : d);
+        newDocs.push(folderDoc);
+        fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: newDocs }));
+        return { ...c, documents: newDocs };
+      });
+      return updated;
+    });
+    return folderId;
+  }, []);
 
   const removeDocument = useCallback((clientId, docId) => {
     const client = clients.find(c => c.id === clientId);
@@ -339,7 +590,7 @@ export function AppProvider({ children }) {
   }, [clients]);
 
   const addDocumentNote = useCallback((clientId, docId, note) => {
-    const user = sessionStorage.getItem('sg_user') || 'kann';
+    const user = currentUser;
     const newNote = { text: note, by: user, at: new Date().toISOString() };
     setClients(p => p.map(c => {
       if (c.id !== clientId) return c;
@@ -352,10 +603,9 @@ export function AppProvider({ children }) {
         d.id === docId ? { ...d, notes: [...(d.notes || []), newNote] } : d);
       fb(fbUpdate(ref(db, `clients/${clientId}`), { documents: updatedDocs }));
       // Notify all other users
-      const TEAM = ['kann', 'jero', 'facu'];
-      const userName = user === 'kann' ? 'Kann' : user === 'jero' ? 'Jero' : 'Facu';
+      const userName = USER_LABELS[user] || user;
       const notifId = `${Date.now()}_${Math.random().toString(36).slice(2)}`;
-      TEAM.filter(u => u !== user).forEach(target => {
+      TEAM_IDS.filter(u => u !== user).forEach(target => {
         fb(set(ref(db, `userNotifs/${target}/${notifId}`), {
           id: notifId,
           user: 'system',
@@ -411,35 +661,62 @@ export function AppProvider({ children }) {
     if (proj) pushNotif(`eliminó proyecto "${proj.clientName}"`, 'Finanzas', TEAM_FINANCE);
   };
 
+  const archiveTask = (id) => {
+    setTasks(p => p.filter(t => t.id !== id));
+    fb(remove(ref(db, `tasks/${id}`)));
+    const newCount = archivedCount + 1;
+    setArchivedCount(newCount);
+    fb(set(ref(db, 'archivedCount'), newCount));
+    const monthKey = new Date().toISOString().slice(0, 7);
+    const updated = { ...taskMonthlyHistoryRef.current, [monthKey]: (taskMonthlyHistoryRef.current[monthKey] || 0) + 1 };
+    setTaskMonthlyHistory(updated);
+    try { localStorage.setItem('sg_task_monthly', JSON.stringify(updated)); } catch (_) {}
+    fb(fbUpdate(ref(db, 'taskMonthlyHistory'), { [monthKey]: updated[monthKey] }));
+  };
+
   const reorderTask = (id, updates) => {
+    undoStack.current.push([...tasks]);
+    if (undoStack.current.length > 30) undoStack.current.shift();
     const task = tasks.find(t => t.id === id);
-    setTasks(p => p.map(t => t.id === id ? { ...t, ...updates } : t));
-    fb(fbUpdate(ref(db, `tasks/${id}`), updates));
-    if (task && updates.status && updates.status !== task.status) {
-      pushNotif(`movió "${task.title}" → ${STATUS_NAMES[updates.status] || updates.status}`, 'Kanban');
+    const finalUpdates = { ...updates };
+    if (updates.status === 'done' && task?.status !== 'done') finalUpdates.completedAt = Date.now();
+    setTasks(p => p.map(t => t.id === id ? { ...t, ...finalUpdates } : t));
+    fb(fbUpdate(ref(db, `tasks/${id}`), finalUpdates));
+    if (task && finalUpdates.status && finalUpdates.status !== task.status) {
+      pushNotif(`movió "${task.title}" → ${TASK_STATUS_LABELS[finalUpdates.status] || finalUpdates.status}`, 'Kanban');
     }
   };
 
   const addTask = (data) => {
+    undoStack.current.push([...tasks]);
+    if (undoStack.current.length > 30) undoStack.current.shift();
     const id = Date.now().toString();
-    const task = { ...data, id, status: data.status || 'todo' };
+    const task = { ...data, id, status: data.status || 'todo', createdBy: currentUser, createdAt: Date.now() };
     setTasks(p => [...p, task]);
     fb(set(ref(db, `tasks/${id}`), task));
     pushNotif(`creó la tarea "${data.title}"`, 'Kanban');
   };
   const updateTask = (id, updates) => {
+    undoStack.current.push([...tasks]);
+    if (undoStack.current.length > 30) undoStack.current.shift();
     const task = tasks.find(t => t.id === id);
     setTasks(p => p.map(t => t.id === id ? { ...t, ...updates } : t));
     fb(fbUpdate(ref(db, `tasks/${id}`), updates));
     if (task) pushNotif(`editó "${updates.title || task.title}"`, 'Kanban');
   };
   const moveTask = (id, status) => {
+    undoStack.current.push([...tasks]);
+    if (undoStack.current.length > 30) undoStack.current.shift();
     const task = tasks.find(t => t.id === id);
-    setTasks(p => p.map(t => t.id === id ? { ...t, status } : t));
-    fb(fbUpdate(ref(db, `tasks/${id}`), { status }));
-    if (task) pushNotif(`movió "${task.title}" → ${STATUS_NAMES[status] || status}`, 'Kanban');
+    const updates = { status };
+    if (status === 'done' && task?.status !== 'done') updates.completedAt = Date.now();
+    setTasks(p => p.map(t => t.id === id ? { ...t, ...updates } : t));
+    fb(fbUpdate(ref(db, `tasks/${id}`), updates));
+    if (task) pushNotif(`movió "${task.title}" → ${TASK_STATUS_LABELS[status] || status}`, 'Kanban');
   };
   const deleteTask = (id) => {
+    undoStack.current.push([...tasks]);
+    if (undoStack.current.length > 30) undoStack.current.shift();
     const task = tasks.find(t => t.id === id);
     setTasks(p => p.filter(t => t.id !== id));
     fb(remove(ref(db, `tasks/${id}`)));
@@ -467,6 +744,11 @@ export function AppProvider({ children }) {
     fb(set(ref(db, `ideas/${id}`), idea));
     pushNotif(`agregó una idea: "${data.title || (data.content || '').slice(0, 40)}"`, 'Banco de ideas');
   };
+  const updateIdea = (id, updates) => {
+    setIdeas(p => p.map(i => i.id === id ? { ...i, ...updates } : i));
+    fb(fbUpdate(ref(db, `ideas/${id}`), updates));
+  };
+
   const deleteIdea = (id) => {
     const idea = ideas.find(i => i.id === id);
     setIdeas(p => p.filter(i => i.id !== id));
@@ -517,7 +799,64 @@ export function AppProvider({ children }) {
     const task = liveTasks.find(t => t.id === id);
     setLiveTasks(p => p.map(t => t.id === id ? { ...t, status } : t));
     fb(fbUpdate(ref(db, `liveTasks/${id}`), { status }));
-    if (task) pushNotif(`movió "${task.title}" → ${STATUS_NAMES[status] || status}`, 'Live Tasks');
+    if (task) pushNotif(`movió "${task.title}" → ${TASK_STATUS_LABELS[status] || status}`, 'Live Tasks');
+  };
+
+  const addAdPipeline = (data) => {
+    const id = Date.now().toString();
+    const pipeline = { ...data, id, createdAt: new Date().toISOString(), createdBy: currentUser, step1: null, step2: null, step3: null, step4: null };
+    setAdPipelines(p => [...p, pipeline]);
+    fb(set(ref(db, `adPipelines/${id}`), pipeline));
+    pushNotif(`creó pipeline "${data.name || ''}"`, 'Live Tasks');
+  };
+  const updateAdPipeline = (id, updates) => {
+    setAdPipelines(p => p.map(x => x.id === id ? { ...x, ...updates } : x));
+    fb(fbUpdate(ref(db, `adPipelines/${id}`), updates));
+  };
+  const deleteAdPipeline = (id) => {
+    setAdPipelines(p => p.filter(x => x.id !== id));
+    fb(remove(ref(db, `adPipelines/${id}`)));
+    pushNotif('eliminó un pipeline', 'Live Tasks');
+  };
+
+  const saveMentoriasLS = (arr) => {
+    try { localStorage.setItem('sg_mentorias_v1', JSON.stringify(arr)); } catch (_) {}
+  };
+  const addMentoria = (data) => {
+    const id = data.id || Date.now().toString();
+    const number = mentorias.length > 0 ? Math.max(...mentorias.map(m => m.number || 0)) + 1 : 1;
+    const session = { id, number, date: data.date, duration: data.duration || '', status: data.status || 'programada', createdAt: new Date().toISOString(), createdBy: currentUser };
+    setMentorias(p => { const next = [...p, session]; saveMentoriasLS(next); return next; });
+    fb(set(ref(db, `mentorias/${id}`), session));
+    pushNotif(`creó sesión de mentoría #${number}`, 'Mentoría', ['kann', 'jero']);
+  };
+  const updateMentoria = (id, updates) => {
+    setMentorias(p => { const next = p.map(m => m.id === id ? { ...m, ...updates } : m); saveMentoriasLS(next); return next; });
+    fb(fbUpdate(ref(db, `mentorias/${id}`), updates));
+  };
+  const addMentoriaItem = (sessionId, data) => {
+    const itemId = Date.now().toString();
+    const item = { ...data, id: itemId, status: 'pendiente', createdBy: currentUser, createdAt: new Date().toISOString() };
+    setMentorias(p => { const next = p.map(m => m.id === sessionId ? { ...m, items: { ...(m.items || {}), [itemId]: item } } : m); saveMentoriasLS(next); return next; });
+    fb(set(ref(db, `mentorias/${sessionId}/items/${itemId}`), item));
+  };
+  const updateMentoriaItem = (sessionId, itemId, updates) => {
+    setMentorias(p => { const next = p.map(m => m.id === sessionId ? { ...m, items: { ...(m.items || {}), [itemId]: { ...(m.items?.[itemId] || {}), ...updates } } } : m); saveMentoriasLS(next); return next; });
+    fb(fbUpdate(ref(db, `mentorias/${sessionId}/items/${itemId}`), updates));
+  };
+  const deleteMentoriaItem = (sessionId, itemId) => {
+    setMentorias(p => { const next = p.map(m => m.id === sessionId ? { ...m, items: Object.fromEntries(Object.entries(m.items || {}).filter(([k]) => k !== itemId)) } : m); saveMentoriasLS(next); return next; });
+    fb(remove(ref(db, `mentorias/${sessionId}/items/${itemId}`)));
+  };
+  const updateMentoriaNotes = (sessionId, block, text) => {
+    const noteData = { text, updatedBy: currentUser, updatedAt: new Date().toISOString() };
+    setMentorias(p => { const next = p.map(m => m.id === sessionId ? { ...m, notes: { ...(m.notes || {}), [block]: noteData } } : m); saveMentoriasLS(next); return next; });
+    fb(fbUpdate(ref(db, `mentorias/${sessionId}/notes/${block}`), noteData));
+  };
+  const deleteMentoria = (id) => {
+    setMentorias(p => { const next = p.filter(m => m.id !== id); saveMentoriasLS(next); return next; });
+    fb(remove(ref(db, `mentorias/${id}`)));
+    pushNotif('eliminó una sesión de mentoría', 'Mentoría', ['kann', 'jero']);
   };
 
   const saveBrand = (slug, data) => {
@@ -549,6 +888,32 @@ export function AppProvider({ children }) {
     if (cost) pushNotif(`eliminó costo "${cost.name}"`, 'Finanzas', TEAM_FINANCE);
   };
 
+  const addSgPerson = (data) => {
+    const id = Date.now().toString();
+    const p = { ...data, id };
+    setSgPersons(prev => [...prev, p]);
+    fb(set(ref(db, `sgPersons/${id}`), p));
+  };
+  const deleteSgPerson = (id) => {
+    setSgPersons(prev => prev.filter(p => p.id !== id));
+    fb(remove(ref(db, `sgPersons/${id}`)));
+  };
+
+  const addSgAccount = (data) => {
+    const id = Date.now().toString();
+    const acc = { ...data, id };
+    setSgAccounts(p => [...p, acc]);
+    fb(set(ref(db, `sgAccounts/${id}`), acc));
+  };
+  const updateSgAccount = (id, updates) => {
+    setSgAccounts(p => p.map(a => a.id === id ? { ...a, ...updates } : a));
+    fb(fbUpdate(ref(db, `sgAccounts/${id}`), updates));
+  };
+  const deleteSgAccount = (id) => {
+    setSgAccounts(p => p.filter(a => a.id !== id));
+    fb(remove(ref(db, `sgAccounts/${id}`)));
+  };
+
   const getClientExpenses = (clientId) =>
     finances.filter(f => f.clientId === clientId && f.type === 'expense')
       .reduce((s, f) => s + f.amount, 0);
@@ -568,16 +933,22 @@ export function AppProvider({ children }) {
       convertAmount, fmtAmount, toUSD,
       currentUser,
       notifications, addNotification, markAllRead,
-      addDocument, removeDocument, addDocumentNote,
+      addDocument, updateDocument, removeDocument, addDocumentNote, createFolderWithFiles,
       projects, addProject, updateProject, deleteProject,
       recurringCosts, addRecurringCost, updateRecurringCost, deleteRecurringCost,
-      ideas, addIdea, deleteIdea,
+      ideas, addIdea, updateIdea, deleteIdea,
       meetings, addMeeting, updateMeeting, deleteMeeting,
       liveTasks, addLiveTask, updateLiveTask, deleteLiveTask, moveLiveTask,
-      clientActivity,
+      adPipelines, adPipelinesLoaded, addAdPipeline, updateAdPipeline, deleteAdPipeline,
+      mentorias, addMentoria, updateMentoria, deleteMentoria,
+      addMentoriaItem, updateMentoriaItem, deleteMentoriaItem, updateMentoriaNotes,
+      clientActivity, globalOnlineUsers, fbReady,
+      archivedCount, archiveTask, taskMonthlyHistory,
       docFocusClientId, setDocFocusClientId,
       gcalEvents, syncGcalEvents, clearGcalEvents,
       brands, saveBrand, getBrand,
+      sgAccounts, addSgAccount, updateSgAccount, deleteSgAccount,
+      sgPersons, addSgPerson, deleteSgPerson,
     }}>
       {children}
     </AppContext.Provider>

@@ -1,9 +1,9 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
+import { TEAM_MEMBERS } from '../constants';
 
 function AddIdeaModal({ onClose }) {
-  const { addIdea, clients } = useApp();
-  const currentUser = sessionStorage.getItem('sg_user') || 'kann';
+  const { addIdea, clients, currentUser } = useApp();
   const [form, setForm] = useState({ text: '', clientId: clients[0]?.id || '' });
 
   const handleSubmit = (e) => {
@@ -46,10 +46,10 @@ function AddIdeaModal({ onClose }) {
           </div>
           <div className="flex items-center gap-2 px-3 py-2 bg-[#080808] rounded-xl border border-[#111]">
             <div className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold flex-shrink-0"
-              style={{ background: currentUser === 'kann' ? '#faff05' : '#60a5fa', color: '#000' }}>
-              {currentUser === 'kann' ? 'K' : 'J'}
+              style={{ background: TEAM_MEMBERS[currentUser]?.bg || '#faff05', color: TEAM_MEMBERS[currentUser]?.text || '#000' }}>
+              {TEAM_MEMBERS[currentUser]?.initials || '?'}
             </div>
-            <span className="text-zinc-400 text-xs">Idea de <span className="text-white font-medium">{currentUser === 'kann' ? 'Kann' : 'Jero'}</span></span>
+            <span className="text-zinc-400 text-xs">Idea de <span className="text-white font-medium">{TEAM_MEMBERS[currentUser]?.label || currentUser}</span></span>
           </div>
           <button type="submit"
             className="w-full py-2.5 rounded-xl text-sm font-semibold text-black"
@@ -83,17 +83,22 @@ function ConfirmDialog({ message, onConfirm, onCancel }) {
 }
 
 export default function IdeaBank() {
-  const { ideas, deleteIdea, clients } = useApp();
+  const { ideas, deleteIdea, updateIdea, clients } = useApp();
   const [showAdd, setShowAdd] = useState(false);
   const [filterClient, setFilterClient] = useState('all');
-  const [confirmDelete, setConfirmDelete] = useState(null); // idea object
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState('');
 
+  const appliedCount = ideas.filter(i => i.applied).length;
+  const activeCount = ideas.filter(i => !i.applied).length;
+
+  const activeIdeas = ideas.filter(i => !i.applied);
   const filtered = filterClient === 'all'
-    ? ideas
-    : ideas.filter(i => i.clientId === filterClient);
+    ? activeIdeas
+    : activeIdeas.filter(i => i.clientId === filterClient);
 
-  // Only show clients that have at least one idea
-  const clientsWithIdeas = clients.filter(c => ideas.some(i => i.clientId === c.id));
+  const clientsWithIdeas = clients.filter(c => activeIdeas.some(i => i.clientId === c.id));
 
   const relativeTime = (iso) => {
     const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
@@ -107,16 +112,15 @@ export default function IdeaBank() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        {/* Left: title + filter pills */}
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <svg className="w-4 h-4 text-[#faff05]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
             <h2 className="text-white font-semibold text-sm">Banco de Ideas</h2>
-            <span className="text-zinc-600 text-xs">{ideas.length} ideas</span>
           </div>
-          {/* Client filter pills */}
           {clientsWithIdeas.length > 0 && (
             <div className="flex gap-1 flex-wrap">
               <button onClick={() => setFilterClient('all')}
@@ -134,6 +138,13 @@ export default function IdeaBank() {
             </div>
           )}
         </div>
+        {/* Right: stats + button */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <div className="flex items-center gap-3 text-xs">
+            <span className="text-zinc-500">Ideas: <span className="text-white font-medium">{activeCount}</span></span>
+            <span className="w-px h-3 bg-zinc-800" />
+            <span className="text-zinc-500">Ejecutadas: <span className="font-medium" style={{ color: '#60a5fa' }}>{appliedCount}</span></span>
+          </div>
         <button onClick={() => setShowAdd(true)}
           className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-black flex-shrink-0"
           style={{ background: '#faff05' }}>
@@ -142,9 +153,10 @@ export default function IdeaBank() {
           </svg>
           Nueva idea
         </button>
+        </div>
       </div>
 
-      {/* Postit grid */}
+      {/* Grid */}
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-14 text-center">
           <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: '#faff0515' }}>
@@ -152,51 +164,92 @@ export default function IdeaBank() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
             </svg>
           </div>
-          <p className="text-zinc-400 text-sm font-medium">Sin ideas todavía</p>
-          <p className="text-zinc-600 text-xs mt-1">Agregá la primera idea para este banco</p>
+          <p className="text-zinc-400 text-sm font-medium">Sin ideas activas</p>
+          <p className="text-zinc-600 text-xs mt-1">Agregá una nueva o revisá las aplicadas</p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-6 gap-2">
           {[...filtered].reverse().map(idea => {
             const client = clients.find(c => c.id === idea.clientId);
             const color = client?.color || '#faff05';
             return (
               <div key={idea.id}
-                className="relative flex flex-col gap-2 p-4 rounded-2xl border group transition-all hover:scale-[1.02]"
+                className={`relative flex flex-col gap-1.5 p-3 rounded-xl border group transition-all duration-200 ${editingId === idea.id ? '' : 'hover:scale-[1.06] hover:-translate-y-1 hover:z-10 hover:shadow-xl hover:shadow-black/60'}`}
                 style={{ background: color + '0d', borderColor: color + '30', borderTopWidth: '3px', borderTopColor: color }}>
 
-                {/* Top row: client + delete */}
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ background: color }} />
-                    <span className="text-[11px] font-semibold truncate" style={{ color }}>
+                {/* Top row: client + actions */}
+                <div className="flex items-center justify-between gap-1 min-w-0">
+                  <div className="flex items-center gap-1 min-w-0">
+                    <div className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: color }} />
+                    <span className="text-[10px] font-semibold truncate" style={{ color }}>
                       {client?.name || 'General'}
                     </span>
                   </div>
-                  <button
-                    onClick={() => setConfirmDelete(idea)}
-                    className="flex-shrink-0 opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-red-400 transition-all">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                  {editingId !== idea.id && (
+                    <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-all flex-shrink-0">
+                      <button
+                        onClick={() => updateIdea(idea.id, { applied: true })}
+                        title="Marcar como aplicada"
+                        className="text-zinc-600 hover:text-green-400 transition-colors">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => { setEditingId(idea.id); setEditText(idea.text); }}
+                        className="text-zinc-600 hover:text-zinc-300 transition-colors">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button
+                        onClick={() => setConfirmDelete(idea)}
+                        className="text-zinc-600 hover:text-red-400 transition-colors">
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Idea text */}
-                <p className="text-zinc-200 text-sm leading-relaxed flex-1">{idea.text}</p>
+                {editingId === idea.id ? (
+                  <textarea
+                    autoFocus
+                    value={editText}
+                    onChange={e => setEditText(e.target.value)}
+                    onBlur={() => {
+                      const trimmed = editText.trim();
+                      if (trimmed && trimmed !== idea.text) updateIdea(idea.id, { text: trimmed });
+                      setEditingId(null);
+                    }}
+                    onKeyDown={e => {
+                      if (e.key === 'Escape') { setEditingId(null); setEditText(''); }
+                      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                        const trimmed = editText.trim();
+                        if (trimmed && trimmed !== idea.text) updateIdea(idea.id, { text: trimmed });
+                        setEditingId(null);
+                      }
+                    }}
+                    className="bg-transparent text-zinc-200 text-xs leading-relaxed resize-none focus:outline-none w-full"
+                    rows={3}
+                  />
+                ) : (
+                  <p className="text-zinc-200 text-xs leading-relaxed">
+                    {idea.text}
+                  </p>
+                )}
 
-                {/* Footer: author + time */}
-                <div className="flex items-center justify-between gap-2 pt-1 border-t" style={{ borderColor: color + '20' }}>
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold flex-shrink-0"
-                      style={{ background: idea.createdBy === 'kann' ? '#faff05' : '#60a5fa', color: '#000' }}>
-                      {idea.createdBy === 'kann' ? 'K' : 'J'}
+                {/* Footer */}
+                <div className="flex items-center justify-between gap-1 pt-1 border-t" style={{ borderColor: color + '20' }}>
+                  <div className="flex items-center gap-1">
+                    <div className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[7px] font-bold flex-shrink-0"
+                      style={{ background: TEAM_MEMBERS[idea.createdBy]?.bg || '#a78bfa', color: TEAM_MEMBERS[idea.createdBy]?.text || '#000' }}>
+                      {TEAM_MEMBERS[idea.createdBy]?.initials || '?'}
                     </div>
-                    <span className="text-zinc-500 text-[10px]">
-                      {idea.createdBy === 'kann' ? 'Kann' : 'Jero'}
-                    </span>
+                    <span className="text-zinc-600 text-[9px]">{relativeTime(idea.createdAt)}</span>
                   </div>
-                  <span className="text-zinc-600 text-[10px]">{relativeTime(idea.createdAt)}</span>
                 </div>
               </div>
             );

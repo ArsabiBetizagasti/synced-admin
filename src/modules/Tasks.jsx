@@ -1,37 +1,130 @@
 ﻿import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { TaskModal } from './KanbanBoard';
-
-const PRIORITIES = {
-  Alta: { color: '#f87171', bg: '#f8717120' },
-  Media: { color: '#fbbf24', bg: '#fbbf2420' },
-  Baja: { color: '#34d399', bg: '#34d39920' },
-};
-
-const ASSIGNEES = {
-  kann: { label: 'Kann', initials: 'K', bg: '#faff05', text: '#000' },
-  jero: { label: 'Jero', initials: 'J', bg: '#60a5fa', text: '#000' },
-  facu: { label: 'Facu', initials: 'F', bg: '#a78bfa', text: '#000' },
-};
+import { TEAM_MEMBERS as ASSIGNEES, PRIORITY_STYLES as PRIORITIES } from '../constants';
 
 const STATUS_LABELS = { todo: 'To Do', inprogress: 'En Progreso', done: 'Completado' };
 const STATUS_COLORS = { todo: '#71717a', inprogress: '#faff05', done: '#34d399' };
 
-export function TaskStats() {
-  const { tasks } = useApp();
+function MiniChart({ data }) {
+  const maxVal = Math.max(...data.map(d => d.value), 1);
+  const H = 44, padY = 6;
+  // svgY: position within the SVG viewBox (0..H), maps 1-to-1 to pixels since SVG renders at H px
+  const pts = data.map((d, i) => {
+    const xPct = data.length <= 1 ? 50 : (i / (data.length - 1)) * 100;
+    const svgY = padY + (1 - d.value / maxVal) * (H - padY * 2);
+    return { xPct, svgY, ...d };
+  });
+  const polyline = pts.map(p => `${p.xPct.toFixed(2)},${p.svgY.toFixed(2)}`).join(' ');
+  // Container is 14px (value labels) + H px (chart)
+  const containerH = 14 + H;
+
   return (
-    <div className="grid grid-cols-4 gap-4">
-      {[
-        { label: 'Total tareas', value: tasks.length, color: 'white' },
-        { label: 'To Do', value: tasks.filter(t => t.status === 'todo').length, color: '#71717a' },
-        { label: 'En Progreso', value: tasks.filter(t => t.status === 'inprogress').length, color: '#faff05' },
-        { label: 'Completadas', value: tasks.filter(t => t.status === 'done').length, color: '#34d399' },
-      ].map(s => (
-        <div key={s.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4">
-          <p className="text-zinc-500 text-xs uppercase tracking-wider mb-2">{s.label}</p>
-          <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+    <div className="bg-[#080808] border border-[#111] rounded-2xl px-5 pt-3 pb-3 mt-2">
+      <p className="text-zinc-600 text-[9px] uppercase tracking-wider mb-2">Tracking de tareas mensuales</p>
+      <div className="relative" style={{ height: containerH }}>
+        {/* SVG line only — starts 14px from top */}
+        <svg viewBox={`0 0 100 ${H}`} className="absolute w-full"
+          style={{ height: H, top: 14, left: 0 }} preserveAspectRatio="none">
+          <polyline points={polyline} fill="none" stroke="#faff05" strokeWidth="1.2"
+            strokeLinecap="round" strokeLinejoin="round" opacity="0.5" />
+        </svg>
+        {pts.map((p, i) => {
+          const dotCenterPx = 14 + p.svgY; // px from container top to dot center
+          return (
+            <div key={i} className="absolute" style={{ left: `${p.xPct}%`, top: 0, transform: 'translateX(-50%)' }}>
+              {/* Value label: sits just above the dot */}
+              <span className="absolute text-[8px] font-medium"
+                style={{ color: '#faff05', opacity: 0.65, top: dotCenterPx - 16, left: '50%', transform: 'translateX(-50%)', whiteSpace: 'nowrap' }}>
+                {p.value}
+              </span>
+              {/* Dot: centered on the line */}
+              <div className="absolute rounded-full bg-[#faff05]"
+                style={{ width: 7, height: 7, top: dotCenterPx - 3.5, left: '50%', transform: 'translateX(-50%)' }} />
+            </div>
+          );
+        })}
+      </div>
+      {/* Month labels row — separate, always below the chart */}
+      <div className="relative mt-2" style={{ height: 14 }}>
+        {pts.map(p => (
+          <span key={p.key} className="absolute text-[9px] text-zinc-600 capitalize"
+            style={{ left: `${p.xPct}%`, transform: 'translateX(-50%)' }}>
+            {p.label}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function TaskStats() {
+  const { tasks, archivedCount, ideas, taskMonthlyHistory } = useApp();
+  const [hovered, setHovered] = useState(false);
+
+  const now = new Date();
+  const thisMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const prevDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthKey = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+  const thisMonth = taskMonthlyHistory?.[thisMonthKey] || 0;
+  const lastMonth = taskMonthlyHistory?.[lastMonthKey] || 0;
+  let pctDiff = null, pctPositive = true;
+  if (lastMonth > 0) { pctDiff = Math.round(((thisMonth - lastMonth) / lastMonth) * 100); pctPositive = pctDiff >= 0; }
+  else if (thisMonth > 0) { pctDiff = 100; pctPositive = true; }
+
+  const chartData = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() - (6 - i), 1);
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    return { key, label: d.toLocaleString('es-ES', { month: 'short' }), value: taskMonthlyHistory?.[key] || 0 };
+  });
+
+  const activeIdeas   = (ideas || []).filter(i => !i.applied).length;
+  const appliedIdeas  = (ideas || []).filter(i =>  i.applied).length;
+
+  const stats = [
+    { label: 'Total Tareas', value: tasks.length,                                       color: 'white'   },
+    { label: 'To Do',        value: tasks.filter(t => t.status === 'todo').length,       color: '#71717a' },
+    { label: 'En Progreso',  value: tasks.filter(t => t.status === 'inprogress').length, color: '#faff05' },
+    { label: 'Completadas',  value: tasks.filter(t => t.status === 'done').length,       color: '#34d399', sub: archivedCount,  subLabel: 'archivadas', subColor: '#34d399' },
+    { label: 'Ideas',        value: activeIdeas,                                         color: '#a78bfa', sub: appliedIdeas,   subLabel: 'ejecutadas', subColor: '#60a5fa' },
+  ];
+
+  return (
+    <div onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+        {stats.map(s => (
+          <div key={s.label} className="bg-[#080808] border border-[#111] rounded-2xl p-4">
+            <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-2 leading-tight">{s.label}</p>
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-1.5">
+              <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
+              {s.sub > 0 && (
+                <span className="text-[9px] font-medium" style={{ color: s.subColor, opacity: 0.6 }}>+{s.sub} {s.subLabel}</span>
+              )}
+            </div>
+          </div>
+        ))}
+        <div className="bg-[#080808] border border-[#111] rounded-2xl p-4">
+          <p className="text-zinc-500 text-[10px] uppercase tracking-wider mb-2 leading-tight">Este Mes</p>
+          {pctDiff === null ? (
+            <p className="text-zinc-600 text-lg font-bold">—</p>
+          ) : (
+            <div className="flex flex-col sm:flex-row sm:items-baseline sm:gap-1">
+              <p className="text-2xl font-bold" style={{ color: pctPositive ? '#34d399' : '#f87171' }}>
+                {pctPositive ? '+' : ''}{pctDiff}%
+              </p>
+              <span className="text-zinc-700 text-[9px]">vs mes anterior</span>
+            </div>
+          )}
         </div>
-      ))}
+      </div>
+      <div style={{
+        maxHeight: hovered ? '120px' : '0px',
+        opacity: hovered ? 1 : 0,
+        overflow: 'hidden',
+        transition: 'max-height 300ms ease, opacity 250ms ease',
+      }}>
+        <MiniChart data={chartData} />
+      </div>
     </div>
   );
 }
@@ -151,7 +244,8 @@ export default function Tasks({ filters: extFilters, hideStats }) {
 
 
       {/* Task table */}
-      <div className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden">
+      <div className="overflow-x-auto">
+      <div className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden min-w-[600px]">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#111]">
@@ -251,6 +345,7 @@ export default function Tasks({ filters: extFilters, hideStats }) {
             No se encontraron tareas con los filtros seleccionados
           </div>
         )}
+      </div>
       </div>
 
       {showAdd && <AddTaskInline onClose={() => setShowAdd(false)} />}

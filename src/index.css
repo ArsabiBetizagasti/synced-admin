@@ -17,7 +17,29 @@ body {
 ::-webkit-scrollbar-thumb { background: #000; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: #111; }
 
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
 .drag-over { border-color: #faff05 !important; background: rgba(250,255,5,0.04) !important; }
+
+/* ─── Date input calendar icon ──────────────────────────────────────────── */
+input[type="date"],
+input[type="datetime-local"],
+input[type="time"] {
+  color-scheme: dark;
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: brightness(0) invert(1) !important;
+  opacity: 0.75 !important;
+  cursor: pointer;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1 !important;
+}
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }

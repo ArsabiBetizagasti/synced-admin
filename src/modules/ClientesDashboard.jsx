@@ -1,6 +1,7 @@
 ﻿import React, { useState, useRef } from 'react';
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useApp } from '../context/AppContext';
+import DirectorioSGCard, { DirectorioSGDetail } from './DirectorioSG';
 
 const CURR_SYM = { USD: '$', EUR: '€', GBP: '£' };
 
@@ -426,7 +427,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
       </div>
 
       {/* KPIs */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: 'Ingresos totales',  value: totalIncome,   color: '#4ade80', icon: '↑' },
           { label: 'Comisiones',        value: totalComm,     color: '#faff05', icon: '%' },
@@ -446,9 +447,9 @@ function ClientDetail({ client, onBack, onNavigate }) {
       </div>
 
       {/* Mini chart + Contract info */}
-      <div className="grid grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-5 gap-4">
         {/* Income chart */}
-        <div className="col-span-3 bg-[#080808] border border-[#111] rounded-2xl p-5">
+        <div className="sm:col-span-3 bg-[#080808] border border-[#111] rounded-2xl p-5">
           <SectionHeader title="Ingresos mensuales" color={client.color}
             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>} />
           {chartData.length === 0
@@ -473,7 +474,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
         </div>
 
         {/* Contract details + upload */}
-        <div className="col-span-2 bg-[#080808] border border-[#111] rounded-2xl p-5 flex flex-col">
+        <div className="sm:col-span-2 bg-[#080808] border border-[#111] rounded-2xl p-5 flex flex-col">
           <SectionHeader title="Contrato" color={client.color}
             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>} />
           <div className="space-y-2 text-xs flex-1">
@@ -561,7 +562,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
       <div>
         <SectionHeader title="Tareas" count={`${clientTasks.length} tareas`} color={client.color}
           icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>} />
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {COLUMNS.map(colId => {
             const colTasks = tasksByStatus[colId];
             const isOver = dragOver === colId;
@@ -649,7 +650,8 @@ function ClientDetail({ client, onBack, onNavigate }) {
         <div>
           <SectionHeader title="Historial mensual" color={client.color}
             icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>} />
-          <div className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden">
+          <div className="overflow-x-auto">
+          <div className="bg-[#080808] border border-[#111] rounded-2xl overflow-hidden min-w-[380px]">
             <div className={`grid gap-2 text-[10px] text-zinc-500 uppercase tracking-wider px-5 py-3 border-b border-[#111] ${client.hasCommissions ? 'grid-cols-5' : 'grid-cols-3'}`}>
               <span>Mes</span><span>Ingreso real</span><span>Gasto</span>
               {client.hasCommissions && <><span>Ventas cliente</span><span>Comisión</span></>}
@@ -683,6 +685,7 @@ function ClientDetail({ client, onBack, onNavigate }) {
               })}
             </div>
           </div>
+          </div>
         </div>
       )}
     </div>
@@ -693,6 +696,9 @@ function ClientDetail({ client, onBack, onNavigate }) {
 export default function ClientesDashboard({ onNavigate }) {
   const { clients, projects } = useApp();
   const [selected, setSelected] = useState(null);
+  const [sgOpen, setSgOpen] = useState(false);
+
+  if (sgOpen) return <DirectorioSGDetail onBack={() => setSgOpen(false)} />;
 
   if (selected) {
     const live = clients.find(c => c.id === selected.id) || selected;
@@ -705,6 +711,8 @@ export default function ClientesDashboard({ onNavigate }) {
 
   return (
     <div className="space-y-8">
+      <DirectorioSGCard onEnter={() => setSgOpen(true)} />
+
       {/* ── Active ── */}
       <div>
         <div className="flex items-center gap-4 mb-4">

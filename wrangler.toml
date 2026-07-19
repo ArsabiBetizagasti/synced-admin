@@ -1,6 +1,7 @@
 name = "synced-admin"
 main = "worker-admin.js"
 compatibility_date = "2025-05-18"
+account_id = "83145c92c624e133fad08499b4d48ba0"
 
 routes = [
   { pattern = "synced.graphics/admin*", zone_name = "synced.graphics" }

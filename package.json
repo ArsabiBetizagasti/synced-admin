@@ -16,8 +16,10 @@
     "@tiptap/react": "^3.23.4",
     "@tiptap/starter-kit": "^3.23.4",
     "firebase": "^12.13.0",
+    "konva": "^9.3.22",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-konva": "^18.2.10",
     "recharts": "^2.10.3"
   },
   "devDependencies": {

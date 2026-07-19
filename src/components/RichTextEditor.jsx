@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Underline from '@tiptap/extension-underline';
@@ -56,7 +56,7 @@ function LinkPopover({ onConfirm, onCancel }) {
 }
 
 // ─── Main editor ──────────────────────────────────────────────────────────────
-export default function RichTextEditor({ value, onChange, placeholder = 'Describe la tarea en detalle...' }) {
+export default function RichTextEditor({ value, onChange, placeholder = 'Describe la tarea en detalle...', readOnly = false, fill = false, editorMinH = 'min-h-[120px]', editorMaxH = 'max-h-[300px]' }) {
   const fileRef = useRef(null);
   const [showLinkPopover, setShowLinkPopover] = useState(false);
 
@@ -78,7 +78,8 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Describ
       Placeholder.configure({ placeholder }),
     ],
     content: value || '',
-    onUpdate: ({ editor }) => onChange(editor.getHTML()),
+    editable: !readOnly,
+    onUpdate: ({ editor }) => !readOnly && onChange?.(editor.getHTML()),
     editorProps: {
       handlePaste(view, event) {
         const items = event.clipboardData?.items;
@@ -127,14 +128,22 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Describ
     editor?.chain().focus().setLink({ href }).run();
   };
 
+  useEffect(() => {
+    if (!editor || editor.isFocused) return;
+    const newVal = value || '';
+    if (editor.getHTML() !== newVal) editor.commands.setContent(newVal, false);
+  }, [value, editor]);
+
   if (!editor) return null;
 
   const isActive = (name, attrs) => editor.isActive(name, attrs);
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-[#111] overflow-hidden focus-within:border-[#faff05] transition-colors">
+    <div className={`rounded-xl border bg-[#111] overflow-hidden transition-colors flex flex-col ${
+      readOnly ? 'border-zinc-800/40' : 'border-zinc-800 focus-within:border-[#faff05]'
+    } ${fill ? 'flex-1 min-h-0' : ''}`}>
       {/* Toolbar */}
-      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-zinc-800 flex-wrap">
+      {!readOnly && <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-zinc-800 flex-wrap flex-shrink-0">
         {/* Text format */}
         <Btn onClick={() => editor.chain().focus().toggleBold().run()} active={isActive('bold')} title="Negrita (Ctrl+B)">
           <span className="font-bold text-sm">B</span>
@@ -214,19 +223,21 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Describ
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </Btn>
-      </div>
+      </div>}
 
       {/* Editor area */}
       <EditorContent
         editor={editor}
-        className="rich-editor min-h-[120px] max-h-[300px] overflow-y-auto px-3 py-2.5 text-sm text-white"
+        className={`rich-editor overflow-y-auto px-3 py-2.5 text-sm text-white ${
+          fill ? 'flex-1 min-h-0' : `${editorMinH} ${editorMaxH}`
+        } ${readOnly ? 'cursor-default' : ''}`}
       />
 
       {/* Hint */}
-      <div className="px-3 py-1.5 border-t border-zinc-800/50 flex items-center gap-3">
+      {!readOnly && <div className="px-3 py-1.5 border-t border-zinc-800/50 flex items-center gap-3 flex-shrink-0">
         <span className="text-zinc-700 text-[10px]">Ctrl+B negrita · Ctrl+I cursiva · Ctrl+U subrayado</span>
         <span className="text-zinc-700 text-[10px] ml-auto">Pegá imágenes directo acá</span>
-      </div>
+      </div>}
     </div>
   );
 }
