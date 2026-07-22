@@ -631,6 +631,23 @@ function StepMarket({ form, set }) {
           placeholder="Free shipping above £40. Profitable at 2+ units per order."
           className={inputCls + ' resize-none'} />
       </div>
+
+      <div>
+        <label className={labelCls}>Carpeta de assets (Drive / Dropbox / WeTransfer)</label>
+        <input value={form.assetsLink}
+          onChange={e => set(p => ({ ...p, assetsLink: e.target.value }))}
+          placeholder="https://drive.google.com/..."
+          className={inputCls} />
+      </div>
+
+      <div>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" checked={!!form.metaAdsGranted}
+            onChange={e => set(p => ({ ...p, metaAdsGranted: e.target.checked }))}
+            className="w-3.5 h-3.5 accent-[#faff05]" />
+          <span className="text-sm text-zinc-400">Cliente otorgó acceso Advertiser a Meta Ads</span>
+        </label>
+      </div>
     </div>
   );
 }
@@ -650,6 +667,7 @@ const BLANK = {
   icp: '', market: '', monthlySpend: '', spendCurrency: 'GBP',
   targetCpa: '', cpaCurrency: 'GBP', aov: '',
   competitors: [], notes: '',
+  assetsLink: '', metaAdsGranted: false,
   // Step 6 — Strategy
   whyStarted: '', vision: '',
   goal1m: '', goal3m: '', goal6m: '', goal1y: '',
@@ -739,6 +757,30 @@ function ProfileField({ label, value }) {
       <p className="text-zinc-600 text-[10px] uppercase tracking-wider mb-1">{label}</p>
       <p className="text-zinc-200 text-sm leading-relaxed whitespace-pre-wrap">
         {Array.isArray(value) ? value.join(', ') : String(value)}
+      </p>
+    </div>
+  );
+}
+
+function ProfileLinkField({ label, value }) {
+  if (!value) return null;
+  return (
+    <div>
+      <p className="text-zinc-600 text-[10px] uppercase tracking-wider mb-1">{label}</p>
+      <a href={value} target="_blank" rel="noopener noreferrer"
+        className="text-zinc-200 text-sm leading-relaxed underline decoration-zinc-600 hover:text-[#faff05] transition-colors break-all">
+        {value}
+      </a>
+    </div>
+  );
+}
+
+function ProfileStatusField({ label, granted }) {
+  return (
+    <div>
+      <p className="text-zinc-600 text-[10px] uppercase tracking-wider mb-1">{label}</p>
+      <p className={`text-sm font-medium ${granted ? 'text-green-400' : 'text-zinc-600'}`}>
+        {granted ? '✅ Acceso otorgado' : 'Pendiente'}
       </p>
     </div>
   );
@@ -885,6 +927,11 @@ function ClientProfile({ client, brand, onboarding, onEdit, onGenerateLink, gene
           )}
         </ProfileSection>
 
+        <ProfileSection title="Assets y Accesos">
+          <ProfileLinkField label="Carpeta de assets" value={c.assets_drive_link} />
+          <ProfileStatusField label="Acceso a Meta Ads" granted={!!c.meta_ads_access_granted} />
+        </ProfileSection>
+
         {products.length > 0 && (
           <div className={cardCls + ' space-y-3'}>
             <p className="text-zinc-400 text-xs font-semibold uppercase tracking-wider">Productos</p>
@@ -983,6 +1030,8 @@ export default function BrandSetup() {
         aov:             existingBrand.config?.aov || '',
         competitors:     existingBrand.config?.competitor_brands || [],
         notes:           existingBrand.config?.notes || '',
+        assetsLink:      existingBrand.config?.assets_drive_link || '',
+        metaAdsGranted:  !!existingBrand.config?.meta_ads_access_granted,
         whyStarted:      existingBrand.strategy?.why_started || '',
         vision:          existingBrand.strategy?.vision || '',
         goal1m:          existingBrand.strategy?.objectives?.month_1 || '',
@@ -1043,6 +1092,8 @@ export default function BrandSetup() {
           target_cpa: parseFloat(form.targetCpa) || 0, cpa_currency: form.cpaCurrency,
           monthly_spend: parseFloat(form.monthlySpend) || 0, spend_currency: form.spendCurrency,
           aov: parseFloat(form.aov) || 0, notes: form.notes,
+          assets_drive_link: form.assetsLink,
+          meta_ads_access_granted: !!form.metaAdsGranted,
         },
         art_direction: {
           aesthetic_tagline: form.aestheticTagline, aesthetic_desc: form.aestheticDesc,

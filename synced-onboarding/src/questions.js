@@ -234,6 +234,22 @@ export const QUESTIONS = [
     required: false,
     path: 'products[0].benefits',
   },
+  {
+    id: 'assets_drive_link',
+    type: 'url',
+    label: "Got a shared folder with your brand assets?",
+    placeholder: 'https://drive.google.com/...',
+    required: false,
+    path: 'config.assets_drive_link',
+    hint: 'Any cloud folder works — Google Drive, Dropbox, WeTransfer, etc. Logos, product photos, past creative, whatever you have.',
+  },
+  {
+    id: 'meta_ads_access',
+    type: 'meta_ads_access',
+    label: "Give us access to your Meta Ads account.",
+    required: false,
+    path: 'config.meta_ads_access_granted',
+  },
 ];
 
 export const WELCOME = {

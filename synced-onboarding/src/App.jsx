@@ -256,6 +256,57 @@ function ImageUploadInput({ question, value, onChange, slug }) {
   );
 }
 
+const META_PARTNER_ID = '2009932539600377';
+
+function MetaAdsAccessInput({ value, onChange }) {
+  const [copied, setCopied] = useState(false);
+  const copyId = () => {
+    navigator.clipboard.writeText(META_PARTNER_ID).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+  const steps = [
+    <>Go to <strong>Meta Business Manager → Settings → Ad Accounts</strong></>,
+    <>Select your ad account</>,
+    <>Click <strong>Partners → Give a partner access to your ad account</strong></>,
+    <>Enter this Business Portfolio ID:</>,
+    <>Set the role to <strong>Advertiser</strong> (not Analyst — we need to run and edit campaigns, not just view)</>,
+    <>Click <strong>Connect</strong></>,
+  ];
+  return (
+    <div>
+      <ol className="space-y-4">
+        {steps.map((content, i) => (
+          <li key={i} className="flex gap-3 items-start">
+            <span className="text-zinc-300 text-sm font-light w-5 flex-shrink-0 pt-0.5">{i + 1}</span>
+            <div className="flex-1">
+              <p className="text-zinc-700 text-base leading-relaxed font-light">{content}</p>
+              {i === 3 && (
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <code className="text-zinc-800 text-sm font-mono bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2 break-all">
+                    {META_PARTNER_ID}
+                  </code>
+                  <button type="button" onClick={copyId}
+                    className="px-3 py-2 rounded-lg text-xs font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors flex-shrink-0">
+                    {copied ? 'Copied!' : 'Copy'}
+                  </button>
+                </div>
+              )}
+            </div>
+          </li>
+        ))}
+      </ol>
+      <label className="flex items-start gap-3 mt-8 cursor-pointer">
+        <input type="checkbox" checked={!!value}
+          onChange={e => onChange(e.target.checked ? true : undefined)}
+          className="mt-1 w-5 h-5 rounded border-zinc-300 accent-zinc-800 flex-shrink-0 cursor-pointer" />
+        <span className="text-zinc-800 text-base font-medium">I've added Synced Graphics as an Advertiser partner</span>
+      </label>
+    </div>
+  );
+}
+
 // ── Question screen ────────────────────────────────────────────────────────────
 function QuestionScreen({ question, value, onChange, onNext, onBack, index, total, isLast, slug }) {
   const canAdvance = !question.required ||
@@ -273,6 +324,8 @@ function QuestionScreen({ question, value, onChange, onNext, onBack, index, tota
         return <BenefitsInput question={question} value={value || ['', '', '']} onChange={onChange} />;
       case 'image_upload':
         return <ImageUploadInput question={question} value={value || ''} onChange={onChange} slug={slug} />;
+      case 'meta_ads_access':
+        return <MetaAdsAccessInput value={value} onChange={onChange} />;
       default:
         return (
           <TextInput
@@ -286,9 +339,9 @@ function QuestionScreen({ question, value, onChange, onNext, onBack, index, tota
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-white px-6 py-12 md:px-20 md:py-20">
+    <div className="flex flex-col items-center min-h-screen bg-white px-6 py-12 md:px-20 md:py-20">
       {/* Progress bar */}
-      <div className="mb-16">
+      <div className="w-full max-w-2xl mx-auto mb-16">
         <div className="w-full h-0.5 bg-zinc-100 rounded-full">
           <div
             className="h-full bg-zinc-800 rounded-full transition-all duration-500"
@@ -299,7 +352,7 @@ function QuestionScreen({ question, value, onChange, onNext, onBack, index, tota
       </div>
 
       {/* Question content */}
-      <div className="flex-1 flex flex-col justify-center max-w-2xl">
+      <div className="flex-1 flex flex-col justify-center w-full max-w-2xl mx-auto">
         <div className="mb-2 flex items-center gap-2">
           <span className="text-zinc-300 text-sm">{index + 1}</span>
           <span className="text-zinc-300 text-sm">→</span>
